@@ -42,9 +42,8 @@ Turn a collection of 51 isolated agent personalities into a functional AI agency
 
 - Custom CLI tooling (like GSD's gsd-tools.cjs) — keep it pure markdown/skills
 - Board of directors / governance model (Conductor-style) — too heavy
-- Milestone archiving / retrospectives — save for later
-- MCP server integrations — rely on whatever the user already has configured
-- Brownfield codebase mapping — not needed for v1
+- MCP server requirements — user brings their own
+- Jira / Linear / other issue trackers — GitHub only for now
 
 ## Constraints
 
@@ -76,4 +75,4 @@ Turn a collection of 51 isolated agent personalities into a functional AI agency
 | **Best Practice** | Skills/commands/agents structure, agent frontmatter, permission patterns | RPI workflow (too specific), custom hooks infrastructure |
 
 ---
-*Last updated: 2026-03-01 after initialization*
+*Last updated: 2026-03-01 after milestone audit — requirements expanded from 30 to 51*

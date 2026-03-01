@@ -13,6 +13,7 @@ Output: Dashboard display with next-action routing.
 
 <execution_context>
 @./.claude/skills/agency/workflow-common.md
+@./.claude/skills/agency/execution-tracker.md
 </execution_context>
 
 <context>

@@ -2,7 +2,7 @@
 name: agency:build
 description: Execute current phase plans with parallel agent teams
 argument-hint: [--phase N]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage, AskUserQuestion]
 ---
 
 <objective>

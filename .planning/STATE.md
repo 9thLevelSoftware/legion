@@ -1,13 +1,13 @@
 # Project State
 
 ## Current Position
-- **Phase**: 6 of 6 (executed, pending review)
-- **Status**: Phase 6 complete — all plans executed successfully
-- **Last Activity**: Phase 6 execution (2026-03-01)
+- **Phase**: 6 of 14 (complete)
+- **Status**: Core orchestration complete — extended features pending
+- **Last Activity**: Milestone audit, requirements expansion (2026-03-01)
 
 ## Progress
 ```
-[##################..] 86% — 13/15 plans complete
+[##########..........] 50% — 15/? plans complete (phases 7-14 not yet planned)
 ```
 
 ## Phase 1 Results
@@ -48,7 +48,10 @@
 - Plan 06-02 (Wave 1): Full /agency:quick implementation (182 lines) — 7-step ad-hoc task execution with agent selection, personality injection, optional commit
 
 ## Pre-existing Issues
-- 2 spatial-computing agents lack YAML frontmatter (terminal-integration-specialist, visionos-spatial-engineer)
+- ~~2 spatial-computing agents lack YAML frontmatter~~ — Fixed (2026-03-01)
+- ~~INFRA-01 through INFRA-05 unchecked in REQUIREMENTS.md~~ — Fixed (2026-03-01)
+- ~~build.md missing AskUserQuestion in allowed-tools~~ — Fixed (2026-03-01)
+- ~~status.md missing execution-tracker in execution_context~~ — Fixed (2026-03-01)
 
 ## Next Action
-Run `/agency:review` to verify Phase 6: Status & Quick
+Run `/gsd:plan-phase` for Phase 7 to begin extended features. Phases 7-14 need planning.

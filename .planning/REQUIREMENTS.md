@@ -4,11 +4,11 @@
 
 ### Plugin Infrastructure (INFRA)
 
-- [ ] INFRA-01: Create `.claude/commands/agency/` directory with command entry points
-- [ ] INFRA-02: Create `.claude/skills/agency/` directory with reusable workflow skills
-- [ ] INFRA-03: Create agent registry mapping all 51 agents by division, capability, and task type
-- [ ] INFRA-04: Define `.planning/` state structure (PROJECT.md, ROADMAP.md, STATE.md)
-- [ ] INFRA-05: Create plugin README with installation instructions
+- [x] INFRA-01: Create `.claude/commands/agency/` directory with command entry points
+- [x] INFRA-02: Create `.claude/skills/agency/` directory with reusable workflow skills
+- [x] INFRA-03: Create agent registry mapping all 51 agents by division, capability, and task type
+- [x] INFRA-04: Define `.planning/` state structure (PROJECT.md, ROADMAP.md, STATE.md)
+- [x] INFRA-05: Create plugin README with installation instructions
 
 ### Project Initialization (INIT)
 
@@ -50,21 +50,58 @@
 - [x] STATUS-03: Session resume — read STATE.md to restore context on new session
 - [x] STATUS-04: Next-action routing — direct user to the right command based on project state
 
-## v2 Requirements (Deferred)
+### Portfolio Management (PORT)
 
-- [ ] Multi-project portfolio management (Studio Producer agent coordination)
-- [ ] Milestone completion and archiving
-- [ ] Cross-session learning / pattern memory
-- [ ] Custom agent creation workflow
-- [ ] Integration with external tools (GitHub, Jira, etc.)
-- [ ] Brownfield codebase mapping before planning
-- [ ] Marketing-specific workflows (campaign planning, content calendars)
-- [ ] Design-specific workflows (design system creation, UX research)
+- [ ] PORT-01: Multi-project portfolio management — track multiple projects with shared agent pool
+- [ ] PORT-02: Studio Producer agent coordination — orchestrate cross-project dependencies and resources
+
+### Milestone Management (MILE)
+
+- [ ] MILE-01: Milestone completion — mark milestones done with summary and metrics
+- [ ] MILE-02: Milestone archiving — archive completed milestone artifacts to reduce active state
+
+### Cross-Session Learning (LEARN)
+
+- [ ] LEARN-01: Memory skill — lightweight semantic memory inspired by Daem0n-MCP patterns (store, recall, decay) called explicitly by Agency workflows, not via hooks
+- [ ] LEARN-02: Outcome recording — after build/review, store agent performance, task outcomes, and review findings with importance scoring
+- [ ] LEARN-03: Pattern recall — during plan/agent selection, query past outcomes to improve recommendations (falls back to registry algorithm if no memory available)
+- [ ] LEARN-04: Session briefing — richer resume via stored decision history and recent outcomes, enhancing STATUS.md-only restore
+- [ ] LEARN-05: Graceful degradation — all memory integration is optional; workflows function identically without it
+
+### Custom Agents (CUSTOM)
+
+- [ ] CUSTOM-01: Agent creation workflow — guided flow to define new agent personalities
+- [ ] CUSTOM-02: Agent schema and validation — enforce frontmatter structure, required fields
+- [ ] CUSTOM-03: Registry auto-update — new agents automatically registered in agent-registry
+
+### GitHub Integration (GH)
+
+- [ ] GH-01: GitHub issue tracking — link phases/tasks to GitHub issues
+- [ ] GH-02: PR creation — agents can create PRs for their work
+- [ ] GH-03: GitHub status sync — reflect project progress in GitHub (issues, milestones)
+
+### Brownfield Support (BROWN)
+
+- [ ] BROWN-01: Codebase mapping — analyze existing codebase before planning phases
+- [ ] BROWN-02: Dependency detection — identify existing patterns, frameworks, conventions
+- [ ] BROWN-03: Risk assessment — flag areas of complexity or technical debt before agent work
+
+### Marketing Workflows (MKT)
+
+- [ ] MKT-01: Campaign planning workflow — structured campaign creation with marketing agents
+- [ ] MKT-02: Content calendar generation — time-based content planning with assignments
+- [ ] MKT-03: Cross-channel coordination — align messaging across social, email, web
+
+### Design Workflows (DSN)
+
+- [ ] DSN-01: Design system creation — structured design system workflow with design agents
+- [ ] DSN-02: UX research workflow — user research planning and synthesis
+- [ ] DSN-03: Design review cycle — design-specific quality gates (brand, accessibility, usability)
 
 ## Out of Scope
 
 - Custom CLI tooling — no Node.js scripts, pure Claude Code primitives
-- Board of directors governance — too heavy for v1
+- Board of directors governance — too heavy
 - Message bus / file-based IPC — use Teams' built-in coordination
 - Complex checkpoint/rollback — git handles this naturally
 - MCP server requirements — user brings their own
@@ -79,3 +116,11 @@
 | EXEC-01 through EXEC-06 | Phase 4 |
 | QA-01 through QA-05 | Phase 5 |
 | STATUS-01 through STATUS-04 | Phase 6 |
+| PORT-01 through PORT-02 | TBD |
+| MILE-01 through MILE-02 | TBD |
+| LEARN-01 through LEARN-05 | TBD |
+| CUSTOM-01 through CUSTOM-03 | TBD |
+| GH-01 through GH-03 | TBD |
+| BROWN-01 through BROWN-03 | TBD |
+| MKT-01 through MKT-03 | TBD |
+| DSN-01 through DSN-03 | TBD |
