@@ -1,13 +1,13 @@
 # Project State
 
 ## Current Position
-- **Phase**: 5 of 6 (executed, pending review)
-- **Status**: Phase 5 complete — all plans executed successfully
-- **Last Activity**: Phase 5 execution (2026-03-01)
+- **Phase**: 6 of 6 (executed, pending review)
+- **Status**: Phase 6 complete — all plans executed successfully
+- **Last Activity**: Phase 6 execution (2026-03-01)
 
 ## Progress
 ```
-[##############......] 73% — 11/15 plans complete
+[##################..] 86% — 13/15 plans complete
 ```
 
 ## Phase 1 Results
@@ -43,8 +43,12 @@
 - Two-skill split for execution: wave-executor (spawning/coordination) + execution-tracker (progress/commits)
 - Parallel dispatch via Claude Code Teams (TeamCreate + team_name + SendMessage) — preserves coordinator context
 
+## Phase 6 Results
+- Plan 06-01 (Wave 1): Full /agency:status implementation (134 lines) — 6-step dashboard with progress bar, phase history, session resume, deterministic next-action routing
+- Plan 06-02 (Wave 1): Full /agency:quick implementation (182 lines) — 7-step ad-hoc task execution with agent selection, personality injection, optional commit
+
 ## Pre-existing Issues
 - 2 spatial-computing agents lack YAML frontmatter (terminal-integration-specialist, visionos-spatial-engineer)
 
 ## Next Action
-Run `/agency:review` to verify Phase 5: Quality Gates
+Run `/agency:review` to verify Phase 6: Status & Quick
