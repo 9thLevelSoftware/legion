@@ -189,6 +189,28 @@ For each extracted term, find all agents whose task types contain a match. Weigh
 - **4 agents** for cross-domain work (e.g., "build and launch a new feature")
 - Never exceed 4 agents per discrete task; split larger efforts into sub-tasks
 
+### Step 4.5: Apply Memory Boost (Optional)
+
+If `.planning/memory/OUTCOMES.md` exists:
+
+1. Call memory-manager Section 4 "Recall Agent Scores" with the task types extracted in Step 1
+2. Receive an `agent_id → memory_score` mapping (scores in range [0, 5])
+3. For each agent in the current candidate list:
+   - If the agent has a memory_score: add it to their recommendation score
+   - Memory scores are additive — they boost existing scores, not replace them
+4. Re-rank candidates with the updated scores
+5. Display memory influence in the recommendation output:
+   - For each agent with a memory boost: "(+{score} from {task_count} past outcomes)"
+   - Example: "engineering-senior-developer — 8 points (+2.3 from 5 past outcomes)"
+
+**Constraints**:
+- Memory boost CANNOT override Step 5 (Mandatory Roles). A testing agent is still required for code execution teams regardless of memory scores.
+- Memory boost CANNOT promote an agent from a completely unrelated division. An agent must have at least 1 point from Step 2 matching to receive a memory boost.
+- If memory is unavailable (no OUTCOMES.md): skip this step entirely, proceed to Step 5. No warning, no placeholder.
+- Minimum data threshold: agents with fewer than 2 recorded outcomes are excluded from memory boosting (prevents one-off noise from influencing recommendations).
+
+If `.planning/memory/OUTCOMES.md` does not exist: skip this step entirely.
+
 ### Step 5: Mandatory Roles
 - **Every execution team** (teams that write or deploy code) MUST include at least one agent from the Testing division
 - **Cross-division tasks** (spanning 2+ divisions) MUST include a coordinator: either `project-manager-senior`, `project-management-project-shepherd`, or `agents-orchestrator`

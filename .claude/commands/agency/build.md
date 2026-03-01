@@ -14,6 +14,7 @@ Execute all plans for the current (or specified) phase. Spawn agents with full p
 @./.claude/skills/agency/agent-registry.md
 @./.claude/skills/agency/wave-executor.md
 @./.claude/skills/agency/execution-tracker.md
+@./.claude/skills/agency/memory-manager.md
 </execution_context>
 
 <context>
@@ -177,6 +178,19 @@ Execute all plans for the current (or specified) phase. Spawn agents with full p
 
         Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
       - If the plan failed: do NOT commit — leave changes unstaged for diagnosis
+
+   g2. Record outcome in memory (optional — follows memory-manager Section 6)
+       If .planning/memory/OUTCOMES.md exists or .planning/memory/ directory can be created:
+         Follow memory-manager Section 3 (Store Outcome):
+         - Agent: the agent that executed this plan (from plan's agent assignment, or "autonomous" if autonomous: true)
+         - Task Type: primary task type from the plan (match plan's tasks against agent-registry task type tags)
+         - Outcome: "success" if plan passed all verification, "failed" if plan failed, "partial" if completed with warnings
+         - Importance: per memory-manager Section 2 importance scoring (base 2 for success, 5 for failure, 3 for partial)
+         - Tags: phase slug (e.g., "cross-session-learning"), agent division (e.g., "engineering"), key file types modified
+         - Summary: one-line from the agent's SendMessage completion summary (the Status field)
+         NOTE: Memory write happens AFTER the plan's git commit (step 4.g). The memory file change
+         will be included in the wave completion commit (step 4.h) via git add.
+       If memory is not available: skip silently. Do not warn. Do not suggest setup.
 
    h. Track wave completion (execution-tracker Section 3):
       - Count plans succeeded vs. failed in the wave

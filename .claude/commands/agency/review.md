@@ -14,6 +14,7 @@ Select appropriate review agents for the current phase, run a personality-inject
 @./.claude/skills/agency/agent-registry.md
 @./.claude/skills/agency/review-loop.md
 @./.claude/skills/agency/execution-tracker.md
+@./.claude/skills/agency/memory-manager.md
 </execution_context>
 
 <context>
@@ -246,6 +247,18 @@ Select appropriate review agents for the current phase, run a personality-inject
 
       Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 
+   c2. RECORD REVIEW OUTCOME (optional — follows memory-manager Section 6):
+       If .planning/memory/OUTCOMES.md exists or .planning/memory/ directory can be created:
+         Follow memory-manager Section 3 (Store Outcome):
+         - Agent: comma-separated list of reviewer agent IDs (e.g., "testing-reality-checker, testing-evidence-collector")
+         - Task Type: "quality-review"
+         - Outcome: "success"
+         - Importance: 2 if passed in cycle 1, 3 if passed in cycle 2+
+         - Tags: phase slug, reviewer agent IDs, "review-passed", cycle count
+         - Summary: "Phase {N} review passed in {cycles} cycle(s). {blocker_count} blockers fixed."
+         NOTE: Memory write is included in the review completion git commit via git add.
+       If memory is not available: skip silently.
+
    d. Display pass result:
       "Phase {N}: {phase_name} — Review PASSED ({cycles} cycle(s))
        {count} issues found and resolved."
@@ -268,6 +281,17 @@ Select appropriate review agents for the current phase, run a personality-inject
       - Next Action: "Review .planning/phases/{NN}-{slug}/{NN}-REVIEW.md for full details.
         Fix manually then re-run /agency:review, or accept as-is and proceed."
       Write updated STATE.md
+
+   b2. RECORD REVIEW OUTCOME (optional — follows memory-manager Section 6):
+       If .planning/memory/OUTCOMES.md exists or .planning/memory/ directory can be created:
+         Follow memory-manager Section 3 (Store Outcome):
+         - Agent: comma-separated list of reviewer agent IDs
+         - Task Type: "quality-review"
+         - Outcome: "failed"
+         - Importance: 5 (escalation is always high-signal)
+         - Tags: phase slug, reviewer agent IDs, "review-escalated", "3-cycles", unresolved blocker files
+         - Summary: "Phase {N} review escalated — {blocker_count} blocker(s) unresolved after 3 cycles."
+       If memory is not available: skip silently.
 
    c. Display escalation table with remaining blockers (review-loop Section 8, Step 4):
       ## Phase {N}: {phase_name} — Review Escalated
