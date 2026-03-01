@@ -45,10 +45,10 @@
 
 ### Status & Quick (STATUS)
 
-- [ ] STATUS-01: `/agency:status` command — shows current progress and next action
-- [ ] STATUS-02: `/agency:quick` command — lightweight single-task execution with agent selection
-- [ ] STATUS-03: Session resume — read STATE.md to restore context on new session
-- [ ] STATUS-04: Next-action routing — direct user to the right command based on project state
+- [x] STATUS-01: `/agency:status` command — shows current progress and next action
+- [x] STATUS-02: `/agency:quick` command — lightweight single-task execution with agent selection
+- [x] STATUS-03: Session resume — read STATE.md to restore context on new session
+- [x] STATUS-04: Next-action routing — direct user to the right command based on project state
 
 ## v2 Requirements (Deferred)
 
