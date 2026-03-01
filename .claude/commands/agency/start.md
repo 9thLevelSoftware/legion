@@ -12,6 +12,7 @@ Guide the user through an adaptive questioning flow to capture project vision, r
 @./.claude/skills/agency/workflow-common.md
 @./.claude/skills/agency/agent-registry.md
 @./.claude/skills/agency/questioning-flow.md
+@./.claude/skills/agency/portfolio-manager.md
 </execution_context>
 
 <context>
@@ -90,13 +91,44 @@ Guide the user through an adaptive questioning flow to capture project vision, r
      - date: current date
    - Write to `.planning/STATE.md`
 
-9. DISPLAY SUMMARY
+9. REGISTER IN PORTFOLIO
+   Follow portfolio-manager Section 2 (Register Project):
+   a. Check if `~/.claude/agency/` directory exists; create it if not (including parent directories)
+   b. Read `~/.claude/agency/portfolio.md` if it exists; otherwise initialize with empty structure:
+      ```
+      # Agency Portfolio
+      ## Projects
+      ## Cross-Project Dependencies
+      | ID | From | To | Type | Status | Notes |
+      |----|------|----|------|--------|-------|
+      ## Metadata
+      - **Last Updated**: {today}
+      - **Total Projects**: 0
+      - **Active Projects**: 0
+      ```
+   c. Get the absolute path of the current working directory
+   d. Check if this path is already registered under any project heading
+      - If yes: update the project name and description to match current PROJECT.md
+      - If no: add a new project entry:
+        ```
+        ### {project_name}
+        - **Path**: {absolute_path}
+        - **Status**: Active
+        - **Registered**: {today}
+        - **Description**: {one-line from PROJECT.md}
+        ```
+   e. Update Metadata: Last Updated, Total Projects count, Active Projects count
+   f. Write the updated `~/.claude/agency/portfolio.md`
+   g. Display: "Registered in portfolio: ~/.claude/agency/portfolio.md"
+
+10. DISPLAY SUMMARY
    - Show the user a concise summary:
      - Project: {project_name} — {one-line description}
      - Phases: {count} phases planned
      - For each phase: name and recommended agent count
      - Workflow: {mode}, {depth}, {cost_profile}
      - Files created: PROJECT.md, ROADMAP.md, STATE.md
+     - Portfolio: Registered at ~/.claude/agency/portfolio.md
    - End with: "Run `/agency:plan 1` to begin Phase 1: {first_phase_name}"
    - Do NOT dump full file contents — summary only
 </process>

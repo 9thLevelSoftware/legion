@@ -16,6 +16,7 @@ Shared constants, paths, and patterns used across all /agency: commands.
 | STATE.md | `.planning/STATE.md` | Current position, recent activity, next action |
 | Templates | `.planning/templates/` | Schema files for generating PROJECT/ROADMAP/STATE |
 | Phase Plans | `.planning/phases/{NN-name}/` | Plan and summary files per phase |
+| PORTFOLIO.md | `~/.claude/agency/portfolio.md` | Global portfolio registry — all Agency projects |
 
 ## Agent Personality Paths
 
@@ -121,3 +122,19 @@ DIVISIONS = [
 
 TOTAL_AGENTS = 51
 ```
+
+## Portfolio Conventions
+
+### Global Portfolio Path
+The portfolio registry lives at `~/.claude/agency/portfolio.md` — outside any project directory. This file is shared across all Agency projects on the machine.
+
+### Portfolio Registration
+Projects are auto-registered in the portfolio when `/agency:start` completes. Registration stores the project name, absolute path, registration date, and one-line description.
+
+### Cross-Project State Reading
+Portfolio commands read each registered project's `.planning/STATE.md` and `.planning/ROADMAP.md` at request time. There is no background sync. If a project directory is missing, it's marked Stale.
+
+### Portfolio Command Convention
+| Command | Purpose | Cost Tier |
+|---------|---------|-----------|
+| `/agency:portfolio` | Multi-project dashboard and dependency management | Haiku (dashboard), Opus (Studio Producer insights) |
