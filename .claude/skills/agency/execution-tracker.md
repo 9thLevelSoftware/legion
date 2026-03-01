@@ -13,6 +13,7 @@ References:
 - Cost Profile Convention from `workflow-common.md` (Opus/Sonnet/Haiku model selection)
 - `.planning/STATE.md` — reads and updates project state after each plan completion
 - `.planning/ROADMAP.md` — updates progress table after wave completion
+- `memory-manager.md` — optional memory recording after plan completion (Section 3)
 
 ---
 
@@ -54,6 +55,21 @@ Step 2: Update STATE.md
     - Percentage = (completed / total) * 100, rounded to nearest integer
     - Update the progress bar: [####...] {pct}% — {completed}/{total} plans complete
   Write updated STATE.md
+
+Step 2.5: Record outcome in memory (optional)
+  Follow memory-manager Section 6 (Graceful Degradation) caller pattern:
+  - Check if .planning/memory/OUTCOMES.md exists OR if .planning/memory/ directory exists
+  - If memory is available or can be created:
+    Follow memory-manager Section 3 (Store Outcome):
+    - Agent: the agent that executed the plan (from the plan's agent assignment, or "autonomous")
+    - Task Type: inferred from the plan's primary task types (match against agent-registry tags)
+    - Outcome: "success" if plan passed, "failed" if plan failed, "partial" if plan had warnings
+    - Importance: calculated per memory-manager Section 2 importance scoring
+    - Tags: phase slug, agent division, primary file types modified
+    - Summary: one-line from the agent's SendMessage completion summary
+  - If memory is not available: skip silently, proceed to Step 3
+  - If memory write fails: output the intended record as text, continue to Step 3
+  NOTE: The git add -A in Step 3 will include any memory file changes automatically.
 
 Step 3: Create atomic git commit (success only)
   Only commit if the plan succeeded:

@@ -19,6 +19,7 @@ Shared constants, paths, and patterns used across all /agency: commands.
 | PORTFOLIO.md | `~/.claude/agency/portfolio.md` | Global portfolio registry — all Agency projects |
 | Milestone Summaries | `.planning/milestones/MILESTONE-{N}.md` | Completion summaries with metrics per milestone |
 | Milestone Archive | `.planning/archive/milestone-{N}/` | Archived phase directories from completed milestones |
+| Memory Outcomes | `.planning/memory/OUTCOMES.md` | Agent performance and task outcome records for cross-session learning |
 
 ## Agent Personality Paths
 
@@ -166,3 +167,38 @@ Pending → In Progress → Complete → Archived
 | Command | Purpose | Cost Tier |
 |---------|---------|-----------|
 | `/agency:milestone` | Milestone status, completion, archiving, and definition | Haiku (status), Sonnet (summary generation) |
+
+## Memory Conventions
+
+### Memory Purpose
+Cross-session learning layer that tracks agent performance and task outcomes. All memory operations are explicit calls from workflows — no hooks, no background processes, no automatic triggers.
+
+### Memory Lifecycle
+```
+Absent → Created (first store) → Growing (appending records) → Mature (200+ records, pruning suggested)
+```
+- **Absent**: No `.planning/memory/` directory. All workflows function identically.
+- **Created**: First build or review outcome triggers `.planning/memory/OUTCOMES.md` creation.
+- **Growing**: Records accumulate as phases execute and review.
+- **Mature**: When record count exceeds 200, recall suggests pruning. Never auto-prunes.
+
+### Memory Paths
+| Artifact | Path | When Created |
+|----------|------|-------------|
+| Memory directory | `.planning/memory/` | On first store operation |
+| Outcome log | `.planning/memory/OUTCOMES.md` | On first store operation |
+
+### Memory Integration Points
+| Workflow | Operation | When |
+|----------|-----------|------|
+| `/agency:build` | Store outcome | After each plan completes (success, partial, or failed) |
+| `/agency:review` | Store outcome | After review passes or escalates |
+| `/agency:plan` | Recall agent scores | During agent recommendation (phase-decomposer Section 4) |
+| `/agency:status` | Recall session briefing | During dashboard display |
+
+### Graceful Degradation Rule
+All memory integration follows this pattern:
+1. Check if `.planning/memory/OUTCOMES.md` exists
+2. If yes: use memory data to enhance the operation
+3. If no: skip silently, proceed with default behavior
+4. Never error, never block, never require memory for workflow completion
