@@ -1,13 +1,13 @@
 # Project State
 
 ## Current Position
-- **Phase**: 6 of 14 (complete)
-- **Status**: Core orchestration complete — extended features pending
-- **Last Activity**: Milestone audit, requirements expansion (2026-03-01)
+- **Phase**: 7 of 14 (executed, pending review)
+- **Status**: Phase 7 complete — all 2 plans executed successfully
+- **Last Activity**: Phase 7 execution (2026-03-01)
 
 ## Progress
 ```
-[##########..........] 50% — 15/? plans complete (phases 7-14 not yet planned)
+[#################...] 85% — 17/20 plans complete (phases 8-14 not yet planned)
 ```
 
 ## Phase 1 Results
@@ -31,6 +31,10 @@
 - Plan 05-01 (Wave 1): Review-loop skill (685 lines) — 9-section dev-QA loop engine with structured feedback, fix routing, and escalation
 - Plan 05-02 (Wave 2): Full /agency:review implementation (315 lines) — 6-step process wiring review-loop + execution-tracker with agent selection, 3-cycle loop, and escalation
 
+## Phase 7 Results
+- Plan 07-01 (Wave 1): Portfolio-manager skill (328 lines) — 6-section registry, CRUD, state aggregation, dependencies, agent allocation + workflow-common and start.md updates
+- Plan 07-02 (Wave 2): Full /agency:portfolio implementation (245 lines) — 8-step dashboard with health indicators, dependency tracking, Studio Producer integration, manual registration
+
 ## Recent Decisions
 - Plugin format: Claude Code .claude/ directory structure
 - Full personality injection for all agent spawns
@@ -42,6 +46,10 @@
 - Template-driven generation: skills produce data, templates define structure
 - Two-skill split for execution: wave-executor (spawning/coordination) + execution-tracker (progress/commits)
 - Parallel dispatch via Claude Code Teams (TeamCreate + team_name + SendMessage) — preserves coordinator context
+- Global portfolio registry at ~/.claude/agency/portfolio.md — outside project directories
+- /agency:portfolio as separate command from /agency:status — single-responsibility
+- Read-time state aggregation — no background sync, always fresh
+- Studio Producer analysis is opt-in on demand (Opus cost)
 
 ## Phase 6 Results
 - Plan 06-01 (Wave 1): Full /agency:status implementation (134 lines) — 6-step dashboard with progress bar, phase history, session resume, deterministic next-action routing
@@ -54,4 +62,4 @@
 - ~~status.md missing execution-tracker in execution_context~~ — Fixed (2026-03-01)
 
 ## Next Action
-Run `/gsd:plan-phase` for Phase 7 to begin extended features. Phases 7-14 need planning.
+Run `/agency:review` to verify Phase 7: Portfolio Management. Phases 8-14 still need planning.

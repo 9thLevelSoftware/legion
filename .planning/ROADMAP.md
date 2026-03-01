@@ -8,7 +8,7 @@
 - [x] **Phase 4: Parallel Execution** — `/agency:build` with Teams-based agent spawning
 - [x] **Phase 5: Quality Gates** — `/agency:review` with dev-QA loops and verification
 - [x] **Phase 6: Status & Quick** — `/agency:status`, `/agency:quick`, session resume
-- [ ] **Phase 7: Portfolio Management** — Multi-project tracking, Studio Producer coordination
+- [x] **Phase 7: Portfolio Management** — Multi-project tracking, Studio Producer coordination
 - [ ] **Phase 8: Milestone Management** — Milestone completion, archiving, metrics
 - [ ] **Phase 9: Cross-Session Learning** — Pattern memory, rich session context restoration
 - [ ] **Phase 10: Custom Agents** — Agent creation workflow, schema validation, registry auto-update
@@ -91,7 +91,7 @@
 - Portfolio dashboard shows all active projects with status
 - Studio Producer agent coordinates cross-project dependencies
 - Agents can be shared/allocated across projects
-**Plans**: TBD
+**Plans**: 2
 
 ### Phase 8: Milestone Management
 **Goal**: Users can mark milestones complete with summaries and archive completed work to reduce active state.
@@ -168,7 +168,7 @@
 | 4. Parallel Execution | 3 | 3 | Complete |
 | 5. Quality Gates | 2 | 2 | Complete |
 | 6. Status & Quick | 2 | 2 | Complete |
-| 7. Portfolio Management | TBD | 0 | Pending |
+| 7. Portfolio Management | 2 | 2 | Complete |
 | 8. Milestone Management | TBD | 0 | Pending |
 | 9. Cross-Session Learning | TBD | 0 | Pending |
 | 10. Custom Agents | TBD | 0 | Pending |
