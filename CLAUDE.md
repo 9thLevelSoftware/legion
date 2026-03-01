@@ -13,6 +13,7 @@ A Claude Code plugin for orchestrating 51 AI specialist personalities as coordin
 | `/agency:status` | Show progress dashboard and route to next action |
 | `/agency:quick <task>` | Run ad-hoc task with intelligent agent selection |
 | `/agency:portfolio` | Multi-project dashboard with dependency tracking |
+| `/agency:milestone` | Milestone completion, archiving, and metrics |
 
 ## Project Structure
 

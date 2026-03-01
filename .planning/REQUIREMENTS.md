@@ -57,8 +57,8 @@
 
 ### Milestone Management (MILE)
 
-- [ ] MILE-01: Milestone completion — mark milestones done with summary and metrics
-- [ ] MILE-02: Milestone archiving — archive completed milestone artifacts to reduce active state
+- [x] MILE-01: Milestone completion — mark milestones done with summary and metrics
+- [x] MILE-02: Milestone archiving — archive completed milestone artifacts to reduce active state
 
 ### Cross-Session Learning (LEARN)
 
@@ -117,7 +117,7 @@
 | QA-01 through QA-05 | Phase 5 |
 | STATUS-01 through STATUS-04 | Phase 6 |
 | PORT-01 through PORT-02 | Phase 7 |
-| MILE-01 through MILE-02 | TBD |
+| MILE-01 through MILE-02 | Phase 8 |
 | LEARN-01 through LEARN-05 | TBD |
 | CUSTOM-01 through CUSTOM-03 | TBD |
 | GH-01 through GH-03 | TBD |
