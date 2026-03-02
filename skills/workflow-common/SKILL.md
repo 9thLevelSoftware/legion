@@ -26,6 +26,7 @@ Shared constants, paths, and patterns used across all /legion: commands.
 | Memory Outcomes | `.planning/memory/OUTCOMES.md` | Agent performance and task outcome records for cross-session learning |
 | Memory Patterns | `.planning/memory/PATTERNS.md` | Successful patterns with reuse criteria — distilled from agent outcomes (via memory-manager skill) |
 | Memory Errors | `.planning/memory/ERRORS.md` | Error signatures mapped to known fixes — troubleshooting reference for agents (via memory-manager skill) |
+| Memory Preferences | `.planning/memory/PREFERENCES.md` | User decision signals (accepted/rejected/modified proposals) for preference-informed agent routing (via memory-manager skill) |
 | Custom Agents | `agents/{agent-id}.md` | User-created agent personality files (via `/legion:agent`) |
 | Codebase Map | `.planning/CODEBASE.md` | Structured map of existing codebase architecture, patterns, and risks (via codebase-mapper skill) |
 | Campaign Documents | `.planning/campaigns/{campaign-slug}.md` | Structured campaign plans with objectives, messaging, audience, channels, calendar, and agent assignments (via marketing-workflows skill) |
@@ -372,6 +373,7 @@ Absent → Created (first store) → Growing (appending records) → Mature (200
 | Outcome log | `.planning/memory/OUTCOMES.md` | On first store operation |
 | Pattern library | `.planning/memory/PATTERNS.md` | On first pattern store operation |
 | Error fixes | `.planning/memory/ERRORS.md` | On first error store operation |
+| Preference pairs | `.planning/memory/PREFERENCES.md` | On first preference store operation |
 | Compacted summaries | `.planning/phases/{NN-name}/{NN}-COMPACTED.md` | After phase review passes (opt-in) |
 
 ### Memory Integration Points
@@ -380,16 +382,20 @@ Absent → Created (first store) → Growing (appending records) → Mature (200
 | `/legion:build` | Store outcome | After each plan completes (success, partial, or failed) |
 | `/legion:build` | Store error fix | When an agent resolves a non-trivial error during execution |
 | `/legion:build` | Recall error fixes | Before agent starts task — check if known fixes exist for relevant error patterns |
+| `/legion:build` | Store preference (manual edit) | When uncommitted changes to build-modified files are detected at review start |
 | `/legion:review` | Store outcome | After review passes or escalates |
 | `/legion:review` | Store pattern | When review passes on first cycle (clean approach worth capturing) |
 | `/legion:review` | Store error fix | When review identifies and fixes a recurring issue |
+| `/legion:review` | Store preference (verdict) | After review passes — positive signal for the review approach and agents |
+| `/legion:review` | Store preference (override) | After user selects "Accept as-is" or "Fix manually" from escalation — corrective or negative signal |
 | `/legion:plan` | Recall agent scores | During agent recommendation (phase-decomposer Section 4) |
 | `/legion:plan` | Recall patterns | During phase decomposition — suggest proven approaches for similar task types |
+| `/legion:plan` | Recall preferences | During agent recommendation — preference scores boost or penalize candidates |
 | `/legion:status` | Recall session briefing | During dashboard display |
 
 ### Graceful Degradation Rule
 All memory integration follows this pattern:
-1. Check if `.planning/memory/OUTCOMES.md` exists
+1. Check if the relevant memory file exists (`.planning/memory/OUTCOMES.md`, `PATTERNS.md`, `ERRORS.md`, or `PREFERENCES.md`)
 2. If yes: use memory data to enhance the operation
 3. If no: skip silently, proceed with default behavior
 4. Never error, never block, never require memory for workflow completion

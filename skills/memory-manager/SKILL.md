@@ -27,7 +27,7 @@ Core rules governing all memory operations:
 3. **Graceful degradation** — every caller checks for memory availability before using it. If memory files don't exist, the workflow proceeds identically to how it worked before Phase 9. Memory is an enhancement, never a requirement.
 4. **Append-only records** — outcome records are added, never modified or deleted automatically. Decay happens at recall time through scoring, not through deletion.
 5. **Supplement, not override** — memory boosts agent recommendations but cannot override mandatory roles, division alignment, or the core recommendation algorithm in agent-registry.md.
-6. **Minimal footprint** — one directory (`.planning/memory/`), three files (`OUTCOMES.md`, `PATTERNS.md`, `ERRORS.md`). Each file has a distinct schema and purpose — no duplication across files.
+6. **Minimal footprint** — one directory (`.planning/memory/`), four files (`OUTCOMES.md`, `PATTERNS.md`, `ERRORS.md`, `PREFERENCES.md`). Each file has a distinct schema and purpose — no duplication across files.
 
 ---
 
@@ -562,7 +562,7 @@ Step 5: Return top {limit} records with Fix text prominently displayed
 
 ## Section 10: Cross-File Integration
 
-How the three memory files work together as a unified knowledge layer.
+How the four memory files work together as a unified knowledge layer.
 
 ```
 Memory File Relationships:
@@ -582,24 +582,33 @@ ERRORS.md — Fix database (troubleshooting reference)
   Growing: appends when non-trivial errors are resolved.
   Query pattern: "Has this error been seen before? What fixed it?"
 
+PREFERENCES.md — Decision signals (user feedback)
+  Records what agents proposed and what users preferred, with positive/negative/corrective signals.
+  Growing: appends when user makes a non-routine decision at a workflow decision point.
+  Query pattern: "Does this user prefer agent X for task type Y? Do corrective signals cluster?"
+
 Data flow:
   Build outcome (success) → OUTCOMES.md → distill → PATTERNS.md
   Build outcome (failure + fix) → OUTCOMES.md + ERRORS.md
-  Review outcome (pass on first cycle) → OUTCOMES.md → distill → PATTERNS.md
-  Review outcome (found recurring issue) → OUTCOMES.md + ERRORS.md
+  Review pass (first cycle) → OUTCOMES.md + PATTERNS.md + PREFERENCES.md (positive)
+  Review pass (after fixes) → OUTCOMES.md + PREFERENCES.md (positive for fix approach)
+  Review escalated (user overrides) → OUTCOMES.md + PREFERENCES.md (corrective)
+  Review escalated (user rejects) → OUTCOMES.md + PREFERENCES.md (negative)
+  Manual edit detected → PREFERENCES.md (corrective)
 
-All three files:
+All four files:
   - Live in .planning/memory/
   - Created on first write (not during initialization)
   - Follow identical graceful degradation (Section 6)
   - Use append-only records with sequential IDs
   - Never auto-prune or auto-delete
   - Are human-readable markdown tables
+  - Include Branch field for git-aware context (Section 11)
 ```
 
-**Graceful degradation for all three files:**
+**Graceful degradation for all four files:**
 
-The caller pattern from Section 6 applies identically to PATTERNS.md and ERRORS.md:
+The caller pattern from Section 6 applies identically to PATTERNS.md, ERRORS.md, and PREFERENCES.md:
 - Check for file existence before any read operation
 - Return empty results (not errors) when file is absent
 - Only store operations create the file
@@ -792,4 +801,147 @@ When recalling phase context (e.g., during /legion:plan or /legion:status):
 2. If yes: use the compacted summary (smaller, faster to read)
 3. If no: fall back to reading individual SUMMARY files
 4. If detailed audit needed: always read original SUMMARY files regardless of compaction
+```
+
+---
+
+## Section 13: Preference Pairs
+
+Captures user decision signals — what agents proposed and whether the user accepted, rejected, or modified the proposal — enabling preference-informed routing in future planning.
+
+File path: `.planning/memory/PREFERENCES.md`
+Created: on first preference store operation (not during project initialization)
+
+**File structure:**
+
+```markdown
+# Memory — User Preferences
+
+Decision signals from user interactions with agent proposals. Each record captures what was proposed, what the user chose, and the preference signal. Used by /legion:plan to improve agent and approach recommendations.
+Managed by memory-manager skill. Do not edit manually unless curating entries.
+
+## Preferences
+
+| ID | Date | Branch | Decision Point | Context | Proposed | User Choice | Signal | Agent | Tags |
+|----|------|--------|---------------|---------|----------|-------------|--------|-------|------|
+| D-001 | 2026-03-02 | main | review-verdict | Phase 5 review cycle 1 — testing-reality-checker found 2 blockers | 2 blockers requiring fixes in auth module | Accepted — ran fix cycle, review passed on cycle 2 | positive | testing-reality-checker | review, testing, auth |
+```
+
+**Field definitions:**
+
+| Field | Format | Description |
+|-------|--------|-------------|
+| ID | `D-{NNN}` | Sequential, zero-padded to 3 digits |
+| Date | `YYYY-MM-DD` | When the preference was captured |
+| Branch | string | Git branch at capture time (via `git branch --show-current`) |
+| Decision Point | enum-like | Category of decision: `review-verdict`, `review-override`, `agent-selection`, `manual-edit`, `fix-acceptance` |
+| Context | Free text | Phase, plan, cycle, and situation description |
+| Proposed | Free text | What the agent or system proposed (brief summary, not full content) |
+| User Choice | Free text | What the user actually did (accepted, rejected, modified, selected alternative) |
+| Signal | enum | `positive` (accepted as proposed), `negative` (rejected), `corrective` (accepted with modifications) |
+| Agent | Agent ID or "system" | The agent whose proposal was being evaluated |
+| Tags | Comma-separated | Searchable keywords: decision type, agent division, phase type |
+
+**Store Preference operation:**
+
+```
+Store Preference:
+
+Step 1: Check memory directory
+  - If .planning/memory/ does not exist: create it with mkdir -p
+  - If .planning/memory/PREFERENCES.md does not exist: create it with the header template
+
+Step 2: Determine next ID
+  - Read PREFERENCES.md
+  - Count rows in the Preferences table (exclude header row)
+  - Next ID = D-{count + 1}, zero-padded to 3 digits
+
+Step 3: Get current branch
+  - Run: git branch --show-current
+  - If command fails or returns empty: use "unknown"
+
+Step 4: Build the record
+  - Date: current date (YYYY-MM-DD)
+  - Branch: from Step 3
+  - Decision Point: one of: review-verdict, review-override, agent-selection,
+    manual-edit, fix-acceptance
+  - Context: describe the phase, plan, cycle, and situation
+  - Proposed: what was proposed (summarize, don't include full content)
+  - User Choice: what the user chose to do
+  - Signal: positive (accepted), negative (rejected), corrective (modified)
+  - Agent: agent ID that made the proposal, or "system" for system-level decisions
+  - Tags: decision type, agent division, relevant phase type keywords
+
+Step 5: Append and verify
+  - Append the new row to the Preferences table
+  - Write updated PREFERENCES.md
+  - If write fails: output the record as text (never lose data)
+```
+
+**When to store preferences:**
+- After `/legion:review` passes (positive signal for the review approach and agents)
+- After user selects "Accept as-is" despite unresolved blockers (corrective signal — user overrides review)
+- After user selects "Fix manually" from escalation (negative signal — automated fixes insufficient)
+- After manual edits to build-modified files are detected (corrective signal — user improved agent output)
+- NOT for routine decisions like "Execute all plans" (low signal value)
+- NOT for system confirmations like "Create PR?" (infrastructure choice, not preference)
+
+**Recall Preferences operation:**
+
+```
+Recall Preferences:
+
+Input:
+  - signal_filter: "positive", "negative", "corrective", or "all" (default: "all")
+  - decision_point_filter: specific decision point type, or "all" (default: "all")
+  - query_tags: list of tags to filter by (optional)
+  - agent_filter: specific agent ID (optional)
+  - branch_filter: specific branch, "current", or "all" (default: "all")
+  - limit: max records to return (default: 10)
+
+Step 1: Check if .planning/memory/PREFERENCES.md exists
+  - If not: return empty results (do NOT create the file)
+
+Step 2: Read and parse PREFERENCES.md
+  - Parse the Preferences table into individual records
+  - If parse fails: log warning, return empty results
+
+Step 3: Apply filters
+  - signal_filter: keep records matching the signal type
+  - decision_point_filter: keep records matching the decision point
+  - query_tags: keep records where any tag matches any query_tag
+  - agent_filter: keep records where Agent matches
+  - branch_filter: "all" (default), "current" (detect via git), or specific name
+
+Step 4: Apply recency scoring
+  - Same decay formula as OUTCOMES.md (Section 5):
+    days_old <= 7: 1.0, <= 30: 0.7, <= 90: 0.4, > 90: 0.1
+  - Sort by recency_weight descending
+
+Step 5: Return top {limit} records
+```
+
+**Using Preferences for Routing Improvement:**
+
+```
+During /legion:plan agent recommendation:
+
+1. Recall preferences with agent_filter for each candidate agent
+2. Count positive vs. negative vs. corrective signals per agent
+3. Compute preference score:
+   - positive signals: +1 each (agent's proposals were accepted)
+   - corrective signals: +0.5 each (agent was useful but needed adjustment)
+   - negative signals: -1 each (agent's proposals were rejected)
+4. Apply as a modifier to the existing agent recommendation score:
+   - preference_boost = (sum of preference scores) * 0.5
+   - Add to the base recommendation score from agent-registry Section 3
+5. This is a soft signal — never exclude an agent based solely on preferences
+   (user may have rejected a proposal for situational reasons, not agent quality)
+
+During /legion:plan approach suggestion:
+
+1. Recall preferences with decision_point_filter: "review-verdict"
+2. Look for patterns: do corrective signals cluster around specific task types or approaches?
+3. Surface as a note: "Previous preference signals suggest {pattern} for {task type}"
+4. This is advisory — never auto-select an approach based on preferences
 ```
