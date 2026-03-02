@@ -19,6 +19,7 @@ Shared constants, paths, and patterns used across all /legion: commands.
 | STATE.md | `.planning/STATE.md` | Current position, recent activity, next action |
 | Templates | `skills/questioning-flow/templates/` | Schema files for generating PROJECT/ROADMAP/STATE |
 | Phase Plans | `.planning/phases/{NN-name}/` | Plan and summary files per phase |
+| Compacted Summaries | `.planning/phases/{NN-name}/{NN}-COMPACTED.md` | AI-compacted phase summaries preserving decisions and outcomes while trimming verbose details (via memory-manager skill) |
 | PORTFOLIO.md | `~/.claude/legion/portfolio.md` | Global portfolio registry — all Legion projects |
 | Milestone Summaries | `.planning/milestones/MILESTONE-{N}.md` | Completion summaries with metrics per milestone |
 | Milestone Archive | `.planning/archive/milestone-{N}/` | Archived phase directories from completed milestones |
@@ -265,6 +266,7 @@ Absent → Created (first store) → Growing (appending records) → Mature (200
 | Outcome log | `.planning/memory/OUTCOMES.md` | On first store operation |
 | Pattern library | `.planning/memory/PATTERNS.md` | On first pattern store operation |
 | Error fixes | `.planning/memory/ERRORS.md` | On first error store operation |
+| Compacted summaries | `.planning/phases/{NN-name}/{NN}-COMPACTED.md` | After phase review passes (opt-in) |
 
 ### Memory Integration Points
 | Workflow | Operation | When |
@@ -285,6 +287,20 @@ All memory integration follows this pattern:
 2. If yes: use memory data to enhance the operation
 3. If no: skip silently, proceed with default behavior
 4. Never error, never block, never require memory for workflow completion
+
+### Branch Awareness
+Memory files live in `.planning/memory/` inside the git repository. They branch and merge naturally with git operations.
+- All memory records include a `Branch` field recording the git branch at write time
+- Recall operations accept an optional `branch_filter` parameter (default: "all")
+- When branches merge, memory files merge via git — append-only tables merge cleanly
+- Existing records without a Branch field are treated as belonging to the default branch
+
+### Semantic Compaction
+Completed phases can be compacted into condensed summaries that preserve reasoning while trimming verbose details.
+- Compacted summaries are written to `.planning/phases/{NN-name}/{NN}-COMPACTED.md`
+- Original SUMMARY files are never deleted or overwritten
+- Compaction is always opt-in — never automatic
+- When recalling phase context, prefer COMPACTED.md over individual SUMMARY files if available
 
 ## GitHub Conventions
 

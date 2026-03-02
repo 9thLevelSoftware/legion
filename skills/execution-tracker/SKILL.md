@@ -1,6 +1,9 @@
 ---
 name: legion:execution-tracker
 description: Tracks execution progress with STATE.md updates, ROADMAP.md progress, and atomic git commits per plan
+triggers: [track, progress, execution, status, state]
+token_cost: low
+summary: "Tracks phase execution progress and updates STATE.md. Records plan completions, failures, and wave advancement. Use during /legion:build to maintain execution state."
 ---
 
 # Legion Execution Tracker
@@ -144,6 +147,16 @@ Step 2: Update STATE.md
 
 Step 3: Update ROADMAP.md progress table
   - Status: "Complete" if all plans passed, "Partial" if some failed
+
+Step 3.5: Suggest semantic compaction (optional)
+  If all plans passed (phase is complete, not partial):
+  - Check if any previous completed phases have uncompacted summaries:
+    For each completed phase in ROADMAP.md:
+      Check if .planning/phases/{NN-name}/{NN}-COMPACTED.md exists
+      If not: count it as uncompacted
+  - If uncompacted phases exist:
+    Include in the output: "💡 {count} completed phase(s) have uncompacted summaries. Run compaction to free context for future planning."
+  - This is informational only — never auto-compact, never block on compaction
 
 Step 4: Final progress display
   Output for the user:
