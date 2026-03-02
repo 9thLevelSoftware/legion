@@ -1,9 +1,29 @@
 # Changelog
 
-All notable changes to The Agency Workflows plugin are documented here.
+All notable changes to the Legion plugin are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.0.0] - 2026-03-02
+
+### Changed
+- **Project identity**: Rebranded from "The Agency Workflows" to "Legion" — *"My name is Legion, for we are many."*
+- All 10 commands renamed from `/agency:*` to `/legion:*` namespace
+- Plugin name changed from `agency-workflows` to `legion` — install via `claude plugin install legion`
+- Plugin version bumped to 3.0.0 across plugin.json and marketplace.json
+- All 17 skill files updated with `/legion:` command references
+- workflow-common shared constants updated to Legion namespace
+- README.md, CLAUDE.md, CONTRIBUTING.md rewritten with Legion branding
+- Commit message prefixes updated from `feat(agency):` to `feat(legion):`
+
+### Added
+- Shoulders of Giants attribution entry crediting 9thLevelSoftware/agency-agents as origin of the 51 agent personalities
+
+### Unchanged
+- 51 agent personality files (contain zero "agency" references — no changes needed)
+- Repository URL remains `9thLevelSoftware/agency-agents` (actual GitHub repo name)
+- All features, workflows, and capabilities remain identical
 
 ## [2.0.0] - 2026-03-02
 
