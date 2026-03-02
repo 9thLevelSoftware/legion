@@ -345,7 +345,7 @@ Step 3: Include --milestone flag in issue creation
 
 ---
 
-## Section 5: Status Readback (GH-04)
+## Section 5: Status Readback (GH-03)
 
 Fetching live GitHub status for the `/agency:status` dashboard. This section provides real-time data that supplements the static STATE.md information.
 

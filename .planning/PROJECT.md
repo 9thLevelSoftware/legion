@@ -14,31 +14,19 @@ Turn a collection of 51 isolated agent personalities into a functional AI agency
 - Projects spanning any of the 9 Agency divisions (engineering, design, marketing, product, PM, testing, support, spatial, specialized)
 - Both code and non-code work (marketing campaigns, design systems, content strategies, not just software)
 
-## Requirements
+## Current State
 
-### Validated
+**v1.0 shipped** (2026-03-01) — 9 commands, 15 skills, 51 agents, 54 requirements delivered across 14 phases.
 
-(None yet — ship to validate)
+All core workflows operational: project initialization, phase planning with agent recommendation, parallel execution via Teams, quality review with domain-specific review lenses, portfolio management, milestone tracking, cross-session memory, custom agent creation, GitHub integration, brownfield codebase analysis, marketing campaign workflows, and design system workflows.
 
-### Active
+See [v1.0 archived requirements](milestones/v1.0-REQUIREMENTS.md) for full details.
 
-- [ ] `/agency:start` command — project initialization with questioning flow
-- [ ] `/agency:plan` command — phase decomposition with agent recommendations
-- [ ] `/agency:build` command — parallel agent execution using Claude Code Teams
-- [ ] `/agency:review` command — quality gate / review loop
-- [ ] `/agency:status` command — progress dashboard and next-action routing
-- [ ] `/agency:quick` command — lightweight ad-hoc task execution
-- [ ] Agent selection engine — recommends agents from 51 personalities based on task type
-- [ ] Full personality injection — agents spawned with their .md file as system prompt
-- [ ] Hybrid agent selection — workflow recommends, user confirms or overrides
-- [ ] Minimal state management — .planning/ with PROJECT.md, ROADMAP.md, STATE.md
-- [ ] Phase-based planning — break work into phases with wave-structured plans
-- [ ] Parallel execution — multiple agents working simultaneously via Teams
-- [ ] Quality gates — dev-QA loops with specific feedback and retry logic
-- [ ] Cross-division support — workflows handle engineering, design, marketing, etc.
-- [ ] Installable plugin format — .claude/ directory structure others can adopt
+## Next Milestone Goals
 
-### Out of Scope
+(To be defined via `/gsd:new-milestone` or `/agency:start`)
+
+## Out of Scope
 
 - Custom CLI tooling (like GSD's gsd-tools.cjs) — keep it pure markdown/skills
 - Board of directors / governance model (Conductor-style) — too heavy
@@ -75,4 +63,4 @@ Turn a collection of 51 isolated agent personalities into a functional AI agency
 | **Best Practice** | Skills/commands/agents structure, agent frontmatter, permission patterns | RPI workflow (too specific), custom hooks infrastructure |
 
 ---
-*Last updated: 2026-03-01 after milestone audit — requirements expanded from 30 to 51*
+*Last updated: 2026-03-01 — v1.0 milestone completed and archived*

@@ -5,7 +5,7 @@ description: Maps all 51 Agency agents by division, capability, and task type fo
 
 # Agency Agent Registry
 
-Complete catalog of all 51 agent personalities across 9 divisions. Use this registry to assemble the right team for any project task.
+Complete catalog of all agent personalities. Includes 51 built-in agents across 9 divisions plus any custom agents created via `/agency:agent`. Use this registry to assemble the right team for any project task.
 
 ---
 
@@ -107,6 +107,15 @@ Complete catalog of all 51 agent personalities across 9 divisions. Use this regi
 | testing-tool-evaluator | `agency-agents/testing/testing-tool-evaluator.md` | Expert technology assessment specialist evaluating, testing, and recommending tools, software, and platforms for business use | tool-evaluation, technology-assessment, competitive-comparison, adoption-strategy, productivity-tools |
 | testing-workflow-optimizer | `agency-agents/testing/testing-workflow-optimizer.md` | Expert process improvement specialist analyzing, optimizing, and automating workflows across all business functions | workflow-optimization, process-automation, efficiency, bottleneck-analysis, continuous-improvement |
 
+### Custom Division
+
+Custom agents created via `/agency:agent` appear here. This section is populated automatically by the agent-creator skill.
+
+| ID | File | Specialty | Task Types |
+|----|------|-----------|------------|
+
+*No custom agents yet. Run `/agency:agent` to create one.*
+
 ---
 
 ## Section 2: Task Type Index
@@ -171,6 +180,8 @@ When assembling a team for a task, follow this decision process:
 
 ### Step 1: Parse Task Description
 Extract key terms from the task description. Match terms against the `task_types` tags in the Agent Catalog above.
+
+**Custom agents:** Custom agents added to the Section 1 catalog via `/agency:agent` are automatically eligible for recommendation. Their task type tags are matched identically to built-in agents. No changes to the scoring algorithm are needed.
 
 ### Step 2: Match Agents to Task Types
 For each extracted term, find all agents whose task types contain a match. Weight matches:
