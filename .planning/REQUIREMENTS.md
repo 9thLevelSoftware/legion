@@ -41,6 +41,22 @@ Requirements for plugin conversion. Each maps to roadmap phases.
 - [ ] **DIST-03**: CHANGELOG.md with v1.0 and v2.0 version history
 - [ ] **DIST-04**: Development docs for testing with `--plugin-dir`
 
+### Strategic Advisory (ADV)
+
+- [ ] **ADV-01**: `/agency:advise` command spawns read-only consultation agents from the 51 agent pool based on topic (architecture, UX, business, marketing, etc.)
+- [ ] **ADV-02**: Advisory agents operate in explicit read-only mode — can explore codebase and read files but cannot modify anything
+
+### Dynamic Review Panels (REV)
+
+- [ ] **REV-01**: Review panel composer uses agent-registry recommendation algorithm to assemble 2-4 reviewers based on what's being reviewed
+- [ ] **REV-02**: Each reviewer evaluates through domain-weighted scoring rubrics with non-overlapping criteria specific to their specialty
+- [ ] **REV-03**: Review panel integrates with existing `/agency:review` as an enhanced multi-perspective review lens option
+
+### Plan Critique (CRIT)
+
+- [ ] **CRIT-01**: Pre-mortem analysis skill — "assume the project failed, write the headline, explain what happened" technique for plans and proposals
+- [ ] **CRIT-02**: Assumption hunting — extract, prioritize, and challenge foundational beliefs in plans before execution begins
+
 ## Future Requirements
 
 ### Plugin Enhancements
@@ -57,38 +73,47 @@ Requirements for plugin conversion. Each maps to roadmap phases.
 | MCP servers | Agency doesn't need external tool connections — it's pure skills/commands/agents |
 | LSP integration | No language server needed — Agency is workflow orchestration, not code intelligence |
 | Hooks | Could add later, but v2.0 focuses on structure conversion |
-| New agent capabilities | Same 51 agents, same features — just repackaged |
+| Fixed board of directors | Agency uses dynamic agent selection, not hardcoded 5-director panel |
+| File-based message bus | Unnecessary overhead — use structured agent spawning |
+| PESTLE analysis | Too broad for software project reviews |
 | Breaking changes to commands | `/agency:start` etc. must work identically after migration |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLUG-01 | — | Pending |
-| PLUG-02 | — | Pending |
-| PLUG-03 | — | Pending |
-| PLUG-04 | — | Pending |
-| PLUG-05 | — | Pending |
-| AGENT-01 | — | Pending |
-| AGENT-02 | — | Pending |
-| AGENT-03 | — | Pending |
-| AGENT-04 | — | Pending |
-| SKILL-01 | — | Pending |
-| SKILL-02 | — | Pending |
-| SKILL-03 | — | Pending |
-| PATH-01 | — | Pending |
-| PATH-02 | — | Pending |
-| PATH-03 | — | Pending |
-| DIST-01 | — | Pending |
-| DIST-02 | — | Pending |
-| DIST-03 | — | Pending |
-| DIST-04 | — | Pending |
+| PLUG-01 | Phase 15 | Pending |
+| PLUG-05 | Phase 15 | Pending |
+| PLUG-04 | Phase 16 | Pending |
+| AGENT-01 | Phase 16 | Pending |
+| AGENT-02 | Phase 16 | Pending |
+| AGENT-03 | Phase 16 | Pending |
+| PLUG-03 | Phase 17 | Pending |
+| SKILL-01 | Phase 17 | Pending |
+| SKILL-02 | Phase 17 | Pending |
+| SKILL-03 | Phase 17 | Pending |
+| PLUG-02 | Phase 18 | Pending |
+| PATH-01 | Phase 18 | Pending |
+| PATH-02 | Phase 18 | Pending |
+| PATH-03 | Phase 18 | Pending |
+| AGENT-04 | Phase 19 | Pending |
+| DIST-01 | Phase 20 | Pending |
+| DIST-02 | Phase 20 | Pending |
+| DIST-03 | Phase 20 | Pending |
+| DIST-04 | Phase 20 | Pending |
+| ADV-01 | Phase 21 | Pending |
+| ADV-02 | Phase 21 | Pending |
+| REV-01 | Phase 22 | Pending |
+| REV-02 | Phase 22 | Pending |
+| REV-03 | Phase 22 | Pending |
+| CRIT-01 | Phase 23 | Pending |
+| CRIT-02 | Phase 23 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19 (roadmap pending)
+- v2.0 requirements: 26 total
+- Mapped to phases: 26
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-01*
-*Last updated: 2026-03-01 after initial definition*
+*Last updated: 2026-03-01 — expanded with advisory, review panel, and plan critique requirements*
