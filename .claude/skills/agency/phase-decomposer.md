@@ -63,6 +63,27 @@ Derive the phase directory slug from the phase name:
 - Example: "Plugin Foundation" becomes `plugin-foundation`
 - Full path: `.planning/phases/{NN}-{slug}/` (e.g., `.planning/phases/03-phase-planning/`)
 
+### Marketing Domain Detection
+
+After reading phase details, check if this is a marketing-focused phase:
+
+1. **Requirement check**: Any MKT-* requirement IDs in the phase requirements?
+2. **Keyword check**: Phase description contains marketing keywords?
+   Keywords: "campaign", "content calendar", "social media", "cross-channel",
+   "marketing", "brand awareness", "audience", "engagement strategy",
+   "content strategy", "channel strategy"
+3. **Agent signal**: Does agent-registry recommend majority marketing-division agents?
+
+If ANY signal is positive:
+  → Flag phase as marketing-focused
+  → Read marketing-workflows skill for domain-specific patterns
+  → Use marketing wave pattern in Section 3 decomposition
+  → Trigger campaign questioning (marketing-workflows Section 2.1)
+  → Generate campaign document (marketing-workflows Section 2.2)
+
+If no signals:
+  → Standard decomposition (no impact)
+
 ---
 
 ## Section 3: Task Decomposition
@@ -108,6 +129,32 @@ How to break a phase's requirements into plans and tasks.
 | Two deliverables share no files or patterns | Can be separate plans in same wave |
 | Deliverable is a skill/markdown file only | Consider autonomous (no agent needed) |
 | Deliverable involves code + tests | Include testing agent |
+
+### Marketing-Specific Wave Pattern
+
+When phase is flagged as marketing-focused (Section 2 detection):
+
+Replace the generic wave mapping with marketing-specific waves:
+- **Wave 1: Strategy & Planning**
+  Tasks: Campaign strategy brief, audience analysis, success metrics definition
+  Agents: marketing-social-media-strategist (lead), marketing-growth-hacker
+  Output: Strategy brief in campaign document, core messaging (marketing-workflows Section 4.1)
+
+- **Wave 2: Content Creation**
+  Tasks: Core content production, channel-specific content adaptation
+  Agents: marketing-content-creator + channel specialists based on campaign channels
+  Input: Wave 1 strategy brief + core messaging as context
+  Output: Content assets per channel, following adaptation guidelines
+
+- **Wave 3 (optional — only if phase scope includes distribution/execution)**:
+  Tasks: Content distribution, engagement, community management
+  Agents: All assigned channel agents in parallel
+  Input: Wave 2 content + campaign calendar
+  Output: Published content, engagement metrics
+
+Generate plan files following this wave structure instead of generic dependency-based waves.
+Each plan's context section references the campaign document:
+  @.planning/campaigns/{campaign-slug}.md
 
 ### Naming Plans
 
@@ -195,6 +242,17 @@ When a phase spans multiple divisions (e.g., engineering + design), at least one
 - `project-manager-senior` — task breakdown and scope management
 - `project-management-project-shepherd` — cross-functional coordination
 - `agents-orchestrator` — pipeline management and agent coordination
+
+### Marketing Team Assembly
+
+When phase is marketing-focused, replace individual-agent-per-plan recommendation with team assembly:
+- Read agent-registry Section 4 "Marketing Campaign" team pattern
+- Read marketing-workflows Section 2.3 for role definitions
+- Assemble team based on campaign's channel selection:
+  Required: Strategy Lead (social-media-strategist) + Content Lead (content-creator)
+  Per-channel: one specialist per selected channel (from marketing-workflows Section 1 Channel-Agent Mapping)
+  Optional: growth-hacker (if acquisition/conversion focus), design-visual-storyteller (if visual-heavy)
+- Present team to user for confirmation (not individual agent per plan)
 
 ---
 
