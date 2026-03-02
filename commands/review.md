@@ -1,5 +1,5 @@
 ---
-name: agency:review
+name: legion:review
 description: Run quality review cycle with testing/QA agents
 argument-hint: [--phase N]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage, AskUserQuestion]
@@ -29,16 +29,16 @@ skills/design-workflows/SKILL.md
 
 <process>
 1. DETERMINE TARGET PHASE
-   - Check $ARGUMENTS for --phase N flag (e.g., `/agency:review --phase 4`)
+   - Check $ARGUMENTS for --phase N flag (e.g., `/legion:review --phase 4`)
    - If no flag: read STATE.md to determine current phase
      - Use the phase number from "Phase: N of M" in Current Position
      - Valid states for review: "executed, pending review" or "partial"
-     - If status says "planned" or "pending": error — "Phase {N} hasn't been executed yet. Run /agency:build first."
-     - If status says "complete": error — "Phase {N} already passed review. Run /agency:plan {N+1} for the next phase."
+     - If status says "planned" or "pending": error — "Phase {N} hasn't been executed yet. Run /legion:build first."
+     - If status says "complete": error — "Phase {N} already passed review. Run /legion:plan {N+1} for the next phase."
    - Validate: phase must exist in ROADMAP.md
    - Check that phase directory has SUMMARY.md files (proof of execution):
      - Look for files matching .planning/phases/{NN}-{slug}/{NN}-{PP}-SUMMARY.md
-     - If no SUMMARY.md files found: error — "Phase {N} has no execution summaries. Run /agency:build first."
+     - If no SUMMARY.md files found: error — "Phase {N} has no execution summaries. Run /legion:build first."
    - Display: "Reviewing Phase {N}: {phase_name}"
 
 2. GATHER PHASE CONTEXT
@@ -275,7 +275,7 @@ skills/design-workflows/SKILL.md
       - Track per finding: fixed (by which agent) vs. not-fixed (with reason)
       - Create fix commit:
         git add {only files actually modified by fix agents}
-        git commit -m "fix(agency): review cycle {cycle_count} fixes for phase {N}
+        git commit -m "fix(legion): review cycle {cycle_count} fixes for phase {N}
 
         Phase {N}: {phase_name}
         Fixed {count} issues: {brief comma-separated descriptions}
@@ -318,7 +318,7 @@ skills/design-workflows/SKILL.md
       - Status: "Phase {N} complete — review passed ({cycles} cycle(s))"
       - Last Activity: "Phase {N} review passed ({date})"
       - Next Action:
-        If more phases remain: "Run `/agency:plan {N+1}` to plan the next phase"
+        If more phases remain: "Run `/legion:plan {N+1}` to plan the next phase"
         If this was the last phase: "All phases complete — project review finished!"
       Write updated STATE.md
       Update ROADMAP.md progress table:
@@ -330,7 +330,7 @@ skills/design-workflows/SKILL.md
       git add .planning/phases/{NN}-{slug}/{NN}-REVIEW.md
       git add .planning/STATE.md
       git add .planning/ROADMAP.md
-      git commit -m "chore(agency): phase {N} review passed — {phase_name}
+      git commit -m "chore(legion): phase {N} review passed — {phase_name}
 
       Review passed after {cycles} cycle(s).
       {blocker_count} blocker(s) fixed, {warning_count} warning(s) fixed.
@@ -376,7 +376,7 @@ skills/design-workflows/SKILL.md
       - Status: "Phase {N} review escalated — {count} unresolved blocker(s) after 3 cycles"
       - Last Activity: "Phase {N} review escalated ({date})"
       - Next Action: "Review .planning/phases/{NN}-{slug}/{NN}-REVIEW.md for full details.
-        Fix manually then re-run /agency:review, or accept as-is and proceed."
+        Fix manually then re-run /legion:review, or accept as-is and proceed."
       Write updated STATE.md
 
    b2. RECORD REVIEW OUTCOME (optional — follows memory-manager Section 6):
@@ -402,8 +402,8 @@ skills/design-workflows/SKILL.md
 
    d. Use AskUserQuestion: "How would you like to proceed?"
       Options:
-      - "Fix manually and re-run /agency:review" — exit; let user address the issues
-      - "Accept as-is and move to /agency:plan {N+1}" — mark phase complete despite issues
+      - "Fix manually and re-run /legion:review" — exit; let user address the issues
+      - "Accept as-is and move to /legion:plan {N+1}" — mark phase complete despite issues
       - "Investigate further" — exit for user to diagnose root cause
 
    e. If user selects "Accept as-is":
@@ -420,17 +420,18 @@ skills/design-workflows/SKILL.md
    - If review passed (Path A) or user accepted as-is (Path B override):
      If more phases remain:
      "Phase {N}: {phase_name} complete.
-      Next: Run `/agency:plan {N+1}` to plan the next phase."
+      Next: Run `/legion:plan {N+1}` to plan the next phase."
      If this was the last phase:
-     "All phases complete! The Agency Workflows project is finished."
+     "All phases complete! The Legion Workflows project is finished."
 
    - If escalated and user chose "Fix manually":
      "Fix the issues listed in .planning/phases/{NN}-{slug}/{NN}-REVIEW.md
-      Then re-run `/agency:review` to verify."
+      Then re-run `/legion:review` to verify."
 
    - If escalated and user chose "Investigate further":
      "Review .planning/phases/{NN}-{slug}/{NN}-REVIEW.md for the full escalation report.
       Each unresolved finding includes the fix attempts and why they failed."
 
-   - Do NOT automatically trigger /agency:plan — let the user decide when to proceed.
+   - Do NOT automatically trigger /legion:plan — let the user decide when to proceed.
 </process>
+</output>

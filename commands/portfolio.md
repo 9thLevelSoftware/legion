@@ -1,5 +1,5 @@
 ---
-name: agency:portfolio
+name: legion:portfolio
 description: Multi-project portfolio dashboard with cross-project dependency tracking
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
@@ -18,22 +18,22 @@ skills/agent-registry/SKILL.md
 </execution_context>
 
 <context>
-Portfolio registry: ~/.claude/agency/portfolio.md
+Portfolio registry: ~/.claude/legion/portfolio.md
 Studio Producer: agents/project-management-studio-producer.md
 </context>
 
 <process>
 1. LOAD PORTFOLIO REGISTRY
-   - Attempt to read `~/.claude/agency/portfolio.md`
+   - Attempt to read `~/.claude/legion/portfolio.md`
    - If not found:
      Display:
-     "No portfolio registry found at `~/.claude/agency/portfolio.md`
-      Run `/agency:start` in a project to register it, or use Step 8 to register manually."
+     "No portfolio registry found at `~/.claude/legion/portfolio.md`
+      Run `/legion:start` in a project to register it, or use Step 8 to register manually."
      Exit — do not proceed to Step 2
    - If found but empty (no `###` project headings under `## Projects`):
      Display:
      "Portfolio is empty — no projects registered.
-      Run `/agency:start` in a project directory to add it to the portfolio."
+      Run `/legion:start` in a project directory to add it to the portfolio."
      Exit — do not proceed to Step 2
    - If found with projects: proceed to Step 2
 
@@ -61,7 +61,7 @@ Studio Producer: agents/project-management-studio-producer.md
    Output the dashboard:
 
    ```
-   # Agency Portfolio
+   # Legion Portfolio
 
    **{active_count} active projects** | {total_count} registered | {at_risk_count} at risk
 
@@ -192,7 +192,7 @@ Studio Producer: agents/project-management-studio-producer.md
 
      # Portfolio Analysis Task
 
-     You are analyzing a portfolio of {count} Agency projects.
+     You are analyzing a portfolio of {count} Legion projects.
      Provide strategic coordination insights.
 
      ## Portfolio State
@@ -217,18 +217,18 @@ Studio Producer: agents/project-management-studio-producer.md
    - Return to Step 6
 
    **Path D: Done**
-   - Display: "Portfolio view closed. Run `/agency:portfolio` anytime for cross-project status."
+   - Display: "Portfolio view closed. Run `/legion:portfolio` anytime for cross-project status."
    - Exit
 
-8. MANUAL REGISTRATION (fallback for projects not created with /agency:start)
+8. MANUAL REGISTRATION (fallback for projects not created with /legion:start)
    This step is only reached if the user explicitly asks to register a project manually,
    or if Step 1 shows no registry and the user wants to register the current project.
 
    - Confirm current directory has `.planning/PROJECT.md`
-   - If not: "This directory doesn't have an Agency project. Run `/agency:start` first."
+   - If not: "This directory doesn't have a Legion project. Run `/legion:start` first."
    - If yes: Follow portfolio-manager Section 2 (Register Project):
-     a. Create `~/.claude/agency/` directory if needed
-     b. Read or initialize `~/.claude/agency/portfolio.md`
+     a. Create `~/.claude/legion/` directory if needed
+     b. Read or initialize `~/.claude/legion/portfolio.md`
      c. Register the current project with name, path, date, description
      d. Update metadata counts
      e. Write the updated registry
@@ -243,3 +243,4 @@ IMPORTANT:
 - All operations handle missing/stale projects gracefully
 - Dependencies are validated against live project state, not just registry entries
 </process>
+</output>

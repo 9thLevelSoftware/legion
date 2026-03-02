@@ -1,5 +1,5 @@
 ---
-name: agency:build
+name: legion:build
 description: Execute current phase plans with parallel agent teams
 argument-hint: [--phase N]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage, AskUserQuestion]
@@ -27,14 +27,14 @@ skills/github-sync/SKILL.md
 
 <process>
 1. DETERMINE TARGET PHASE
-   - Check $ARGUMENTS for --phase N flag (e.g., `/agency:build --phase 2`)
+   - Check $ARGUMENTS for --phase N flag (e.g., `/legion:build --phase 2`)
    - If no flag: read STATE.md to determine current phase
      - Use the phase number from "Phase: N of M" in Current Position
      - If status says "planned" or "pending": that's the target phase
-     - If status says "executed" or "complete": error — "Phase {N} already executed. Run /agency:plan {N+1} for the next phase."
+     - If status says "executed" or "complete": error — "Phase {N} already executed. Run /legion:plan {N+1} for the next phase."
    - Validate: the phase number must exist in ROADMAP.md
    - Check if the phase directory exists: .planning/phases/{NN}-{slug}/
-   - If no plan files exist in the directory: error — "No plans found for Phase {N}. Run /agency:plan {N} first."
+   - If no plan files exist in the directory: error — "No plans found for Phase {N}. Run /legion:plan {N} first."
 
 2. DISCOVER PLANS
    Follow wave-executor skill Section 2 (Plan Discovery):
@@ -115,7 +115,7 @@ skills/github-sync/SKILL.md
 
            # Execution Task
 
-           You are executing a plan as part of The Agency Workflows. Follow the tasks below precisely.
+           You are executing a plan as part of The Legion Workflows. Follow the tasks below precisely.
 
            {PLAN_CONTENT}
 
@@ -137,7 +137,7 @@ skills/github-sync/SKILL.md
         2. Construct the autonomous prompt:
            # Execution Task
 
-           You are executing a plan as part of The Agency Workflows. No specialist agent
+           You are executing a plan as part of The Legion Workflows. No specialist agent
            personality is needed for this plan — execute the tasks directly.
 
            {PLAN_CONTENT}
@@ -172,7 +172,7 @@ skills/github-sync/SKILL.md
    g. Track progress after each plan result (execution-tracker Section 2):
       - Update STATE.md: status, last activity, phase results, progress bar
       - If the plan succeeded: create an atomic git commit:
-        feat(agency): execute plan {NN}-{PP} — {plan_name}
+        feat(legion): execute plan {NN}-{PP} — {plan_name}
 
         Phase {N}: {phase_name}
         Wave: {W}
@@ -207,7 +207,7 @@ skills/github-sync/SKILL.md
       - Count plans succeeded vs. failed in the wave
       - Update ROADMAP.md progress table: Completed count and Status column
       - Create wave state commit:
-        chore(agency): update state after wave {W} of phase {N}
+        chore(legion): update state after wave {W} of phase {N}
       - Report wave status:
         "Wave {W}: {succeeded}/{total} plans succeeded
          Files modified: {aggregate list}
@@ -217,7 +217,7 @@ skills/github-sync/SKILL.md
    i. If ANY plan in the wave failed: STOP immediately
       - Do NOT proceed to the next wave
       - Report the full list of failed plans with their summary file paths
-      - Suggest: "Run /agency:review to diagnose failures in Phase {N}."
+      - Suggest: "Run /legion:review to diagnose failures in Phase {N}."
 
 5. COMPLETE PHASE EXECUTION
    Follow execution-tracker Section 4 (Phase Completion Tracking):
@@ -231,13 +231,13 @@ skills/github-sync/SKILL.md
       - Status: "Phase {N} complete — all plans executed successfully"
         OR: "Phase {N} partial — {count} plan(s) failed, review needed"
       - Last Activity: "Phase {N} execution ({date})"
-      - Next Action: "Run `/agency:review` to verify Phase {N}: {phase_name}"
+      - Next Action: "Run `/legion:review` to verify Phase {N}: {phase_name}"
 
    c. Update ROADMAP.md progress table:
       - Status: "Complete" if all plans passed, "Partial" if some failed
 
    d. Create phase completion commit:
-      chore(agency): complete phase {N} execution — {phase_name}
+      chore(legion): complete phase {N} execution — {phase_name}
 
       All plans executed. {succeeded}/{total} passed.
       Overall progress: {completed}/{total_plans} ({pct}%)
@@ -270,7 +270,7 @@ skills/github-sync/SKILL.md
           - "Skip PR" — skip, proceed to step 6
        b. If user chose "Create PR":
           - Check current branch (github-sync Section 3.1)
-          - If on default branch: create feature branch agency/phase-{NN}-{slug}
+          - If on default branch: create feature branch legion/phase-{NN}-{slug}
           - Push branch to remote: git push -u origin {branch}
           - Create PR (github-sync Section 3.2):
             Title: "Phase {N}: {phase_name}"
@@ -282,12 +282,13 @@ skills/github-sync/SKILL.md
 6. ROUTE TO NEXT ACTION
    - If all plans passed:
      "Phase {N}: {phase_name} complete.
-      Run `/agency:review` to verify the work."
+      Run `/legion:review` to verify the work."
 
    - If some plans failed:
      "Phase {N}: {phase_name} partial — {count} plan(s) failed.
       Review summaries: .planning/phases/{NN}-{slug}/{NN}-{PP}-SUMMARY.md
-      Then run `/agency:review` for diagnosis."
+      Then run `/legion:review` for diagnosis."
 
-   - Do NOT automatically trigger /agency:review — let the user decide when to proceed.
+   - Do NOT automatically trigger /legion:review — let the user decide when to proceed.
 </process>
+</output>

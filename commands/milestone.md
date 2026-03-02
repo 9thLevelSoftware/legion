@@ -1,5 +1,5 @@
 ---
-name: agency:milestone
+name: legion:milestone
 description: Milestone management — status, definition, completion, and archiving
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
@@ -30,8 +30,8 @@ skills/github-sync/SKILL.md
    - Attempt to read .planning/PROJECT.md
    - If not found:
      Display:
-     "No Agency project found in this directory.
-      Run `/agency:start` to initialize a new project."
+     "No Legion project found in this directory.
+      Run `/legion:start` to initialize a new project."
    - Exit — do not proceed to step 2
 
 2. READ PROJECT STATE
@@ -59,7 +59,7 @@ skills/github-sync/SKILL.md
      - "Skip for now" — "Return without defining milestones"
 
      If "Define milestones": Go to Step 7 (DEFINE MILESTONES)
-     If "Skip for now": Display "Run `/agency:milestone` anytime to set up milestones." → Exit
+     If "Skip for now": Display "Run `/legion:milestone` anytime to set up milestones." → Exit
 
    If found: proceed to Step 4
 
@@ -146,7 +146,7 @@ skills/github-sync/SKILL.md
    f. Create git commit following execution-tracker Section 6 milestone completion format:
       ```
       git add .planning/milestones/ .planning/ROADMAP.md .planning/STATE.md
-      git commit -m "chore(agency): complete milestone {N} — {name}
+      git commit -m "chore(legion): complete milestone {N} — {name}
 
       Phases {start}-{end}: {count} phases, {plans} plans
       Requirements: {req_count} satisfied
@@ -164,7 +164,7 @@ skills/github-sync/SKILL.md
    g. Display:
       "Milestone {N}: {name} — Complete!
        Summary written to .planning/milestones/MILESTONE-{N}.md
-       Run `/agency:milestone` to archive when ready."
+       Run `/legion:milestone` to archive when ready."
    - Return to Step 5
 
    **Path C: Archive milestone**
@@ -186,7 +186,7 @@ skills/github-sync/SKILL.md
    f. Create git commit following execution-tracker Section 6 milestone archive format:
       ```
       git add -A
-      git commit -m "chore(agency): archive milestone {N} — {name}
+      git commit -m "chore(legion): archive milestone {N} — {name}
 
       Phases moved to .planning/archive/milestone-{N}/
       STATE.md and ROADMAP.md updated
@@ -203,7 +203,7 @@ skills/github-sync/SKILL.md
    - Go to Step 7 (DEFINE MILESTONES) — overwrites existing milestone definitions
 
    **Path E: Done**
-   - Display: "Milestone view closed. Run `/agency:milestone` anytime for milestone management."
+   - Display: "Milestone view closed. Run `/legion:milestone` anytime for milestone management."
    - Exit
 
 7. DEFINE MILESTONES
@@ -246,4 +246,5 @@ IMPORTANT:
 - The action loop (Steps 5-6) keeps the user in milestone context until they choose "Done"
 - All operations handle missing/stale state gracefully
 </process>
+</output>
 </output>

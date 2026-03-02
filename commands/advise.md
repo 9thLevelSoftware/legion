@@ -1,6 +1,6 @@
 ---
-name: agency:advise
-description: Get read-only expert consultation from Agency's 51 agent personalities
+name: legion:advise
+description: Get read-only expert consultation from Legion's 51 agent personalities
 argument-hint: <topic> (e.g., architecture, UX, marketing, testing)
 allowed-tools: [Read, Grep, Glob, Agent, AskUserQuestion]
 ---
@@ -26,7 +26,7 @@ skills/agent-registry/CATALOG.md
 1. PARSE TOPIC
    - Read $ARGUMENTS for the topic
    - If $ARGUMENTS is empty or missing:
-     Display: "Usage: `/agency:advise <topic>`
+     Display: "Usage: `/legion:advise <topic>`
 
      **Common topics:**
      | Category | Topics |
@@ -39,9 +39,9 @@ skills/agent-registry/CATALOG.md
      | Product | roadmap, user research, trends, feedback synthesis |
      | Spatial | VisionOS, XR experiences, Metal optimization |
 
-     Example: `/agency:advise architecture` — get architectural guidance from the backend architect
-     Example: `/agency:advise UX` — get UX recommendations from the UX architect
-     Example: `/agency:advise marketing strategy` — get campaign advice from the marketing strategist"
+     Example: `/legion:advise architecture` — get architectural guidance from the backend architect
+     Example: `/legion:advise UX` — get UX recommendations from the UX architect
+     Example: `/legion:advise marketing strategy` — get campaign advice from the marketing strategist"
      Exit — do not proceed
    - Store the topic for use in subsequent steps
    - Display: "Advisory topic: {topic}"
@@ -169,8 +169,9 @@ skills/agent-registry/CATALOG.md
       - This allows a completely fresh advisory cycle
 
    c. If "End session":
-      Display: "Advisory session ended. Run `/agency:advise <topic>` anytime for another consultation."
+      Display: "Advisory session ended. Run `/legion:advise <topic>` anytime for another consultation."
 
    Note: Advisory sessions do NOT update STATE.md, ROADMAP.md, or any project state.
    They operate entirely outside the phase workflow — pure consultation.
 </process>
+</output>

@@ -1,5 +1,5 @@
 ---
-name: agency:agent
+name: legion:agent
 description: Create a new agent personality through a guided workflow
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
@@ -30,7 +30,7 @@ skills/agent-creator/SKILL.md
 1. PRE-FLIGHT CHECK
    - Check if `.planning/PROJECT.md` exists by attempting to read it
    - If not found:
-     Display: "No Agency project found. Run `/agency:start` to initialize."
+     Display: "No Legion project found. Run `/legion:start` to initialize."
      Exit — do not proceed to step 2
    - Read `.planning/STATE.md` for current project context
 
@@ -96,7 +96,7 @@ skills/agent-creator/SKILL.md
 8. CONFIRM AND COMMIT
    - Display the summary from agent-creator.md Section 7:
      Agent name, file path, division, task types, registry row
-   - Suggest: "Your new agent '{agent-name}' is ready. It will appear in `/agency:plan` recommendations for tasks matching: {tags}."
+   - Suggest: "Your new agent '{agent-name}' is ready. It will appear in `/legion:plan` recommendations for tasks matching: {tags}."
    - Create a git commit:
      ```
      git add agents/{agent-name}.md skills/agent-registry/SKILL.md
@@ -118,3 +118,4 @@ IMPORTANT:
 - Error handling prevents partial state (file without registry, or registry without file)
 - The commit only includes the agent file and registry — no other changes
 </process>
+</output>

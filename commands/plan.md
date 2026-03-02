@@ -1,5 +1,5 @@
 ---
-name: agency:plan
+name: legion:plan
 description: Plan a specific phase with agent recommendations and wave-structured tasks
 argument-hint: <phase-number>
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
@@ -31,7 +31,7 @@ skills/plan-critique/SKILL.md
 
 <process>
 1. PARSE PHASE NUMBER
-   - Read $ARGUMENTS for a phase number (e.g., "3" from `/agency:plan 3`)
+   - Read $ARGUMENTS for a phase number (e.g., "3" from `/legion:plan 3`)
    - If no phase number given: auto-detect the next unplanned phase
      - Read ROADMAP.md progress table
      - Find the first phase where Status = "Pending" and Completed = 0
@@ -46,7 +46,7 @@ skills/plan-critique/SKILL.md
    - If plans exist: use AskUserQuestion
      - "Phase {N} already has {count} plan(s). What would you like to do?"
      - Option 1: "Re-plan from scratch" -- delete existing plans, proceed
-     - Option 2: "Keep existing plans" -- abort, suggest /agency:build instead
+     - Option 2: "Keep existing plans" -- abort, suggest /legion:build instead
    - If no plans exist: proceed directly
 
 3. READ PHASE DETAILS
@@ -63,7 +63,7 @@ skills/plan-critique/SKILL.md
    - If yes:
      a. Read .planning/CODEBASE.md
      b. Check the "Analyzed" date in the header
-        - If >30 days old: warn user "CODEBASE.md was analyzed {N} days ago. Consider running /agency:start to refresh the codebase map."
+        - If >30 days old: warn user "CODEBASE.md was analyzed {N} days ago. Consider running /legion:start to refresh the codebase map."
         - Do NOT auto-re-analyze — let user decide. Continue with existing data.
      c. Extract these sections for use in step 4 (decomposition) and step 5 (agent recommendation):
         - Risk Areas table — flag risks that overlap with files this phase will modify
@@ -203,14 +203,14 @@ skills/plan-critique/SKILL.md
    - If github_available is false: skip to step 10
 
    If github_available is true:
-   a. Ensure "agency" label exists (github-sync Section 2.1)
+   a. Ensure "legion" label exists (github-sync Section 2.1)
    b. If ROADMAP.md has milestones and the current phase falls within a milestone range:
       - Check if the GitHub milestone exists (github-sync Section 4.1)
       - If not: create it
    c. Create a GitHub issue for the phase (github-sync Section 2.2):
       - Title: "Phase {N}: {phase_name}"
       - Body: phase goal, plans checklist, requirements, success criteria
-      - Label: "agency"
+      - Label: "legion"
       - Milestone: GitHub milestone title (if available)
    d. Store the issue number in STATE.md ## GitHub section (github-sync Section 6)
    e. Confirm to user: "Created GitHub issue #{number} for Phase {N}: {phase_name}"
@@ -221,7 +221,7 @@ skills/plan-critique/SKILL.md
      - Phase: {N} of {total} (planned)
      - Status: Phase {N} planned -- {plan_count} plans across {wave_count} waves
      - Last Activity: Phase {N} planning ({date})
-     - Next Action: Run `/agency:build` to execute Phase {N}: {phase_name}
+     - Next Action: Run `/legion:build` to execute Phase {N}: {phase_name}
    - Write updated STATE.md
 
 11. DISPLAY SUMMARY
@@ -230,6 +230,7 @@ skills/plan-critique/SKILL.md
       - Plans: {count} plans across {wave_count} waves
       - For each plan: name, wave, assigned agent(s)
       - Files to be created: list the plan file paths
-    - End with: "Run `/agency:build` to execute Phase {N}: {phase_name}"
+    - End with: "Run `/legion:build` to execute Phase {N}: {phase_name}"
     - Do NOT dump full plan file contents -- summary only
 </process>
+</output>

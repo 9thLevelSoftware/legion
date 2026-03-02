@@ -1,5 +1,5 @@
 ---
-name: agency:start
+name: legion:start
 description: Initialize a new project with guided questioning flow
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
@@ -28,12 +28,12 @@ skills/codebase-mapper/SKILL.md
    - If it exists: use AskUserQuestion to confirm reinitialize
      - "A project already exists in .planning/. Reinitialize from scratch?"
      - Option 1: "Yes, start fresh" — continue (will overwrite PROJECT.md, ROADMAP.md, STATE.md)
-     - Option 2: "No, keep existing" — abort and suggest `/agency:status` instead
+     - Option 2: "No, keep existing" — abort and suggest `/legion:status` instead
    - If it doesn't exist: proceed directly
 
 2. BROWNFIELD DETECTION
    Follow codebase-mapper skill Section 1 (Source Code Detection Heuristic):
-   - Check for non-Agency source files in the current directory:
+   - Check for non-Legion source files in the current directory:
      - Any source files outside .planning/ and .claude/?
      - Any package.json, Gemfile, pyproject.toml, requirements.txt, go.mod at root?
      - Any src/, app/, lib/, components/ directories?
@@ -47,7 +47,7 @@ skills/codebase-mapper/SKILL.md
          → Continue to step 3
        Option 2: "No, skip the analysis"
          → Proceed directly to step 3 (greenfield mode)
-       Option 3: "I'll run /agency:plan directly"
+       Option 3: "I'll run /legion:plan directly"
          → Abort start, let user plan manually
    - If no existing source code detected:
      Skip brownfield flow entirely (pure greenfield) — proceed to step 3
@@ -115,10 +115,10 @@ skills/codebase-mapper/SKILL.md
 
 10. REGISTER IN PORTFOLIO
    Follow portfolio-manager Section 2 (Register Project):
-   a. Check if `~/.claude/agency/` directory exists; create it if not (including parent directories)
-   b. Read `~/.claude/agency/portfolio.md` if it exists; otherwise initialize with empty structure:
+   a. Check if `~/.claude/legion/` directory exists; create it if not (including parent directories)
+   b. Read `~/.claude/legion/portfolio.md` if it exists; otherwise initialize with empty structure:
       ```
-      # Agency Portfolio
+      # Legion Portfolio
       ## Projects
       ## Cross-Project Dependencies
       | ID | From | To | Type | Status | Notes |
@@ -140,8 +140,8 @@ skills/codebase-mapper/SKILL.md
         - **Description**: {one-line from PROJECT.md}
         ```
    e. Update Metadata: Last Updated, Total Projects count, Active Projects count
-   f. Write the updated `~/.claude/agency/portfolio.md`
-   g. Display: "Registered in portfolio: ~/.claude/agency/portfolio.md"
+   f. Write the updated `~/.claude/legion/portfolio.md`
+   g. Display: "Registered in portfolio: ~/.claude/legion/portfolio.md"
 
 11. DISPLAY SUMMARY
    - Show the user a concise summary:
@@ -150,7 +150,8 @@ skills/codebase-mapper/SKILL.md
      - For each phase: name and recommended agent count
      - Workflow: {mode}, {depth}, {cost_profile}
      - Files created: PROJECT.md, ROADMAP.md, STATE.md
-     - Portfolio: Registered at ~/.claude/agency/portfolio.md
-   - End with: "Run `/agency:plan 1` to begin Phase 1: {first_phase_name}"
+     - Portfolio: Registered at ~/.claude/legion/portfolio.md
+   - End with: "Run `/legion:plan 1` to begin Phase 1: {first_phase_name}"
    - Do NOT dump full file contents — summary only
 </process>
+</output>

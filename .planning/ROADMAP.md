@@ -13,7 +13,7 @@
 ### Phases
 
 - [x] **Phase 24: Foundation** — Update workflow-common with Legion constants; everything else depends on this
-- [ ] **Phase 25: Commands** — Rename all 10 command files to `/legion:` namespace
+- [x] **Phase 25: Commands** — Rename all 10 command files to `/legion:` namespace
 - [ ] **Phase 26: Skills** — Update remaining 16 skill files with `/legion:` references
 - [ ] **Phase 27: Plugin Manifest** — Update plugin.json and marketplace.json to Legion identity
 - [ ] **Phase 28: Documentation** — Rewrite README, update CLAUDE.md, CONTRIBUTING.md, CHANGELOG.md, add attribution
@@ -39,7 +39,7 @@
 2. Cross-command routing within each file points to `/legion:` equivalents (e.g., "run `/legion:build` next")
 3. Commit message prefix examples within command files show `feat(legion):` / `chore(legion):`
 4. A user following any command's inline instructions is directed only to `/legion:` commands
-**Plans:** TBD
+**Plans:** 1/1 plans complete
 
 #### Phase 26: Skills
 **Goal:** All 16 remaining skill files reference `/legion:` for every command integration point
@@ -78,7 +78,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 24. Foundation | 1/1 | Complete    | 2026-03-02 |
-| 25. Commands | 0/? | Not started | — |
+| 25. Commands | 1/1 | Complete    | 2026-03-02 |
 | 26. Skills | 0/? | Not started | — |
 | 27. Plugin Manifest | 0/? | Not started | — |
 | 28. Documentation | 0/? | Not started | — |

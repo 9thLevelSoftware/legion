@@ -1,5 +1,5 @@
 ---
-name: agency:quick
+name: legion:quick
 description: Run a single ad-hoc task with intelligent agent selection
 argument-hint: <task-description>
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
@@ -27,10 +27,10 @@ skills/agent-registry/CATALOG.md
 1. PARSE TASK DESCRIPTION
    - Read $ARGUMENTS for the task description
    - If $ARGUMENTS is empty or missing:
-     Display: "Usage: `/agency:quick <task-description>`
-              Example: `/agency:quick write unit tests for the auth module`
-              Example: `/agency:quick create a content calendar for Q2`
-              Example: `/agency:quick review the API rate limiting code`"
+     Display: "Usage: `/legion:quick <task-description>`
+              Example: `/legion:quick write unit tests for the auth module`
+              Example: `/legion:quick create a content calendar for Q2`
+              Example: `/legion:quick review the API rate limiting code`"
      Exit — do not proceed
    - Store the full task description for use in subsequent steps
    - Display: "Quick task: {task_description}"
@@ -163,13 +163,13 @@ skills/agent-registry/CATALOG.md
        Description: "Keep changes in working directory for further review"
    - If user chooses to commit:
      - Determine commit type from task description:
-       - Task mentions "fix", "bug", "repair" -> fix(agency)
-       - Task mentions "test", "spec" -> test(agency)
-       - Task mentions "doc", "readme", "comment" -> docs(agency)
-       - Task mentions "refactor", "clean", "reorganize" -> refactor(agency)
-       - Default -> feat(agency)
+       - Task mentions "fix", "bug", "repair" -> fix(legion)
+       - Task mentions "test", "spec" -> test(legion)
+       - Task mentions "doc", "readme", "comment" -> docs(legion)
+       - Task mentions "refactor", "clean", "reorganize" -> refactor(legion)
+       - Default -> feat(legion)
      - Create the commit:
-       {type}(agency): quick — {brief task summary}
+       {type}(legion): quick — {brief task summary}
 
        Task: {task_description}
        Agent: {agent_id}
@@ -181,3 +181,4 @@ skills/agent-registry/CATALOG.md
    Note: Quick tasks do NOT update STATE.md or ROADMAP.md.
    They operate outside the phase workflow entirely.
 </process>
+</output>

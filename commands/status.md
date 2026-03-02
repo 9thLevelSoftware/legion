@@ -1,11 +1,11 @@
 ---
-name: agency:status
+name: legion:status
 description: Show project progress dashboard and route to next action
 allowed-tools: [Read, Grep, Glob]
 ---
 
 <objective>
-Read project state and display a clear progress dashboard with session resume context. Route the user to the appropriate next /agency: command based on current project state.
+Read project state and display a clear progress dashboard with session resume context. Route the user to the appropriate next /legion: command based on current project state.
 
 Purpose: Single command to understand where the project is and what to do next.
 Output: Dashboard display with next-action routing.
@@ -30,8 +30,8 @@ skills/github-sync/SKILL.md
    - Attempt to read .planning/PROJECT.md
    - If not found:
      Display:
-     "No Agency project found in this directory.
-      Run `/agency:start` to initialize a new project."
+     "No Legion project found in this directory.
+      Run `/legion:start` to initialize a new project."
    - Exit — do not proceed to step 2
 
 2. READ PROJECT STATE
@@ -94,7 +94,7 @@ skills/github-sync/SKILL.md
    Phases {start}-{end} | {phases_complete}/{phases_total} phases complete
 
    If the current milestone is Complete but not Archived:
-   Tip: Run `/agency:milestone` to generate a summary and optionally archive.
+   Tip: Run `/legion:milestone` to generate a summary and optionally archive.
 
    If milestones are NOT defined in ROADMAP.md, omit this section entirely (do not show a placeholder).
 
@@ -167,35 +167,35 @@ skills/github-sync/SKILL.md
    Apply this decision tree in order (first match wins):
 
    a. No ROADMAP.md exists:
-      Next: "Run `/agency:start` to initialize the project."
+      Next: "Run `/legion:start` to initialize the project."
 
    b. Current phase status contains "pending" or "Pending" in ROADMAP.md:
-      Next: "Run `/agency:plan {N}` to plan Phase {N}: {phase_name}."
+      Next: "Run `/legion:plan {N}` to plan Phase {N}: {phase_name}."
 
    c. Current phase status contains "Planned" in ROADMAP.md:
-      Next: "Run `/agency:build` to execute Phase {N}: {phase_name}."
+      Next: "Run `/legion:build` to execute Phase {N}: {phase_name}."
 
    d. Current phase status contains "Executed" or STATE.md says "pending review":
-      Next: "Run `/agency:review` to verify Phase {N}: {phase_name}."
+      Next: "Run `/legion:review` to verify Phase {N}: {phase_name}."
 
    e. Current phase is "Complete" AND there are more phases:
       - Find the next incomplete phase number (N+1)
-      Next: "Run `/agency:plan {N+1}` to plan Phase {N+1}: {next_phase_name}."
+      Next: "Run `/legion:plan {N+1}` to plan Phase {N+1}: {next_phase_name}."
 
    e2. Current phase is "Complete" AND it's the last phase of the current milestone AND all phases in the milestone are Complete:
-       Next: "Milestone {N}: {name} is complete! Run `/agency:milestone` to mark it done and generate a summary."
+       Next: "Milestone {N}: {name} is complete! Run `/legion:milestone` to mark it done and generate a summary."
        This case takes priority over (e) when a milestone boundary is reached.
 
    f. All phases are "Complete":
       Next: "All phases complete! Project is finished.
-             Run `/agency:quick <task>` for any ad-hoc work."
+             Run `/legion:quick <task>` for any ad-hoc work."
 
    g. STATE.md says "escalated" or "failed":
       Next: "Phase {N} needs attention. Review the issues in STATE.md.
              Options:
-             - Fix issues manually, then `/agency:review`
-             - `/agency:quick <task>` to address specific issues
-             - `/agency:plan {N}` to re-plan the phase"
+             - Fix issues manually, then `/legion:review`
+             - `/legion:quick <task>` to address specific issues
+             - `/legion:plan {N}` to re-plan the phase"
 
 6. DISPLAY NEXT ACTION
    Output:
@@ -203,5 +203,5 @@ skills/github-sync/SKILL.md
    ## Next Action
    {next_action_text from step 5}
 
-   Tip: Run `/agency:quick <task>` anytime for ad-hoc tasks outside the phase workflow.
+   Tip: Run `/legion:quick <task>` anytime for ad-hoc tasks outside the phase workflow.
 </process>
