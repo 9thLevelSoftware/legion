@@ -16,25 +16,23 @@ Turn a collection of 51 isolated agent personalities into a functional AI agency
 
 ## Current State
 
-**v1.0 shipped** (2026-03-01) — 9 commands, 15 skills, 51 agents, 54 requirements delivered across 14 phases.
+**v2.0 shipped** (2026-03-02) — Proper Claude Code plugin with 10 commands, 17 skills, 51 agents, 26 requirements delivered across 9 phases.
 
-All core workflows operational: project initialization, phase planning with agent recommendation, parallel execution via Teams, quality review with domain-specific review lenses, portfolio management, milestone tracking, cross-session memory, custom agent creation, GitHub integration, brownfield codebase analysis, marketing campaign workflows, and design system workflows.
+Plugin installable via `claude plugin add github:9thLevelSoftware/agency-agents` or `claude plugin install --plugin-dir .` for local development.
 
-See [v1.0 archived requirements](milestones/v1.0-REQUIREMENTS.md) for full details.
+All v1.0 workflows operational plus three new advisory capabilities:
+- **Strategic Advisors** — `/agency:advise` for read-only expert consultation from any of the 51 agent personalities
+- **Dynamic Review Panels** — 2-4 reviewer composition with domain-weighted rubrics in `/agency:review`
+- **Plan Critique** — Pre-mortem analysis and assumption hunting as optional validation in `/agency:plan`
 
-## Current Milestone: v2.0 Proper Plugin
+See [v2.0 archived requirements](milestones/v2.0-REQUIREMENTS.md) for full details.
 
-**Goal:** Convert Agency from a standalone `.claude/` directory config into a proper Claude Code plugin — installable via `claude plugin add`, distributable via marketplace, with correct plugin structure.
+<details>
+<summary>v1.0 (2026-03-01)</summary>
 
-**Target features:**
-- Plugin manifest (`.claude-plugin/plugin.json`) with full metadata
-- Restructured directory layout: `commands/`, `skills/`, `agents/` at plugin root
-- 51 agent files migrated to plugin `agents/` format
-- 15 skills converted to `skills/{name}/SKILL.md` format
-- 9 commands moved to plugin `commands/` directory
-- All internal cross-references updated for new paths
-- Installable via `claude plugin add github:user/repo` and `--plugin-dir`
-- README and marketplace entry for distribution
+9 commands, 15 skills, 51 agents, 54 requirements across 14 phases. Core workflows: project initialization, phase planning with agent recommendation, parallel execution, quality review, portfolio management, milestone tracking, cross-session memory, custom agent creation, GitHub integration, brownfield analysis, marketing campaigns, design systems. See [v1.0 archived requirements](milestones/v1.0-REQUIREMENTS.md).
+
+</details>
 
 ## Out of Scope
 
@@ -72,7 +70,7 @@ See [v1.0 archived requirements](milestones/v1.0-REQUIREMENTS.md) for full detai
 | **Shipyard** | Wave-based execution, max 3 tasks/plan, atomic commits, agent role boundaries | 29 commands, checkpoint/rollback system, hook complexity |
 | **Best Practice** | Skills/commands/agents structure, agent frontmatter, permission patterns | RPI workflow (too specific), custom hooks infrastructure |
 
-| Convert to Claude Code plugin format | Plugin system is mature, enables distribution and updates | — Pending |
+| Convert to Claude Code plugin format | Plugin system is mature, enables distribution and updates | Confirmed (v2.0) |
 
 ---
-*Last updated: 2026-03-01 — v2.0 milestone started*
+*Last updated: 2026-03-02 — v2.0 milestone complete*

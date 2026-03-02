@@ -18,6 +18,7 @@ skills/github-sync/SKILL.md
 skills/codebase-mapper/SKILL.md
 skills/marketing-workflows/SKILL.md
 skills/design-workflows/SKILL.md
+skills/plan-critique/SKILL.md
 </execution_context>
 
 <context>
@@ -157,6 +158,42 @@ skills/design-workflows/SKILL.md
    - Include all XML sections (objective, context, tasks, verification, success_criteria, output)
    - Each task has detailed action instructions, verify commands, and done sentence
    - Context references include prior plan summaries for wave 2+ plans
+
+8.5. PLAN CRITIQUE (optional)
+   After plan files are generated, offer the user a chance to stress-test:
+
+   Use AskUserQuestion:
+   "Plans generated. Stress-test before execution?"
+   Options:
+   - "Run plan critique (Recommended for complex phases)" — run pre-mortem + assumption hunting
+     Description: "Two skeptical agents analyze the plan for failure modes and unexamined assumptions"
+   - "Skip critique, proceed to execution" — skip directly to state update
+     Description: "Plans look straightforward, no need for extra validation"
+
+   If user selects "Run plan critique":
+   a. Select critique agents using plan-critique Section 4 (Agent Selection):
+      - Compose a task description from phase goal + requirements
+      - Run agent-registry recommendation with skeptical bias terms
+      - Default: testing-reality-checker (pre-mortem) + product-sprint-prioritizer (assumptions)
+      - Present selection to user for confirmation (same pattern as review panel)
+
+   b. Spawn critique agents (read-only):
+      - Use subagent_type "Explore" (no Write/Edit tools)
+      - Agent 1 runs plan-critique Section 1 (Pre-Mortem Analysis)
+      - Agent 2 runs plan-critique Section 2 (Assumption Hunting)
+      - For quick critique (1 agent): single agent runs both sections sequentially
+
+   c. Collect findings and synthesize (plan-critique Section 3):
+      - Merge pre-mortem risks and assumption findings
+      - Compute critique verdict (PASS / CAUTION / REWORK)
+      - Present consolidated report to user
+
+   d. Route based on verdict (plan-critique Section 3, Step 4):
+      - PASS: proceed to Step 9
+      - CAUTION: user chooses to apply mitigations or proceed
+      - REWORK: user chooses to revise plans or proceed anyway
+
+   If user selects "Skip critique": proceed directly to Step 9
 
 9. GITHUB ISSUE CREATION (optional)
    Follow github-sync Section 8 (Graceful Degradation) caller pattern:
