@@ -1,11 +1,11 @@
 ---
-name: agency:workflow-common
-description: Shared workflow patterns and conventions for The Agency plugin
+name: legion:workflow-common
+description: Shared constants, paths, and patterns for all /legion: commands
 ---
 
-# Agency Workflow Common
+# Legion Workflow Common
 
-Shared constants, paths, and patterns used across all /agency: commands.
+Shared constants, paths, and patterns used across all /legion: commands.
 
 ## State File Locations
 
@@ -16,11 +16,11 @@ Shared constants, paths, and patterns used across all /agency: commands.
 | STATE.md | `.planning/STATE.md` | Current position, recent activity, next action |
 | Templates | `skills/questioning-flow/templates/` | Schema files for generating PROJECT/ROADMAP/STATE |
 | Phase Plans | `.planning/phases/{NN-name}/` | Plan and summary files per phase |
-| PORTFOLIO.md | `~/.claude/agency/portfolio.md` | Global portfolio registry — all Agency projects |
+| PORTFOLIO.md | `~/.claude/legion/portfolio.md` | Global portfolio registry — all Legion projects |
 | Milestone Summaries | `.planning/milestones/MILESTONE-{N}.md` | Completion summaries with metrics per milestone |
 | Milestone Archive | `.planning/archive/milestone-{N}/` | Archived phase directories from completed milestones |
 | Memory Outcomes | `.planning/memory/OUTCOMES.md` | Agent performance and task outcome records for cross-session learning |
-| Custom Agents | `agents/{agent-id}.md` | User-created agent personality files (via `/agency:agent`) |
+| Custom Agents | `agents/{agent-id}.md` | User-created agent personality files (via `/legion:agent`) |
 | Codebase Map | `.planning/CODEBASE.md` | Structured map of existing codebase architecture, patterns, and risks (via codebase-mapper skill) |
 | Campaign Documents | `.planning/campaigns/{campaign-slug}.md` | Structured campaign plans with objectives, messaging, audience, channels, calendar, and agent assignments (via marketing-workflows skill) |
 | Design Documents | `.planning/designs/{project-slug}-system.md` | Structured design system specifications with tokens, components, accessibility, and agent assignments (via design-workflows skill) |
@@ -37,7 +37,7 @@ Agent IDs include their division as a prefix (e.g., `engineering-senior-develope
 
 **Divisions**: engineering, design, marketing, product, project-management, testing, support, spatial-computing, specialized, custom
 
-Custom agents created via `/agency:agent` follow the same path pattern.
+Custom agents created via `/legion:agent` follow the same path pattern.
 
 To load an agent personality: `Read agents/{agent-id}.md`
 
@@ -100,9 +100,9 @@ After any significant operation:
 
 | Role | Model | When |
 |------|-------|------|
-| Planning/Decisions | Opus | /agency:start, /agency:plan, architecture choices |
-| Execution/Implementation | Sonnet | /agency:build, agent task execution |
-| Lightweight Checks | Haiku | /agency:status, quick validations, simple queries |
+| Planning/Decisions | Opus | /legion:start, /legion:plan, architecture choices |
+| Execution/Implementation | Sonnet | /legion:build, agent task execution |
+| Lightweight Checks | Haiku | /legion:status, quick validations, simple queries |
 
 Set via `model` parameter on Agent tool calls.
 
@@ -113,7 +113,7 @@ When an agent fails during execution:
 1. Capture the error output
 2. Update STATE.md: mark the failed plan/task with error details
 3. Do NOT retry automatically — present the error to the user
-4. Suggest: re-run the specific plan, or run /agency:review for diagnosis
+4. Suggest: re-run the specific plan, or run /legion:review for diagnosis
 5. If multiple agents fail in a wave, stop the wave and report all failures
 
 ## Division Constants
@@ -137,10 +137,10 @@ TOTAL_AGENTS = 51
 ## Portfolio Conventions
 
 ### Global Portfolio Path
-The portfolio registry lives at `~/.claude/agency/portfolio.md` — outside any project directory. This file is shared across all Agency projects on the machine.
+The portfolio registry lives at `~/.claude/legion/portfolio.md` — outside any project directory. This file is shared across all Legion projects on the machine.
 
 ### Portfolio Registration
-Projects are auto-registered in the portfolio when `/agency:start` completes. Registration stores the project name, absolute path, registration date, and one-line description.
+Projects are auto-registered in the portfolio when `/legion:start` completes. Registration stores the project name, absolute path, registration date, and one-line description.
 
 ### Cross-Project State Reading
 Portfolio commands read each registered project's `.planning/STATE.md` and `.planning/ROADMAP.md` at request time. There is no background sync. If a project directory is missing, it's marked Stale.
@@ -148,12 +148,12 @@ Portfolio commands read each registered project's `.planning/STATE.md` and `.pla
 ### Portfolio Command Convention
 | Command | Purpose | Cost Tier |
 |---------|---------|-----------|
-| `/agency:portfolio` | Multi-project dashboard and dependency management | Haiku (dashboard), Opus (Studio Producer insights) |
+| `/legion:portfolio` | Multi-project dashboard and dependency management | Haiku (dashboard), Opus (Studio Producer insights) |
 
 ## Milestone Conventions
 
 ### Milestone Definition
-Milestones group consecutive phases in ROADMAP.md under a `## Milestones` section. Each milestone has a name, phase range, goal, and status. Milestones are defined interactively via `/agency:milestone` or during `/agency:start` for new projects.
+Milestones group consecutive phases in ROADMAP.md under a `## Milestones` section. Each milestone has a name, phase range, goal, and status. Milestones are defined interactively via `/legion:milestone` or during `/legion:start` for new projects.
 
 ### Milestone Lifecycle
 ```
@@ -174,7 +174,7 @@ Pending → In Progress → Complete → Archived
 ### Milestone Command Convention
 | Command | Purpose | Cost Tier |
 |---------|---------|-----------|
-| `/agency:milestone` | Milestone status, completion, archiving, and definition | Haiku (status), Sonnet (summary generation) |
+| `/legion:milestone` | Milestone status, completion, archiving, and definition | Haiku (status), Sonnet (summary generation) |
 
 ## Memory Conventions
 
@@ -199,10 +199,10 @@ Absent → Created (first store) → Growing (appending records) → Mature (200
 ### Memory Integration Points
 | Workflow | Operation | When |
 |----------|-----------|------|
-| `/agency:build` | Store outcome | After each plan completes (success, partial, or failed) |
-| `/agency:review` | Store outcome | After review passes or escalates |
-| `/agency:plan` | Recall agent scores | During agent recommendation (phase-decomposer Section 4) |
-| `/agency:status` | Recall session briefing | During dashboard display |
+| `/legion:build` | Store outcome | After each plan completes (success, partial, or failed) |
+| `/legion:review` | Store outcome | After review passes or escalates |
+| `/legion:plan` | Recall agent scores | During agent recommendation (phase-decomposer Section 4) |
+| `/legion:status` | Recall session briefing | During dashboard display |
 
 ### Graceful Degradation Rule
 All memory integration follows this pattern:
@@ -214,7 +214,7 @@ All memory integration follows this pattern:
 ## GitHub Conventions
 
 ### GitHub Purpose
-Optional integration that connects Agency Workflows to GitHub — phases link to issues, completed work produces PRs, and milestones sync. All operations use the `gh` CLI and are entirely opt-in.
+Optional integration that connects Legion Workflows to GitHub — phases link to issues, completed work produces PRs, and milestones sync. All operations use the `gh` CLI and are entirely opt-in.
 
 ### GitHub Prerequisites
 ```
@@ -237,19 +237,19 @@ Unavailable → Available (prerequisites pass) → Active (first issue created) 
 | Artifact | Location | When Created |
 |----------|----------|-------------|
 | GitHub metadata | `.planning/STATE.md ## GitHub` section | On first issue or PR creation |
-| Agency label | GitHub repo labels | On first issue creation |
-| Phase issues | GitHub issues with "agency" label | During `/agency:plan` |
-| Phase PRs | GitHub pull requests | During `/agency:build` |
-| GitHub milestones | GitHub API milestones | During `/agency:plan` (if ROADMAP milestones defined) |
+| Legion label | GitHub repo labels | On first issue creation |
+| Phase issues | GitHub issues with "legion" label | During `/legion:plan` |
+| Phase PRs | GitHub pull requests | During `/legion:build` |
+| GitHub milestones | GitHub API milestones | During `/legion:plan` (if ROADMAP milestones defined) |
 
 ### GitHub Integration Points
 | Workflow | Operation | When |
 |----------|-----------|------|
-| `/agency:plan` | Create phase issue, sync milestone | After plan files generated |
-| `/agency:build` | Update issue checklist, create PR | After plans execute and after phase completes |
-| `/agency:status` | Read-back live GitHub status | During dashboard display |
-| `/agency:review` | Close phase issue | After review passes |
-| `/agency:milestone` | Close GitHub milestone | After milestone completion |
+| `/legion:plan` | Create phase issue, sync milestone | After plan files generated |
+| `/legion:build` | Update issue checklist, create PR | After plans execute and after phase completes |
+| `/legion:status` | Read-back live GitHub status | During dashboard display |
+| `/legion:review` | Close phase issue | After review passes |
+| `/legion:milestone` | Close GitHub milestone | After milestone completion |
 
 ### Graceful Degradation Rule
 All GitHub integration follows this pattern:
@@ -268,19 +268,19 @@ Pre-planning codebase analysis that maps existing architecture, detects patterns
 Absent → Analyzed (CODEBASE.md created) → Stale (>30 days old, re-analysis recommended)
 ```
 - **Absent**: No `.planning/CODEBASE.md`. All workflows function identically (greenfield mode).
-- **Analyzed**: Codebase mapped during `/agency:start`. CODEBASE.md available for plan enrichment.
-- **Stale**: CODEBASE.md is >30 days old. `/agency:plan` warns but does not block or auto-refresh.
+- **Analyzed**: Codebase mapped during `/legion:start`. CODEBASE.md available for plan enrichment.
+- **Stale**: CODEBASE.md is >30 days old. `/legion:plan` warns but does not block or auto-refresh.
 
 ### Brownfield Paths
 | Artifact | Path | When Created |
 |----------|------|-------------|
-| Codebase map | `.planning/CODEBASE.md` | After brownfield analysis during /agency:start (user opts in) |
+| Codebase map | `.planning/CODEBASE.md` | After brownfield analysis during /legion:start (user opts in) |
 
 ### Brownfield Integration Points
 | Workflow | Operation | When |
 |----------|-----------|------|
-| `/agency:start` | Detect + analyze | After pre-flight, before questioning (if existing codebase found) |
-| `/agency:plan` | Inject risk areas into context | During phase decomposition (if CODEBASE.md exists) |
+| `/legion:start` | Detect + analyze | After pre-flight, before questioning (if existing codebase found) |
+| `/legion:plan` | Inject risk areas into context | During phase decomposition (if CODEBASE.md exists) |
 
 ### Graceful Degradation Rule
 All brownfield integration follows this pattern:
@@ -299,15 +299,15 @@ Structured campaign workflows for marketing-focused phases -- campaign planning,
 Unplanned --> Planning (campaign document created) --> Active (content in production) --> Measuring --> Complete
 ```
 - **Unplanned**: Phase not yet planned. Standard decomposition applies.
-- **Planning**: Marketing phase detected during `/agency:plan`. Campaign document generated at `.planning/campaigns/{slug}.md`.
-- **Active**: Campaign content being produced and distributed via `/agency:build`.
+- **Planning**: Marketing phase detected during `/legion:plan`. Campaign document generated at `.planning/campaigns/{slug}.md`.
+- **Active**: Campaign content being produced and distributed via `/legion:build`.
 - **Measuring**: Campaign ended, performance data collected.
 - **Complete**: Learnings captured, outcomes recorded to memory (if memory layer active).
 
 ### Marketing Paths
 | Artifact | Path | When Created |
 |----------|------|-------------|
-| Campaign documents | `.planning/campaigns/{campaign-slug}.md` | During /agency:plan when marketing phase detected |
+| Campaign documents | `.planning/campaigns/{campaign-slug}.md` | During /legion:plan when marketing phase detected |
 
 ### Marketing Wave Pattern
 | Wave | Role | Agents | Produces |
@@ -319,9 +319,9 @@ Unplanned --> Planning (campaign document created) --> Active (content in produc
 ### Marketing Integration Points
 | Workflow | Operation | When |
 |----------|-----------|------|
-| `/agency:plan` | Detect marketing phase, campaign questioning, generate campaign doc | During phase decomposition (if MKT-* requirements or marketing keywords) |
-| `/agency:build` | Marketing wave execution, core messaging handoff | During plan execution (if campaign document exists) |
-| `/agency:review` | Cross-channel consistency check | During quality review (if campaign document exists) |
+| `/legion:plan` | Detect marketing phase, campaign questioning, generate campaign doc | During phase decomposition (if MKT-* requirements or marketing keywords) |
+| `/legion:build` | Marketing wave execution, core messaging handoff | During plan execution (if campaign document exists) |
+| `/legion:review` | Cross-channel consistency check | During quality review (if campaign document exists) |
 
 ### Graceful Degradation Rule
 All marketing workflow integration follows this pattern:
@@ -342,14 +342,14 @@ Unplanned --> Research (user insights, brand audit) --> Designing (tokens, compo
 - **Unplanned**: Phase not yet planned. Standard decomposition applies.
 - **Research**: UX research and brand audit underway (Wave 1). Design document generated at `.planning/designs/{slug}-system.md`.
 - **Designing**: Design system creation, component specs, visual assets (Wave 2).
-- **Review**: Three-lens review cycle -- brand, accessibility, usability (Wave 3 or `/agency:review`).
+- **Review**: Three-lens review cycle -- brand, accessibility, usability (Wave 3 or `/legion:review`).
 - **Complete**: Design system documented, handoff ready, outcomes recorded to memory (if memory layer active).
 
 ### Design Paths
 | Artifact | Path | When Created |
 |----------|------|-------------|
-| Design system documents | `.planning/designs/{project-slug}-system.md` | During /agency:plan when design phase detected |
-| UX research reports | `.planning/designs/{research-slug}-research.md` | During /agency:plan when research is in scope |
+| Design system documents | `.planning/designs/{project-slug}-system.md` | During /legion:plan when design phase detected |
+| UX research reports | `.planning/designs/{research-slug}-research.md` | During /legion:plan when research is in scope |
 
 ### Design Wave Pattern
 | Wave | Role | Agents | Produces |
@@ -361,9 +361,9 @@ Unplanned --> Research (user insights, brand audit) --> Designing (tokens, compo
 ### Design Integration Points
 | Workflow | Operation | When |
 |----------|-----------|------|
-| `/agency:plan` | Detect design phase, design questioning, generate design docs | During phase decomposition (if DSN-* requirements or design keywords) |
-| `/agency:build` | Design wave execution, research-to-design handoff | During plan execution (if design documents exist) |
-| `/agency:review` | Three-lens review (brand + accessibility + usability) | During quality review (if design documents exist) |
+| `/legion:plan` | Detect design phase, design questioning, generate design docs | During phase decomposition (if DSN-* requirements or design keywords) |
+| `/legion:build` | Design wave execution, research-to-design handoff | During plan execution (if design documents exist) |
+| `/legion:review` | Three-lens review (brand + accessibility + usability) | During quality review (if design documents exist) |
 
 ### Graceful Degradation Rule
 All design workflow integration follows this pattern:
