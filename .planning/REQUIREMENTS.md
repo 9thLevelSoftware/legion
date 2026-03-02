@@ -27,9 +27,9 @@ Requirements for the Legion rebrand. Each maps to roadmap phases.
 ### Documentation (DOC)
 
 - [ ] **DOC-01**: README.md rewritten with Legion branding, the quote "My name is Legion, for we are many.", and all `/legion:` commands
-- [ ] **DOC-02**: CLAUDE.md updated with Legion identity, `/legion:` command table, and project description
-- [ ] **DOC-03**: CONTRIBUTING.md updated with Legion references and development instructions
-- [ ] **DOC-04**: CHANGELOG.md updated with v3.0 entry documenting the Legion rebrand
+- [x] **DOC-02**: CLAUDE.md updated with Legion identity, `/legion:` command table, and project description
+- [x] **DOC-03**: CONTRIBUTING.md updated with Legion references and development instructions
+- [x] **DOC-04**: CHANGELOG.md updated with v3.0 entry documenting the Legion rebrand
 
 ### Attribution (ATR)
 
@@ -64,9 +64,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PLG-01 | Phase 27 | Complete |
 | PLG-02 | Phase 27 | Complete |
 | DOC-01 | Phase 28 | Pending |
-| DOC-02 | Phase 28 | Pending |
-| DOC-03 | Phase 28 | Pending |
-| DOC-04 | Phase 28 | Pending |
+| DOC-02 | Phase 28 | Complete |
+| DOC-03 | Phase 28 | Complete |
+| DOC-04 | Phase 28 | Complete |
 | ATR-01 | Phase 28 | Pending |
 
 **Coverage:**

@@ -2,26 +2,13 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: — Legion Rebrand
-status: unknown
-last_updated: "2026-03-02T20:04:41.018Z"
-progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
----
-
----
-gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: — Legion Rebrand
-status: executing
-last_updated: "2026-03-02T20:01:14Z"
+status: complete
+last_updated: "2026-03-02T20:20:10Z"
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 5
-  completed_plans: 4
+  completed_phases: 5
+  total_plans: 6
+  completed_plans: 6
 ---
 
 # Project State
@@ -33,12 +20,12 @@ progress:
 ## Current Position
 
 Milestone: v3.0 — Legion Rebrand
-Phase: 27 — Plugin Manifest
-Plan: 27-01 COMPLETE
-Status: Phase 27 executed — plugin.json and marketplace.json rebranded to Legion identity (name: legion, version: 3.0.0)
-Last activity: 2026-03-02 — Phase 27 plan 01 executed (2 files, zero agency-workflows remnants)
+Phase: 28 — Documentation
+Plan: 28-02 COMPLETE
+Status: Phase 28 plan 02 executed — CLAUDE.md, CONTRIBUTING.md, CHANGELOG.md rebranded to Legion (zero /agency: references, v3.0.0 changelog entry added)
+Last activity: 2026-03-02 — Phase 28 plan 02 executed (3 files, zero /agency: remnants, v3.0.0 entry with Legion quote)
 
-Progress: [########--] 80% (4/5 phases complete)
+Progress: [##########] 100% (5/5 phases complete)
 
 ## Shipped Milestones
 
@@ -63,7 +50,7 @@ Progress: [########--] 80% (4/5 phases complete)
 | 25 — Commands | All 10 commands renamed to `/legion:` | CMD-01, CMD-02, CMD-03 | Complete |
 | 26 — Skills | Remaining 16 skill files updated | SKL-02, SKL-03 | Complete |
 | 27 — Plugin Manifest | plugin.json + marketplace.json to Legion identity | PLG-01, PLG-02 | Complete |
-| 28 — Documentation | README, CLAUDE.md, CONTRIBUTING, CHANGELOG, attribution | DOC-01, DOC-02, DOC-03, DOC-04, ATR-01 | Not started |
+| 28 — Documentation | README, CLAUDE.md, CONTRIBUTING, CHANGELOG, attribution | DOC-01, DOC-02, DOC-03, DOC-04, ATR-01 | Complete |
 
 ## Session Continuity
 
@@ -90,3 +77,5 @@ Progress: [########--] 80% (4/5 phases complete)
 - Agent personality files excluded from rebrand — they contain zero "agency" references
 - .planning/ archive files excluded — preserve history as-is
 - Repository URL in plugin manifests retained as agency-agents — it is the real GitHub repo name, not a branding field
+- Historical changelog entries (v1.0.0, v2.0.0) preserved exactly as-is — they document what actually happened at those versions; v3.0.0 entry documents the rename
+- Legion quote ("My name is Legion, for we are many.") anchors the v3.0.0 changelog entry as the rebrand narrative

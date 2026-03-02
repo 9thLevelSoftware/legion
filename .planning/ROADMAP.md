@@ -74,7 +74,7 @@ Plans:
 3. CLAUDE.md command table and project description reflect Legion identity and `/legion:` namespace
 4. CONTRIBUTING.md references Legion throughout its development instructions
 5. CHANGELOG.md has a v3.0 entry that documents the Legion rebrand
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 28-01-PLAN.md — Rewrite README.md with Legion branding and attribution (DOC-01, ATR-01)
@@ -88,4 +88,4 @@ Plans:
 | 25. Commands | 1/1 | Complete    | 2026-03-02 |
 | 26. Skills | 1/1 | Complete    | 2026-03-02 |
 | 27. Plugin Manifest | 1/1 | Complete    | 2026-03-02 |
-| 28. Documentation | 0/2 | Not started | — |
+| 28. Documentation | 1/2 | In Progress|  |
