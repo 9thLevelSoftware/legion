@@ -2,13 +2,15 @@
 
 ## Project Reference
 
-**Core Value:** Turn 51 isolated agent personalities into a functional AI agency, packaged as a proper Claude Code plugin installable via `claude plugin add`
+**Core Value:** Turn 51 isolated agent personalities into a functional AI legion — "My name is Legion, for we are many."
 
 ## Current Position
 
-Milestone: v2.0 — Complete (archived 2026-03-02)
-Status: Between milestones — v2.0 shipped, no v3.0 started
-Last activity: 2026-03-02 — v2.0 milestone archived
+Milestone: v3.0 — Legion Rebrand
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-02 — Milestone v3.0 started
 
 ## Shipped Milestones
 
@@ -27,18 +29,11 @@ Last activity: 2026-03-02 — v2.0 milestone archived
 
 ## Session Continuity
 
-### To Resume Work
-
-Run `/gsd:new-milestone` to start v3.0 (or whatever's next). This will:
-1. Gather requirements through questioning flow
-2. Create new REQUIREMENTS.md
-3. Build roadmap phases
-4. Update STATE.md with new milestone context
-
 ### Key Decisions (carried forward)
 
 - Full personality injection for all agent spawns
-- /agency: namespace for all commands
+- /legion: namespace for all commands (v3.0 rebrand from /agency:)
+- Plugin name: legion (renamed from agency-workflows)
 - Minimal state: PROJECT.md + ROADMAP.md + STATE.md
 - Balanced cost: Opus planning, Sonnet execution
 - Hybrid agent selection: recommend → confirm
