@@ -1,13 +1,13 @@
 # Project State
 
 ## Current Position
-- **Phase**: 12 of 14 (executed)
-- **Status**: Phase 12 complete — 2 plans executed successfully
-- **Last Activity**: Phase 12 execution (2026-03-01)
+- **Phase**: 13 of 14 (executing — 2/2 plans complete)
+- **Status**: Phase 13 complete — marketing workflows integrated into planning lifecycle
+- **Last Activity**: Phase 13 Plan 02 execution (2026-03-02)
 
 ## Progress
 ```
-[########################] 100% — 26/26 plans complete (phases 13-14 not yet planned)
+[##########################] 100% — 28/28 plans complete (phase 14 not yet planned)
 ```
 
 ## Phase 1 Results
@@ -92,7 +92,7 @@
 - Plan 11-02 (Wave 2): GitHub integration wired into 5 commands (plan, build, status, review, milestone) + execution-tracker PR convention + CLAUDE.md/REQUIREMENTS.md updates
 
 ## Phase 12 Results
-- Plan 12-01 (Wave 1): Codebase-mapper skill (380+ lines) — 6-section brownfield analysis engine with source detection, language analysis, framework detection, risk assessment, CODEBASE.md output format, and plan integration guidance
+- Plan 12-01 (Wave 1): Codebase-mapper skill (622 lines) — 6-section brownfield analysis engine with source detection, language analysis, framework detection, risk assessment, CODEBASE.md output format, and integration patterns
 - Plan 12-02 (Wave 2): Workflow integration — start.md brownfield detection branch (step 2, 3 user options), plan.md CODEBASE.md context injection (Risk Areas, Agent Guidance, Conventions, Detected Stack) + CLAUDE.md/REQUIREMENTS.md updates
 
 ## Recent Decisions
@@ -133,6 +133,20 @@
 - Brownfield detection is opt-in via AskUserQuestion — never forced, consistent with Agency's guided workflow pattern
 - All brownfield operations use graceful degradation — skip silently when CODEBASE.md is absent
 - Stale CODEBASE.md (>30 days) warns but does not block — user decides when to re-analyze
+- Marketing detection uses three-signal OR heuristic (MKT-* requirements, keywords, agent signals)
+- Marketing wave pattern (Strategy, Creation, Distribution) replaces generic decomposition for marketing phases
+- Team assembly replaces per-plan agent recommendation for marketing phases
+- All marketing integration uses graceful degradation — skip silently for non-marketing phases
+- Campaign documents generated at .planning/campaigns/{campaign-slug}.md during planning
+
+## Phase 13 Results
+- Plan 13-01 (Wave 1): Marketing-workflows skill (538 lines) — 6-section marketing campaign engine with channel-agent mapping, campaign planning, content calendar, cross-channel coordination, adaptation guidelines + workflow-common Marketing Workflow Conventions
+- Plan 13-02 (Wave 2): Marketing command integration — phase-decomposer.md domain detection + wave patterns + team assembly, plan.md marketing-workflows reference + MARKETING PHASE DETECTION step + CLAUDE.md/REQUIREMENTS.md updates
+
+## Verification Status
+All 13 completed phases have been verified with UAT reports:
+- Phases 1, 2, 3, 4, 8, 12 — Verified 2026-03-01 (batch UAT)
+- Phases 5, 6, 7, 9, 10, 11 — Verified previously
 
 ## Next Action
-Run `/agency:plan 13` to begin Phase 13: Marketing Workflows.
+Phase 13 complete. Run `/agency:plan 14` to plan Phase 14: Design Workflows.

@@ -14,7 +14,7 @@
 - [x] **Phase 10: Custom Agents** — Agent creation workflow, schema validation, registry auto-update
 - [x] **Phase 11: GitHub Integration** — Issue linking, PR creation, status sync
 - [x] **Phase 12: Brownfield Support** — Codebase mapping, dependency detection, risk assessment
-- [ ] **Phase 13: Marketing Workflows** — Campaign planning, content calendars, cross-channel coordination
+- [x] **Phase 13: Marketing Workflows** — Campaign planning, content calendars, cross-channel coordination (completed 2026-03-02)
 - [ ] **Phase 14: Design Workflows** — Design systems, UX research, design-specific review cycles
 
 ## Phase Details
@@ -156,7 +156,10 @@ Plans:
 - Campaign planning workflow produces structured campaign documents
 - Content calendar generation with time-based assignments
 - Cross-channel alignment ensures consistent messaging
-**Plans**: TBD
+**Plans**: 2
+Plans:
+- [ ] 13-01-PLAN.md — marketing-workflows skill with campaign planning, content calendar generation, cross-channel coordination, campaign document format, channel-agent mapping, plus workflow-common Marketing Workflow Conventions section
+- [ ] 13-02-PLAN.md — Workflow integration (phase-decomposer marketing domain detection + wave patterns, plan.md marketing phase awareness) + CLAUDE.md/REQUIREMENTS.md updates
 
 ### Phase 14: Design Workflows
 **Goal**: Design agents have structured workflows for design systems, UX research, and design-specific review cycles.
@@ -183,5 +186,5 @@ Plans:
 | 10. Custom Agents | 2 | 2 | Complete |
 | 11. GitHub Integration | 2 | 2 | Complete |
 | 12. Brownfield Support | 2 | 2 | Complete |
-| 13. Marketing Workflows | TBD | 0 | Pending |
+| 13. Marketing Workflows | 2/2 | Complete   | 2026-03-02 |
 | 14. Design Workflows | TBD | 0 | Pending |
