@@ -16,11 +16,18 @@ Turn a collection of 51 isolated agent personalities into a functional AI legion
 
 ## Current State
 
-**v3.0 shipped** (2026-03-02) — Legion rebrand complete. 5 phases, 6 plans, 13 requirements, 334+ substitutions, repo renamed to `9thLevelSoftware/legion`.
+**v4.0 in progress** (2026-03-02) — Inspiration audit adoption. Cherry-picking proven patterns from 10 orchestration tools (Conductor, Feature-dev, code-foundations, beads, Auto-Claude, bjarne, Puzld.ai, GSD, Shipyard, Best Practice) while maintaining Legion's core identity.
 
-10 commands (`/legion:start`, `plan`, `build`, `review`, `status`, `quick`, `portfolio`, `milestone`, `agent`, `advise`), 17 skills, 51 agents across 9 divisions. Installable via `claude plugin install legion@9thLevelSoftware-legion`.
+6 phases (29-34), 15 requirements across 6 categories: progressive disclosure, review quality, behavioral guardrails, planning intelligence, knowledge & memory, execution resilience.
 
-See [v3.0 archived requirements](milestones/v3.0-REQUIREMENTS.md) for full details.
+See [v4.0 requirements](REQUIREMENTS.md) and [v4.0 roadmap](ROADMAP.md).
+
+<details>
+<summary>v3.0 (2026-03-02)</summary>
+
+Legion rebrand complete. 5 phases, 6 plans, 13 requirements, 334+ substitutions, repo renamed to `9thLevelSoftware/legion`. 10 commands, 17 skills, 51 agents. See [v3.0 archived requirements](milestones/v3.0-REQUIREMENTS.md).
+
+</details>
 
 <details>
 <summary>v2.0 (2026-03-02)</summary>
@@ -42,7 +49,10 @@ See [v3.0 archived requirements](milestones/v3.0-REQUIREMENTS.md) for full detai
 - Board of directors / governance model (Conductor-style) — too heavy
 - MCP server requirements — user brings their own
 - Jira / Linear / other issue trackers — GitHub only for now
-- New features beyond current scope — plan in next milestone
+- Agent count inflation beyond 51 — diminishing returns, maintenance burden
+- Full automation without checkpoints (Conductor `/go` pattern) — expensive runaway sessions
+- 50-iteration QA loops — if 3-5 don't fix it, problem is systemic
+- Bundled third-party skill libraries — version coupling, dependency creep
 
 ## Constraints
 
@@ -62,7 +72,7 @@ See [v3.0 archived requirements](milestones/v3.0-REQUIREMENTS.md) for full detai
 | Plugin name: legion | Simple, memorable, clean `claude plugin install legion` | Confirmed (v3.0) |
 | Full personality injection | The personalities ARE the product — must be preserved | Confirmed |
 | Minimal .planning/ state | Users want human-readable files, not complex state machines | Confirmed |
-| Cherry-pick patterns from 4 repos | GSD questioning + Shipyard waves + Conductor evaluate-loop + Best Practice config | Confirmed |
+| Cherry-pick patterns from 10 repos | GSD + Shipyard + Conductor + Best Practice + Feature-dev + code-foundations + beads + Auto-Claude + bjarne + Puzld.ai | Confirmed (v4.0 audit) |
 | Cross-division support | 51 agents span 9 divisions — workflows must handle all, not just engineering | Confirmed |
 | Hybrid agent selection | Workflow recommends based on task analysis, user confirms/overrides | Confirmed |
 
@@ -75,6 +85,12 @@ See [v3.0 archived requirements](milestones/v3.0-REQUIREMENTS.md) for full detai
 | **Conductor** | Evaluate-loop (build→review→fix), quality gates, parallel dispatch | Board governance, message bus, 50+ iteration limits, metadata.json |
 | **Shipyard** | Wave-based execution, max 3 tasks/plan, atomic commits, agent role boundaries | 29 commands, checkpoint/rollback system, hook complexity |
 | **Best Practice** | Skills/commands/agents structure, agent frontmatter, permission patterns | RPI workflow (too specific), custom hooks infrastructure |
+| **Feature-dev** | Confidence-based review filtering (80%+), competing architecture designs (2-3 approaches), 3-agent model | No state persistence, no memory, no quick mode |
+| **code-foundations** | Anti-rationalization tables, evidence-backed checklists, scope discipline | 614-check pipeline, heavy token consumption, no feedback loop |
+| **beads** | Git-native state, `ready` primitive, semantic compaction, actor-based audit trails | Scope creep, MEOW naming, single-giant-package, $100+/hour cost |
+| **Auto-Claude** | Worktree isolation, multi-stage spec pipeline, semantic merge, dynamic security profiles | 1,751 files, Python-Electron split, 50-iteration QA, file-based IPC |
+| **bjarne** | Verification points, stale loop detection, environment auto-remediation, verbose output redirection | 2,500 lines of Bash, zero tests, --dangerously-skip-permissions |
+| **Puzld.ai** | DPO preference extraction, debate-with-winner-tracking, clean adapter pattern | Near-zero test coverage, 95 releases in 3 months, 11 execution modes |
 
 ---
-*Last updated: 2026-03-02 — v3.0 milestone complete*
+*Last updated: 2026-03-02 — v4.0 milestone initialized*
