@@ -23,6 +23,11 @@ Studio Producer: agents/project-management-studio-producer.md
 </context>
 
 <process>
+0. INTERACTION SAFETY RULE (APPLIES TO ALL USER PROMPTS IN THIS COMMAND)
+   - Never use AskUserQuestion — it has a platform bug that auto-submits phantom answers.
+   - For every decision point, present plain-text numbered choices and wait for the user's reply.
+   - Do NOT default to "skip" or "continue" on missing or unclear input — re-ask.
+
 1. LOAD PORTFOLIO REGISTRY
    - Attempt to read `~/.claude/legion/portfolio.md`
    - If not found:

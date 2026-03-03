@@ -25,6 +25,11 @@ skills/codebase-mapper/SKILL.md
 </context>
 
 <process>
+0. INTERACTION SAFETY RULE (APPLIES TO ALL USER PROMPTS IN THIS COMMAND)
+   - Never use AskUserQuestion — it has a platform bug that auto-submits phantom answers.
+   - For every decision point, present plain-text numbered choices and wait for the user's reply.
+   - Do NOT default to "skip" or "continue" on missing or unclear input — re-ask.
+
 1. PARSE TASK DESCRIPTION
    - Read $ARGUMENTS for the task description
    - If $ARGUMENTS is empty or missing:

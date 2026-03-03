@@ -31,6 +31,11 @@ skills/spec-pipeline/SKILL.md
 </context>
 
 <process>
+0. INTERACTION SAFETY RULE (APPLIES TO ALL USER PROMPTS IN THIS COMMAND)
+   - Never use AskUserQuestion — it has a platform bug that auto-submits phantom answers.
+   - For every decision point, present plain-text numbered choices and wait for the user's reply.
+   - Do NOT default to "skip" or "continue" on missing or unclear input — re-ask.
+
 1. PARSE PHASE NUMBER
    - Read $ARGUMENTS for a phase number (e.g., "3" from `/legion:plan 3`)
    - If no phase number given: auto-detect the next unplanned phase

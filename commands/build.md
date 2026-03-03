@@ -27,6 +27,11 @@ skills/codebase-mapper/SKILL.md
 </context>
 
 <process>
+0. INTERACTION SAFETY RULE (APPLIES TO ALL USER PROMPTS IN THIS COMMAND)
+   - Never use AskUserQuestion — it has a platform bug that auto-submits phantom answers.
+   - For every decision point, present plain-text numbered choices and wait for the user's reply.
+   - Do NOT default to "skip" or "continue" on missing or unclear input — re-ask.
+
 1. DETERMINE TARGET PHASE
    - Check $ARGUMENTS for --phase N flag (e.g., `/legion:build --phase 2`)
    - If no flag: read STATE.md to determine current phase

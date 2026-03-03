@@ -14,6 +14,7 @@ Adaptive conversation engine for `/legion:start`. Captures everything needed to 
 
 ## Section 1: Questioning Philosophy
 
+0. **Never use AskUserQuestion** — it has a platform bug that auto-submits phantom answers. Output all questions and choices as plain text in the conversation. Wait for the user's reply. If the reply is empty or unparseable, re-ask.
 1. **Vision first, technology second** — understand what the user wants to exist before asking how to build it.
 2. **Adaptive depth** — follow the user's energy. If they go deep on a topic, explore it. If they give a terse answer, move on.
 3. **Infer where possible, confirm where uncertain** — don't ask questions the user already answered implicitly. State your inference and let them correct it.
