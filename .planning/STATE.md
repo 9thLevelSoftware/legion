@@ -46,8 +46,8 @@ progress:
 ## Current Position
 
 Milestone: v4.0 — Inspiration Audit Adoption
-Status: Active — Phase 35 complete (all 3 plans executed)
-Last activity: 2026-03-02 — Phase 35 Plan 01 complete (7 consolidation audit findings resolved: 3 agent rewrites, 11 division normalizations, analytics differentiation, orchestrator boundary, review skill cross-references)
+Status: Active — Phase 35 complete (all 3 plans executed, post-fix audit CLEAN)
+Last activity: 2026-03-03 — Phase 35 Plan 02 complete (post-fix re-scan: all 9 findings RESOLVED, no new issues, 35-AUDIT.md produced)
 
 Progress: [==========] 100% (7/7 phases complete — Phase 35 Consolidation Audit all plans done)
 
@@ -87,7 +87,8 @@ Progress: [==========] 100% (7/7 phases complete — Phase 35 Consolidation Audi
 ## Next Steps
 
 Phase 35 Plans 01, 02, and 03 complete — all CON requirements (CON-01, CON-02, CON-03) covered.
-v4.0 milestone is complete — all 7 phases executed. Run `/legion:review` to verify Phase 35: Consolidation Audit, then `/legion:milestone` to close and archive v4.0.
+35-AUDIT.md produced: all 9 findings RESOLVED, post-fix re-scan CLEAN, 1 cosmetic item deferred (engineering-senior-developer description).
+v4.0 milestone is complete — all 7 phases executed. Run `/legion:milestone` to close and archive v4.0.
 
 ### Key Decisions Added (35-01)
 
@@ -97,6 +98,13 @@ v4.0 milestone is complete — all 7 phases executed. Run `/legion:review` to ve
 - Division field uses Title Case to match CLAUDE.md canonical list; agent-creator validation updated in same commit to prevent creating new agents with old lowercase-hyphenated values
 - Boundary documentation for agents-orchestrator is a blockquote at the top of file body — visible at first glance during full personality injection
 - review-loop/review-panel cross-reference added only in frontmatter summary; bodies already cross-reference each other in References sections
+
+### Key Decisions Added (35-02)
+
+- Post-fix re-scan result: CLEAN — all 9 findings resolved, no new functional overlap or misclassification issues found
+- engineering-senior-developer description has legacy technology references (Laravel/Livewire/FluxUI) — cosmetic issue, not an overlap defect; deferred to Phase 36
+- All 18 skills are referenced in at least one command's execution_context — no orphaned skills exist
+- Agent Inventory by Division confirms all 51 agents have unique primary capabilities after Phase 35 fixes
 
 ### Key Decisions Added (35-03)
 
