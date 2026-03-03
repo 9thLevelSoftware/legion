@@ -46,10 +46,10 @@ progress:
 ## Current Position
 
 Milestone: v4.0 — Inspiration Audit Adoption
-Status: Active — Phase 34 complete (both plans executed, pending review)
-Last activity: 2026-03-02 — Phase 34 Plan 02 complete (DPO preference pair capture: PREFERENCES.md memory file, Section 13 in memory-manager, 4 capture points in review command, manual edit detection in build command)
+Status: Active — Phase 35 complete (all 3 plans executed)
+Last activity: 2026-03-03 — Phase 35 Plan 03 complete (Agent Team Conventions + Claude Code Memory Alignment documented in workflow-common and memory-manager)
 
-Progress: [==========] 100% (6/6 phases planned complete, Phase 34 pending review)
+Progress: [==========] 100% (7/7 phases complete — Phase 35 Consolidation Audit all plans done)
 
 ## v4.0 Phase Map
 
@@ -61,10 +61,12 @@ Progress: [==========] 100% (6/6 phases planned complete, Phase 34 pending revie
 | 32 | Planning Intelligence | PLN-01, PLN-02 | Phase 29 | **Complete** |
 | 33 | Knowledge & Memory | KNW-01, KNW-02, KNW-03 | Phase 31 | **Complete** |
 | 34 | Execution Resilience | EXE-01, EXE-02, EXE-03 | Phase 30, 33 | **Executed (pending review)** |
+| 35 | Consolidation Audit | CON-01, CON-02, CON-03 | Phase 34 | **Complete** |
 
 **Parallel wave 1:** Phases 29, 30, 31 (no dependencies — can execute simultaneously)
 **Wave 2:** Phase 32 (needs 29), Phase 33 (needs 31)
 **Wave 3:** Phase 34 (needs 30 + 33)
+**Wave 4:** Phase 35 (needs 34 — full-scope consolidation audit)
 
 ## Shipped Milestones
 
@@ -84,8 +86,15 @@ Progress: [==========] 100% (6/6 phases planned complete, Phase 34 pending revie
 
 ## Next Steps
 
-Phase 34 Plans 01 and 02 complete — all 3 requirements (EXE-01, EXE-02, EXE-03) covered.
-Run `/legion:review` to verify Phase 34: Execution Resilience.
+Phase 35 Plans 01, 02, and 03 complete — all CON requirements (CON-01, CON-02, CON-03) covered.
+v4.0 milestone is complete — all 7 phases executed. Run `/legion:review` to verify Phase 35: Consolidation Audit, then `/legion:milestone` to close and archive v4.0.
+
+### Key Decisions Added (35-03)
+
+- Agent Team Conventions placed in workflow-common as the shared hub — the correct single source since all commands reference workflow-common
+- Claude Code memory is read-only from Legion's perspective — Legion reads it as a soft signal for agent selection but MUST NOT write to it (different audience: platform vs agent routing)
+- Division Constants normalized to Title Case (Engineering, Design, Project Management, Spatial Computing) to match agent frontmatter division values
+- memory-manager Section 14 and workflow-common Memory Conventions work as a pair — neither is authoritative alone; cross-reference in each
 
 ### Key Decisions Added (34-02)
 
