@@ -61,17 +61,30 @@ Step 1: Try local (CWD) path
     → Log: "AGENTS_DIR: agents (local)"
 
 Step 2: If Step 1 failed, discover plugin installation
-  - Run: Glob ~/.claude/plugins/**/legion/**/agents/agents-orchestrator.md
+  - Resolve the user's home directory as a NATIVE path:
+    Run: Bash  cygpath -w "$HOME" 2>/dev/null || echo $HOME
+    Store the result as HOME_DIR
+    On Windows this returns "C:\Users\username" — convert backslashes to forward slashes
+    (e.g., HOME_DIR = "C:/Users/dasbl")
+    On macOS/Linux this returns "/home/user" or "/Users/user" directly
+  - Expand the adapter's `plugin_discovery_glob` pattern:
+    Replace {HOME} with the resolved HOME_DIR value (with forward slashes)
+    (Claude Code: {HOME_DIR}/.claude/plugins/**/legion/**/agents/agents-orchestrator.md)
+    (Other CLIs: see adapter for CLI-specific plugin paths)
+  - Run: Glob {expanded_glob_pattern}
+    IMPORTANT: The Glob tool does NOT expand ~ and does NOT understand MSYS paths
+    like /c/Users/... — you MUST use native absolute paths (C:/Users/... on Windows,
+    /home/... or /Users/... on Linux/macOS).
   - If one or more matches are returned:
     → Extract the parent directory of the first match
-      (e.g., ~/.claude/plugins/cache/legion/legion/3.0.0/agents/agents-orchestrator.md
-       → AGENTS_DIR = ~/.claude/plugins/cache/legion/legion/3.0.0/agents)
+      (e.g., C:/Users/dasbl/.claude/plugins/cache/legion/legion/3.0.0/agents/agents-orchestrator.md
+       → AGENTS_DIR = C:/Users/dasbl/.claude/plugins/cache/legion/legion/3.0.0/agents)
     → Log: "AGENTS_DIR: {resolved_path} (plugin)"
 
 Step 3: If both Step 1 and Step 2 failed
   - Error: "Could not locate agent personality files. Checked:
     1. agents/ (current directory)
-    2. ~/.claude/plugins/**/legion/**/agents/ (plugin installation)
+    2. {HOME_DIR}/.claude/plugins/**/legion/**/agents/ (plugin installation)
     Ensure the Legion plugin is properly installed."
   - Stop the command — do not proceed without agent access.
 ```
