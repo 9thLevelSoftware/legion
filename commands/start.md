@@ -1,7 +1,7 @@
 ---
 name: legion:start
 description: Initialize a new project with guided questioning flow
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 <objective>
@@ -25,20 +25,18 @@ skills/codebase-mapper/SKILL.md
 <process>
 0. INTERACTION SAFETY RULE (APPLIES TO ALL USER PROMPTS IN THIS COMMAND)
    - Never treat empty, whitespace-only, or unparseable user input as consent.
-   - For any AskUserQuestion decision point, proceed only on explicit user intent.
-   - If AskUserQuestion returns empty, unparseable, OR does not match any offered option label:
-     - Re-ask the same decision as a plain chat question with numbered choices.
-     - Wait for a valid response before continuing.
-   - Do NOT default to "skip" or "continue" on missing input.
-   - Non-matching answers are phantom responses (platform bug) — treat as no decision.
+   - Do NOT use AskUserQuestion — it has a known platform bug that auto-submits phantom answers.
+   - For every decision point, present plain-text numbered choices and wait for the user's reply.
+   - Do NOT default to "skip" or "continue" on missing or unclear input — re-ask.
 
 1. PRE-FLIGHT CHECK
    - Check if `.planning/PROJECT.md` already exists by attempting to read it
-   - If it exists: use AskUserQuestion to confirm reinitialize
-     - "A project already exists in .planning/. Reinitialize from scratch?"
-     - Option 1: "Yes, start fresh" — continue (will overwrite PROJECT.md, ROADMAP.md, STATE.md)
-     - Option 2: "No, keep existing" — abort and suggest `/legion:status` instead
-     - If answer is empty, unparseable, or does not match any offered option: ask plain text "Reply with 1 (start fresh) or 2 (keep existing)." and wait
+   - If it exists: present plain-text numbered choice:
+     "A project already exists in .planning/. Reinitialize from scratch?
+     1. Yes, start fresh — will overwrite PROJECT.md, ROADMAP.md, STATE.md
+     2. No, keep existing — abort and use /legion:status instead
+     Reply with 1 or 2."
+     Wait for the user's response before proceeding.
    - If it doesn't exist: proceed directly
 
 2. BROWNFIELD DETECTION
@@ -48,18 +46,19 @@ skills/codebase-mapper/SKILL.md
      - Any package.json, Gemfile, pyproject.toml, requirements.txt, go.mod at root?
      - Any src/, app/, lib/, components/ directories?
    - If existing source code detected:
-     Use AskUserQuestion:
-       "I see an existing codebase here. Should I map it before we plan?"
-       Option 1: "Yes, analyze the codebase first"
-         → Run codebase-mapper Sections 2-4 to build the structural map
+     Present plain-text numbered choice:
+       "I see an existing codebase here. Should I map it before we plan?
+       1. Yes, analyze the codebase first
+       2. No, skip the analysis
+       3. I'll run /legion:plan directly
+       Reply with 1, 2, or 3."
+     Wait for the user's response, then:
+       If 1: Run codebase-mapper Sections 2-4 to build the structural map
          → Write .planning/CODEBASE.md using Section 5 format
          → Display summary: "{N} files across {M} languages, {framework} detected, {risk_count} risk areas flagged"
          → Continue to step 3
-       Option 2: "No, skip the analysis"
-         → Proceed directly to step 3 (greenfield mode)
-       Option 3: "I'll run /legion:plan directly"
-         → Abort start, let user plan manually
-      - If answer is empty, unparseable, or does not match any offered option: ask plain text "Reply with 1 (analyze), 2 (skip), or 3 (plan directly)." and wait
+       If 2: Proceed directly to step 3 (greenfield mode)
+       If 3: Abort start, let user plan manually
    - If no existing source code detected:
      Skip brownfield flow entirely (pure greenfield) — proceed to step 3
 
@@ -86,11 +85,27 @@ skills/codebase-mapper/SKILL.md
 
 6. QUESTIONING STAGE 3: WORKFLOW PREFERENCES
    Follow the questioning-flow skill's Stage 3 exactly:
-   - Use AskUserQuestion with 3 structured choice questions:
-     - Execution mode: Guided (Recommended) / Autonomous / Collaborative
-     - Planning depth: Standard (Recommended) / Quick Sketch / Deep Analysis
-     - Cost profile: Balanced (Recommended) / Economy / Premium
-   - If any preference answer is empty, unparseable, or does not match any offered option: re-ask that specific question in plain text and wait
+   - Present 3 plain-text numbered choices (one at a time or grouped):
+
+     "Execution mode?
+     1. Guided (Recommended) — Legion recommends actions, you approve before each step
+     2. Autonomous — Legion plans and executes, you review at checkpoints
+     3. Collaborative — Work alongside agents with high interaction
+     Reply with 1, 2, or 3."
+
+     "Planning depth?
+     1. Standard (Recommended) — 3-6 phases, balanced planning and execution
+     2. Quick Sketch — 2-3 phases, minimal planning, start building fast
+     3. Deep Analysis — 6+ phases, thorough research before execution
+     Reply with 1, 2, or 3."
+
+     "Cost profile?
+     1. Balanced (Recommended) — Opus for planning, Sonnet for execution, Haiku for checks
+     2. Economy — Sonnet for planning and execution, Haiku for checks
+     3. Premium — Opus for planning and execution, Sonnet for checks
+     Reply with 1, 2, or 3."
+
+   - Wait for the user's response to each before proceeding
    - Record choices as decisions
 
 7. GENERATE PROJECT.MD

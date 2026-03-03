@@ -243,7 +243,7 @@ Step 3: Present consolidated critique
   2. ...
 
 Step 4: Route based on verdict
-  Use AskUserQuestion:
+  Present plain-text numbered choice:
 
   If PASS:
     "Plan critique found no critical issues. What next?"

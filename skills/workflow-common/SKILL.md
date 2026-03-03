@@ -221,20 +221,28 @@ Before loading a skill, check the estimated token impact:
 
 If multiple high-cost skills are needed in a single command, consider whether the orchestrator can delegate to sub-agents (each with their own context window) rather than loading all skills into the main context.
 
-## Interactive Input Reliability Convention
+## Interactive Input Convention
 
-When a command uses AskUserQuestion for branching decisions, apply this guard consistently:
+**Do NOT use AskUserQuestion in skill or command execution contexts.** There is a known Claude Code platform bug ([#30216](https://github.com/anthropics/claude-code/issues/30216)) where AskUserQuestion auto-resolves with phantom responses — the user never sees the options but the tool returns as if they answered. Guard instructions are insufficient because the executing AI sees a non-empty response and proceeds.
 
-**Failure modes** (all treated as "no decision"):
-1. **Empty response** — answer is empty or missing entirely
-2. **Whitespace-only** — answer contains only spaces/newlines
-3. **Phantom response** — answer is non-empty but does not match any of the offered option labels (bug: AskUserQuestion can auto-resolve with fabricated answers the user never saw)
+**Use plain-text numbered choices instead.** For every decision point in a command:
 
-**Guard pattern** — after every AskUserQuestion call:
-1. Validate: does the returned answer contain text matching one of the offered option labels?
-2. If yes: proceed with the matched option
-3. If no (any failure mode): re-ask as plain chat text with numbered choices and wait for explicit response
-4. Never infer "skip", "continue", or "accept default" from an unvalidated response
+1. Output the question and numbered options as plain text in the conversation
+2. Wait for the user to reply with a number or text before proceeding
+3. If the user's response doesn't match any option, re-ask
+4. Never infer "skip", "continue", or "accept default" from missing or unclear input
+
+**Pattern:**
+```
+"Question text?
+1. Option label — description
+2. Option label — description
+3. Option label — description
+
+Reply with the number of your choice."
+```
+
+Then wait for the user's response. Parse their reply (accept the number, the label text, or reasonable variations). If unclear, ask again.
 
 ## Error Handling Pattern
 

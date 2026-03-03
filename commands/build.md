@@ -2,7 +2,7 @@
 name: legion:build
 description: Execute current phase plans with parallel agent teams
 argument-hint: [--phase N]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage]
 ---
 
 <objective>
@@ -71,13 +71,13 @@ skills/codebase-mapper/SKILL.md
      - Total plans and wave count
      - For each wave: plan names and their assigned agents (or "autonomous")
      - Aggregated list of files that will be created or modified across all plans
-   - Use AskUserQuestion: "Ready to execute Phase {N}: {phase_name}?"
-     Options:
-     - "Execute all plans" — proceed with full wave execution
-     - "Execute specific wave only" — ask which wave number, execute only that wave
-     - "Cancel" — abort immediately with no changes made
-     - If answer is empty, unparseable, or does not match any offered option:
-       re-ask as plain text: "Reply with 1 (execute all), 2 (specific wave), or 3 (cancel)." and wait
+   - Present plain-text numbered choice:
+     "Ready to execute Phase {N}: {phase_name}?
+     1. Execute all plans — proceed with full wave execution
+     2. Execute specific wave only — ask which wave number
+     3. Cancel — abort with no changes made
+     Reply with 1, 2, or 3."
+     Wait for the user's response before proceeding.
 
 4. EXECUTE WAVES
 
@@ -334,12 +334,12 @@ skills/codebase-mapper/SKILL.md
        - If github_available is false: skip to step 6
 
        If github_available is true:
-       a. Use AskUserQuestion: "Phase {N} complete. Create a GitHub PR?"
-          Options:
-          - "Create PR" — proceed with PR creation
-          - "Skip PR" — skip, proceed to step 6
-          - If answer is empty, unparseable, or does not match any offered option:
-            re-ask as plain text: "Reply with 1 (create PR) or 2 (skip PR)." and wait
+       a. Present plain-text numbered choice:
+          "Phase {N} complete. Create a GitHub PR?
+          1. Create PR
+          2. Skip PR
+          Reply with 1 or 2."
+          Wait for the user's response before proceeding.
        b. If user chose "Create PR":
           - Check current branch (github-sync Section 3.1)
           - If on default branch: create feature branch legion/phase-{NN}-{slug}

@@ -1,7 +1,7 @@
 ---
 name: legion:agent
 description: Create a new agent personality through a guided workflow
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 <objective>
@@ -45,10 +45,12 @@ skills/agent-creator/SKILL.md
    - Open with: "What kind of specialist do you want to add to your team? Give me the one-liner — what does this agent do?"
    - From the response, extract specialty domain, primary capability, differentiator
    - Infer division and suggested name (kebab-case, pattern: {division}-{specialty})
-   - Confirm via AskUserQuestion:
-     "I'll create a {division} agent — '{suggested-name}'. Specialty: {description}. Correct, or would you like to adjust?"
-   - If answer is empty, unparseable, or does not match any offered option:
-     re-ask as plain text: "Reply with 1 (confirm) or 2 (adjust)." and wait
+   - Present plain-text numbered choice:
+     "I'll create a {division} agent — '{suggested-name}'. Specialty: {description}. Correct, or adjust?
+     1. Correct — proceed with this identity
+     2. Adjust — let me change the name, division, or description
+     Reply with 1 or 2."
+     Wait for the user's response before proceeding.
    - If user adjusts: update inferred values and re-confirm
 
 4. STAGE 2: CAPABILITIES AND PERSONALITY
@@ -58,17 +60,23 @@ skills/agent-creator/SKILL.md
    - Ask: "Are there any hard rules it always follows?"
    - Skip questions already answered in Stage 1
    - Capture: capability list, personality traits, critical rules
-   - Confirm summary via AskUserQuestion before proceeding
-   - If answer is empty, unparseable, or does not match any offered option:
-     re-ask as plain text with numbered choices matching the presented options and wait
+   - Present summary as plain text and ask:
+     "Does this look right?
+     1. Yes, proceed to registry tags
+     2. No, let me adjust
+     Reply with 1 or 2."
+     Wait for the user's response before proceeding.
 
 5. STAGE 3: REGISTRY TAGS
    Follow agent-creator.md Section 2, Stage 3 exactly:
    - Generate 3-5 task type tags from capabilities
    - Present suggested tags alongside existing registry tags for alignment
-   - Confirm via AskUserQuestion
-   - If answer is empty, unparseable, or does not match any offered option:
-     re-ask as plain text with numbered choices matching the presented tag options and wait
+   - Present suggested tags as plain text and ask:
+     "Are these tags correct?
+     1. Yes, proceed to validation
+     2. No, let me adjust the tags
+     Reply with 1 or 2."
+     Wait for the user's response before proceeding.
    - Generate and present the full agent file content and registry row for final review
 
 6. VALIDATE SCHEMA

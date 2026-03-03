@@ -2,7 +2,7 @@
 name: legion:plan
 description: Plan a specific phase with agent recommendations and wave-structured tasks
 argument-hint: <phase-number>
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 ---
 
 <objective>
@@ -44,12 +44,12 @@ skills/spec-pipeline/SKILL.md
    - Construct the phase directory path using workflow-common conventions:
      `.planning/phases/{NN}-{phase-slug}/`
    - Check if any {NN}-{PP}-PLAN.md files already exist in that directory
-   - If plans exist: use AskUserQuestion
-     - "Phase {N} already has {count} plan(s). What would you like to do?"
-     - Option 1: "Re-plan from scratch" -- delete existing plans, proceed
-     - Option 2: "Keep existing plans" -- abort, suggest /legion:build instead
-     - If answer is empty, unparseable, or does not match any offered option:
-       re-ask as plain text: "Reply with 1 (re-plan from scratch) or 2 (keep existing plans)." and wait
+   - If plans exist: present plain-text numbered choice:
+     "Phase {N} already has {count} plan(s). What would you like to do?
+     1. Re-plan from scratch — delete existing plans, start over
+     2. Keep existing plans — abort, use /legion:build instead
+     Reply with 1 or 2."
+     Wait for the user's response before proceeding.
    - If no plans exist: proceed directly
 
 3. READ PHASE DETAILS
@@ -132,15 +132,12 @@ skills/spec-pipeline/SKILL.md
       - If phase has ≤2 requirements AND only modifies existing markdown files: skip to step 3.6
       - Otherwise: offer proposals
 
-   b. Use AskUserQuestion:
-      "Phase {N} has enough complexity to benefit from competing architecture proposals. Generate them?"
-      Options:
-      - "Yes, generate 2-3 proposals (Recommended for complex phases)"
-        Description: "Spawn agents with Minimal, Clean, and Pragmatic philosophies to present trade-offs"
-      - "Skip, I know the approach I want"
-        Description: "Proceed directly to plan decomposition"
-      - If answer is empty, unparseable, or does not match any offered option:
-        re-ask as plain text: "Reply with 1 (generate proposals) or 2 (skip)." and wait
+   b. Present plain-text numbered choice:
+      "Phase {N} has enough complexity to benefit from competing architecture proposals. Generate them?
+      1. Yes, generate 2-3 proposals (Recommended) — agents with Minimal, Clean, and Pragmatic philosophies present trade-offs
+      2. Skip, I know the approach I want — proceed directly to plan decomposition
+      Reply with 1 or 2."
+      Wait for the user's response before proceeding.
 
    c. If user selects "Yes":
       - CONTEXT BUDGET NOTE: Proposal agents are spawned as Explore sub-agents
@@ -166,25 +163,20 @@ skills/spec-pipeline/SKILL.md
 
    a. Check if a spec already exists:
       - Look for `.planning/specs/{NN}-{phase-slug}-spec.md`
-      - If exists: inform user "Spec document already exists for Phase {N}."
-        Use AskUserQuestion:
-        "Use existing spec or regenerate?"
-        - "Use existing" — read spec, pass to step 4 as additional context
-        - "Regenerate" — run spec pipeline, overwrite existing
-        - If answer is empty, unparseable, or does not match any offered option:
-          re-ask as plain text: "Reply with 1 (use existing spec) or 2 (regenerate)." and wait
+      - If exists: present plain-text numbered choice:
+        "Spec document already exists for Phase {N}. Use existing or regenerate?
+        1. Use existing — read spec, pass to planning as additional context
+        2. Regenerate — run spec pipeline, overwrite existing
+        Reply with 1 or 2."
+        Wait for the user's response before proceeding.
       - If not exists: continue to step b
 
-   b. Offer spec pipeline:
-      Use AskUserQuestion:
-      "Run spec pipeline before planning Phase {N}?"
-      Options:
-      - "Yes, create a spec first"
-        Description: "5-stage pipeline: gather, research, write, critique, assess. Produces a structured spec document."
-      - "No, proceed to planning (Recommended for straightforward phases)"
-        Description: "Skip spec creation, decompose directly from ROADMAP requirements"
-      - If answer is empty, unparseable, or does not match any offered option:
-        re-ask as plain text: "Reply with 1 (create spec) or 2 (proceed to planning)." and wait
+   b. Offer spec pipeline — present plain-text numbered choice:
+      "Run spec pipeline before planning Phase {N}?
+      1. Yes, create a spec first — 5-stage pipeline producing a structured spec document
+      2. No, proceed to planning (Recommended) — decompose directly from ROADMAP requirements
+      Reply with 1 or 2."
+      Wait for the user's response before proceeding.
 
    c. If user selects "Yes":
       - Read spec-pipeline skill
@@ -219,12 +211,13 @@ skills/spec-pipeline/SKILL.md
    - Display the complete plan breakdown with wave structure
    - Show agent recommendations with rationale per plan
    - Show agent summary table
-   - Use AskUserQuestion: "Does this plan breakdown look right?"
-     - "Looks good, generate the plans" -- proceed
-     - "Swap an agent" -- ask which plan, present alternatives, update
-     - "Adjust the plan structure" -- discuss changes, revise decomposition
-     - If answer is empty, unparseable, or does not match any offered option:
-       re-ask as plain text: "Reply with 1 (generate plans), 2 (swap an agent), or 3 (adjust plan structure)." and wait
+   - Present plain-text numbered choice:
+     "Does this plan breakdown look right?
+     1. Looks good, generate the plans
+     2. Swap an agent — ask which plan, present alternatives
+     3. Adjust the plan structure — discuss changes, revise decomposition
+     Reply with 1, 2, or 3."
+     Wait for the user's response before proceeding.
    - Loop until user confirms
 
 7. GENERATE CONTEXT FILE
@@ -243,15 +236,12 @@ skills/spec-pipeline/SKILL.md
 8.5. PLAN CRITIQUE (optional)
    After plan files are generated, offer the user a chance to stress-test:
 
-   Use AskUserQuestion:
-   "Plans generated. Stress-test before execution?"
-   Options:
-   - "Run plan critique (Recommended for complex phases)" — run pre-mortem + assumption hunting
-     Description: "Two skeptical agents analyze the plan for failure modes and unexamined assumptions"
-   - "Skip critique, proceed to execution" — skip directly to state update
-     Description: "Plans look straightforward, no need for extra validation"
-   - If answer is empty, unparseable, or does not match any offered option:
-     re-ask as plain text: "Reply with 1 (run critique) or 2 (skip critique)." and wait
+   Present plain-text numbered choice:
+   "Plans generated. Stress-test before execution?
+   1. Run plan critique (Recommended for complex phases) — two skeptical agents analyze for failure modes and assumptions
+   2. Skip critique, proceed to execution — plans look straightforward
+   Reply with 1 or 2."
+   Wait for the user's response before proceeding.
 
    If user selects "Run plan critique":
    a. Select critique agents using plan-critique Section 4 (Agent Selection):

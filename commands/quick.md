@@ -2,7 +2,7 @@
 name: legion:quick
 description: Run a single ad-hoc task with intelligent agent selection
 argument-hint: <task-description>
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent]
 ---
 
 <objective>
@@ -74,17 +74,13 @@ skills/codebase-mapper/SKILL.md
       - For quick tasks: select top 1-2 candidates (not full team assembly)
       - Cap at 1 agent for execution (quick = single agent)
 
-   d. Present recommendation to user via AskUserQuestion:
-      "Which agent should handle this task?"
-      Options:
-      - "{top_agent_id} — {specialty}" (Recommended)
-        Description: "{brief rationale based on task match}"
-      - "{second_agent_id} — {specialty}"
-        Description: "{brief rationale for alternative}"
-      - "No agent — run autonomously"
-        Description: "Execute without personality injection (faster, generic)"
-      - If answer is empty, unparseable, or does not match any offered option:
-        re-ask as plain text with numbered choices matching the presented agent options and wait
+   d. Present recommendation to user as plain-text numbered choice:
+      "Which agent should handle this task?
+      1. {top_agent_id} — {specialty} (Recommended) — {brief rationale}
+      2. {second_agent_id} — {specialty} — {brief rationale}
+      3. No agent — run autonomously (faster, generic)
+      Reply with 1, 2, or 3."
+      Wait for the user's response before proceeding.
 
    e. If user selects "Other": accept a custom agent ID from user input
       - Validate the ID exists in agent-registry Section 1
@@ -168,15 +164,12 @@ skills/codebase-mapper/SKILL.md
 7. OFFER COMMIT (if files changed)
    - Check if the agent created or modified any files:
      Run `git status --short` to detect changes
-   - If changes exist, use AskUserQuestion:
-     "Commit the changes from this quick task?"
-     Options:
-     - "Yes — commit with conventional message" (Recommended)
-       Description: "Creates a feat/fix/chore commit for the work done"
-     - "No — leave uncommitted"
-       Description: "Keep changes in working directory for further review"
-     - If answer is empty, unparseable, or does not match any offered option:
-       re-ask as plain text: "Reply with 1 (commit) or 2 (leave uncommitted)." and wait
+   - If changes exist, present plain-text numbered choice:
+     "Commit the changes from this quick task?
+     1. Yes — commit with conventional message
+     2. No — leave uncommitted for further review
+     Reply with 1 or 2."
+     Wait for the user's response before proceeding.
    - If user chooses to commit:
      - Determine commit type from task description:
        - Task mentions "fix", "bug", "repair" -> fix(legion)

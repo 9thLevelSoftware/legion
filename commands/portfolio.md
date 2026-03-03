@@ -1,7 +1,7 @@
 ---
 name: legion:portfolio
 description: Multi-project portfolio dashboard with cross-project dependency tracking
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent]
 ---
 
 <objective>
@@ -146,23 +146,20 @@ Studio Producer: agents/project-management-studio-producer.md
    If no agent overlap detected: "No agents are shared across projects."
 
 6. DISPLAY NEXT ACTIONS
-   Based on the portfolio state, present options via AskUserQuestion:
-
-   "What would you like to do?"
-   Options:
-   - "View project details" — "Deep dive into one project's phase history and state"
-   - "Add dependency" — "Link phases across projects (e.g., Project A Phase 3 blocks Project B Phase 1)"
-   - "Studio Producer analysis" — "Invoke Studio Producer agent for cross-project strategy (uses Opus)"
-   - "Done" — "Return to normal operation"
-   - If answer is empty, unparseable, or does not match any offered option:
-     re-ask as plain text: "Reply with 1 (view details), 2 (add dependency), 3 (Studio Producer analysis), or 4 (done)." and wait
+   Present plain-text numbered choice:
+   "What would you like to do?
+   1. View project details — deep dive into one project's phase history and state
+   2. Add dependency — link phases across projects
+   3. Studio Producer analysis — cross-project strategy (uses Opus)
+   4. Done — return to normal operation
+   Reply with 1, 2, 3, or 4."
+   Wait for the user's response before proceeding.
 
 7. HANDLE USER CHOICE
 
    **Path A: View project details**
-   - If multiple projects: ask user to pick one (AskUserQuestion with project names as options)
-     - If answer is empty, unparseable, or does not match any offered option:
-       re-ask as plain text with numbered choices matching the project names and wait
+   - If multiple projects: present plain-text numbered choice with project names
+     Wait for the user's response before proceeding.
    - Read the selected project's STATE.md and ROADMAP.md
    - Display detailed project view:
      - Current phase, plans breakdown, phase history
@@ -171,10 +168,9 @@ Studio Producer: agents/project-management-studio-producer.md
    - After display, return to Step 6
 
    **Path B: Add dependency**
-   - Ask user via AskUserQuestion: "Which project is the source (blocker)?"
-     Present registered project names as options
-     - If answer is empty, unparseable, or does not match any offered option:
-       re-ask as plain text with numbered choices matching the project names and wait
+   - Present plain-text numbered choice: "Which project is the source (blocker)?"
+     List registered project names as numbered options.
+     Wait for the user's response before proceeding.
    - Ask: "Which phase in {source_project} must complete first?"
    - Ask: "Which project depends on this?"
    - Ask: "Which phase in {target_project} is blocked?"
