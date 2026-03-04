@@ -1,6 +1,6 @@
 {
   "name": "@9thlevelsoftware/legion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Orchestrate 51 AI specialist personalities as a coordinated legion — project initialization, phase planning, parallel execution, quality review, and portfolio management.",
   "bin": {
     "legion": "bin/install.js"
