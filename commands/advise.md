@@ -71,7 +71,7 @@ skills/agent-registry/CATALOG.md
       - Select top 2 candidates for recommendation
       - Do NOT apply mandatory roles enforcement (advisors don't need testing/coordination)
 
-   d. Present recommendation to user via AskUserQuestion:
+   d. Present recommendation to user via adapter.ask_user:
       "Which agent should advise on this topic?"
       Options:
       - "{top_agent_id} — {specialty}" (Recommended)
@@ -87,6 +87,8 @@ skills/agent-registry/CATALOG.md
    a. RESOLVE AGENT PATH: Follow workflow-common Agent Path Resolution Protocol to resolve AGENTS_DIR
    b. Look up the agent ID from agent-registry Section 1, then read the full personality
       .md file at {AGENTS_DIR}/{agent-id}.md (no truncation)
+      If personality file is missing: error — "Agent personality file not found at {attempted path}.
+      Run /legion:update to reinstall agent files, or check the agent ID."
    c. Construct the advisory prompt:
       """
       {full personality .md content}
@@ -121,14 +123,13 @@ skills/agent-registry/CATALOG.md
       """
 
 5. SPAWN ADVISORY AGENT
-   - Spawn via Agent tool:
-     - subagent_type: "Explore"
-       (Explore agents cannot Write or Edit — enforces read-only at the tool level)
+   - Use adapter.spawn_agent_readonly:
      - prompt: {constructed prompt from Step 4}
-     - model: "sonnet" (per cost profile: advisory = substantive analysis)
+     - model: adapter.model_execution
      - name: "{agent-id}-advisor"
-   - Wait for the agent to complete
-   - Capture the agent's response
+   - On CLIs with read_only_agents (e.g., Claude Code Explore agents): platform enforces read-only
+   - On CLIs without read_only_agents: the prompt's "READ-ONLY" instruction is the only guard
+   - Wait for the agent to complete and capture the response
 
 6. DISPLAY ADVISORY RESULTS
    Output to the user:
@@ -140,7 +141,7 @@ skills/agent-registry/CATALOG.md
    {agent's advisory response}
 
 7. OFFER FOLLOW-UP
-   Use AskUserQuestion:
+   Use adapter.ask_user:
    "Continue this advisory session?"
    Options:
    - "Ask a follow-up question"
@@ -151,7 +152,7 @@ skills/agent-registry/CATALOG.md
      Description: "Close the advisory session"
 
    a. If "Ask a follow-up question":
-      - Use AskUserQuestion with a free-text prompt:
+      - Use adapter.ask_user with a free-text prompt:
         "What's your follow-up question?"
         Options:
         - "Type your question" (with description: "The same advisor will respond")
@@ -162,7 +163,7 @@ skills/agent-registry/CATALOG.md
         - Original advisory context
         - "## Follow-Up Question\n{user's follow-up question}"
         - "Review your previous advice (summarized below) and address this follow-up:\n{brief summary of prior advice}"
-        Use the same subagent_type: "Explore" and model: "sonnet"
+        Use the same adapter.spawn_agent_readonly and adapter.model_execution
       - Display results and return to Step 7
 
    b. If "Switch topic":

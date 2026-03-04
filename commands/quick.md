@@ -62,7 +62,7 @@ skills/agent-registry/CATALOG.md
       - For quick tasks: select top 1-2 candidates (not full team assembly)
       - Cap at 1 agent for execution (quick = single agent)
 
-   d. Present recommendation to user via AskUserQuestion:
+   d. Present recommendation to user via adapter.ask_user:
       "Which agent should handle this task?"
       Options:
       - "{top_agent_id} — {specialty}" (Recommended)
@@ -83,6 +83,7 @@ skills/agent-registry/CATALOG.md
    a. RESOLVE AGENT PATH: Follow workflow-common Agent Path Resolution Protocol to resolve AGENTS_DIR.
       Look up the agent ID from agent-registry Section 1.
    b. Read the agent's full personality .md file at {AGENTS_DIR}/{agent-id}.md
+      If personality file is missing: fall back to Path B (autonomous execution), log the warning
    c. Construct the execution prompt:
       """
       {full personality .md content}
@@ -125,13 +126,12 @@ skills/agent-registry/CATALOG.md
       """
 
 5. SPAWN AGENT AND EXECUTE
-   - Spawn via Agent tool:
-     - subagent_type: "general-purpose"
+   - Use adapter.spawn_agent_personality (or adapter.spawn_agent_autonomous for Path B):
      - prompt: {constructed prompt from Step 4}
-     - model: "sonnet" (per cost profile: execution = Sonnet)
+     - model: adapter.model_execution
      - name: "{agent-id}-quick" or "quick-task" if autonomous
-   - Wait for the agent to complete
-   - Capture the agent's return value (summary of work done)
+   - On CLIs without agent spawning: execute the task inline with personality as context prefix
+   - Wait for completion and capture results
 
 6. DISPLAY RESULTS
    Output the results to the user:
@@ -155,7 +155,7 @@ skills/agent-registry/CATALOG.md
 7. OFFER COMMIT (if files changed)
    - Check if the agent created or modified any files:
      Run `git status --short` to detect changes
-   - If changes exist, use AskUserQuestion:
+   - If changes exist, use adapter.ask_user:
      "Commit the changes from this quick task?"
      Options:
      - "Yes — commit with conventional message" (Recommended)
@@ -175,7 +175,7 @@ skills/agent-registry/CATALOG.md
        Task: {task_description}
        Agent: {agent_id}
 
-       Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+       {adapter.commit_signature}
    - If no changes detected:
      Display: "No file changes detected — nothing to commit."
 

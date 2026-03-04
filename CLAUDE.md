@@ -1,6 +1,6 @@
 # Legion
 
-A Claude Code plugin for orchestrating 51 AI specialist personalities as a coordinated legion.
+A multi-CLI plugin for orchestrating 51 AI specialist personalities as a coordinated legion. Works with Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Amazon Q Developer, Windsurf, OpenCode, and Aider.
 
 ## Available Commands
 
@@ -16,14 +16,16 @@ A Claude Code plugin for orchestrating 51 AI specialist personalities as a coord
 | `/legion:portfolio` | Multi-project dashboard with dependency tracking |
 | `/legion:milestone` | Milestone completion, archiving, and metrics |
 | `/legion:agent` | Create a new agent personality through a guided workflow |
+| `/legion:update` | Check for updates and install latest version from npm |
 
 ## Project Structure
 
 ```
-commands/             — 10 /legion: command entry points
+bin/                  — npm installer (install.js)
+commands/             — 11 /legion: command entry points
 skills/               — 17 reusable workflow skills (SKILL.md per directory)
 agents/               — 51 agent personality .md files (flat, with division in frontmatter)
-.claude-plugin/       — Plugin manifest and marketplace entry
+adapters/             — Per-CLI adapter files (claude-code.md, codex-cli.md, cursor.md, etc.)
 .planning/            — Project state (PROJECT.md, ROADMAP.md, STATE.md)
   milestones/         — Archived requirements and roadmaps
   phases/             — Phase plan and summary files
@@ -49,7 +51,7 @@ agents/               — 51 agent personality .md files (flat, with division in
 /legion:start → /legion:plan 1 → /legion:build → /legion:review → /legion:plan 2 → ...
 ```
 
-Each phase: plan (decompose + assign agents) → build (parallel execution) → review (QA loop)
+Each phase: plan (decompose + assign agents) → build (execution — parallel or sequential per CLI) → review (QA loop)
 
 Advisory: `/legion:advise <topic>` — standalone consultation, no phase context needed
 
@@ -106,7 +108,8 @@ After build/review cycles, outcomes are recorded to `.planning/memory/OUTCOMES.m
 - **Personality-first**: Agent .md files are the source of truth for agent behavior
 - **Full injection**: Agents are spawned with their complete personality as instructions
 - **Max 3 tasks per plan**: Keeps work focused and reviewable
-- **Wave execution**: Plans grouped into dependency waves; parallel within, sequential between
-- **Cost profile**: Opus for planning, Sonnet for execution, Haiku for checks
+- **Wave execution**: Plans grouped into dependency waves; parallel within (if CLI supports it), sequential between
+- **Cost profile**: Planning/execution/check tiers mapped to CLI-specific model names via adapter
+- **CLI-agnostic core**: All skills and commands reference generic adapter concepts; per-CLI adapters define the implementation
 - **Human-readable state**: All planning files are markdown — no binary state
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides

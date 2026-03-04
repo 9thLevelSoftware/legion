@@ -16,25 +16,25 @@ Engine for `/legion:review`. Takes the output of a completed `/legion:build` pha
 
 These rules govern all review decisions. Do not deviate from them.
 
-> **MANDATORY: Agent Teams are the ONLY execution method.**
+> **MANDATORY: Follow the active CLI adapter's Execution Protocol.**
 >
-> All review and fix agents MUST be spawned within a Claude Code Team:
-> 1. `TeamCreate` — one Team per phase review lifecycle (reused across all cycles)
-> 2. `TaskCreate` — one task per review/fix agent
-> 3. `Agent` with `team_name` — every agent spawn MUST include the `team_name` parameter
-> 4. `SendMessage` — agents report findings/fixes to the coordinator
-> 5. `SendMessage(type: "shutdown_request")` — graceful shutdown on pass or escalation
-> 6. `TeamDelete` — clean up after the review lifecycle ends
+> Before spawning any review or fix agents, load the active adapter (see workflow-common CLI Detection Protocol).
+> The adapter defines how agents are spawned, coordinated, and cleaned up.
 >
-> **Spawning agents without `team_name` is a violation of this skill.** Do not use bare
-> subagents. If Teams are unavailable, stop and tell the user to enable
-> `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` — do not silently fall back to subagents.
+> **If adapter.parallel_execution is true AND adapter.structured_messaging is true** (e.g., Claude Code):
+> Use the adapter's full coordination lifecycle for the review Team.
+> On Claude Code specifically: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` must be enabled.
+>
+> **If adapter.parallel_execution is false** (e.g., Codex CLI, Aider):
+> Execute review and fix agents sequentially. Collect results via adapter.collect_results.
+>
+> Always follow the adapter protocol. Do not hardcode CLI-specific tool calls.
 
 1. **Review the output, not the plan** — review agents evaluate files created/modified during `/legion:build`, not the plan documents themselves. The plan is the specification; the output is what gets reviewed.
 2. **Full personality injection** — each review agent receives the ENTIRE contents of its assigned `.md` file as system instructions. No summaries, no excerpts, no paraphrasing.
 3. **Structured feedback only** — review agents must use the exact Finding format defined in Section 3. Vague assessments like "looks good" or letter grades are rejected.
 4. **Max 3 cycles total** — the loop is: review → collect findings → fix → re-review. If blockers remain after 3 full cycles, escalate to the user (Section 8).
-5. **Sonnet for all agents** — review agents and fix agents both use `model: "sonnet"`. This matches the Cost Profile Convention from `workflow-common.md` (execution = Sonnet).
+5. **Adapter model for all agents** — review agents and fix agents both use `adapter.model_execution`. This matches the Cost Profile Convention from `workflow-common.md`.
 6. **Approval required, not exhaustion** — a phase is NOT marked complete when cycles run out. It is marked complete only when review agents give a PASS verdict with no remaining BLOCKERs or WARNINGs.
 7. **Skeptical by default** — "no issues found" on a first review is a yellow flag. Review agents should expect to find at least something on an initial pass. If a reviewer returns PASS on cycle 1, their reasoning must explain what was checked and why confidence is warranted.
 8. **Confidence-gated reporting** — every finding must include a confidence level: HIGH (80-100%), MEDIUM (50-79%), or LOW (<50%). Only HIGH-confidence findings appear in the default report. MEDIUM findings are collected but only surfaced if the user explicitly requests the full report. LOW findings are discarded — if you are not at least 50% confident, it is not a finding.
@@ -88,7 +88,9 @@ Step 3: Validate reviewer availability
     {AGENTS_DIR}/testing-performance-benchmarker.md
     {AGENTS_DIR}/design-brand-guardian.md
   - If any personality file is missing: fall back to testing-reality-checker for that slot
-  - Log the fallback: "Warning: {agent-id}.md not found. Using testing-reality-checker for
+  - If testing-reality-checker.md is ALSO missing: run that review slot without personality
+    injection (autonomous mode). Log: "Core reviewer file missing. Running autonomous review."
+  - Log any fallback: "Warning: {agent-id}.md not found. Using testing-reality-checker for
     {phase-type} review slot."
 ```
 
@@ -240,23 +242,20 @@ Step 3: Construct the review prompt
 
   ## Reporting Results
 
-  When your review is complete, use SendMessage to report to the coordinator:
-  SendMessage(type: "message", recipient: "coordinator",
-              summary: "Review of Phase {N} complete — {verdict}",
-              content: "{your full review findings}")
+  When your review is complete, report to the coordinator per adapter.collect_results.
+  Your report must include your full review findings with all Finding blocks and the Final Verdict.
   """
 
-Step 4: Spawn the review agent
-  Agent tool parameters:
-  - subagent_type: "general-purpose"
+Step 4: Spawn the review agent per adapter protocol
+  Use adapter.spawn_agent_personality with:
   - prompt: {constructed prompt from Step 3}
-  - model: "sonnet"
+  - model: adapter.model_execution
   - name: "{agent-id}-review-{NN}" (e.g., "testing-reality-checker-review-05")
-  - team_name: "{review_team_name}" (e.g., "phase-05-review")
+  - Additional parameters per adapter (e.g., team_name on Claude Code)
 
-  Create the Team before spawning (one Team for the entire review lifecycle):
-  - TeamCreate(team_name: "phase-{NN}-review", description: "Phase {N} review cycle")
-  - One Team per phase review — not per cycle. Reuse across all 3 cycles.
+  Initialize coordination before spawning (one context for the entire review lifecycle):
+  - Per adapter.coordinate_parallel or write WAVE-CHECKLIST.md
+  - One coordination context per phase review — not per cycle. Reuse across all 3 cycles.
 ```
 
 ---
@@ -266,10 +265,10 @@ Step 4: Spawn the review agent
 How to process review agent findings after each review cycle.
 
 ```
-After each review agent completes and sends its findings via SendMessage:
+After each review agent completes and reports findings (per adapter.collect_results):
 
 Step 1: Parse findings
-  - Extract each Finding block from the agent's SendMessage content
+  - Extract each Finding block from the agent's report content
   - Record for each finding:
     - Finding number
     - File path
@@ -359,8 +358,12 @@ Step 2: Group findings by fix agent
 Step 3: Construct the fix prompt
 
   For PERSONALITY-INJECTED fix agents:
+  1. Load personality file from {AGENTS_DIR}/{agent-id}.md
+     (AGENTS_DIR was resolved at the start of /legion:review — reuse that value)
+     If file is missing: fall back to autonomous mode, log the warning
+  2. Construct prompt:
   """
-  {PERSONALITY_CONTENT of the fix agent}
+  {PERSONALITY_CONTENT of the fix agent — full file, no truncation}
 
   ---
 
@@ -390,7 +393,7 @@ Step 3: Construct the fix prompt
 
   ## Report
 
-  After fixing all findings, send a SendMessage to the coordinator reporting:
+  After fixing all findings, report to the coordinator (per adapter.collect_results):
   - **Findings Fixed**: list finding numbers resolved (e.g., "1, 2, 4")
   - **Changes Made**: for each fix: file path, what was changed (before → after)
   - **Findings NOT Fixed**: any finding you could not resolve, and why
@@ -414,22 +417,24 @@ Step 3: Construct the fix prompt
 
   ## Report
 
-  {Same SendMessage reporting requirement}
+  {Same reporting requirement per adapter.collect_results}
   """
 
-Step 4: Spawn fix agents in parallel
-  - Issue ALL fix agent spawn calls in a SINGLE message response (same pattern as
-    wave-executor.md Section 4, Step 4)
+Step 4: Spawn fix agents (adapter-conditional)
+  **If adapter.parallel_execution is true:**
+  - Issue ALL fix agent spawn calls simultaneously (same pattern as wave-executor Section 4, Step 4)
   - All fix agents run concurrently — they work on non-overlapping files
-  - Agent tool parameters:
-    - subagent_type: "general-purpose"
-    - model: "sonnet"
-    - name: "{agent-id}-fix-{NN}-cycle{C}" (e.g., "autonomous-fix-05-cycle1",
-                                              "engineering-backend-architect-fix-05-cycle2")
-    - team_name: "{review_team_name}" (same Team created in Section 3)
+
+  **If adapter.parallel_execution is false:**
+  - Execute fix agents sequentially — one group of findings at a time
+
+  Agent parameters per adapter.spawn_agent_personality:
+  - model: adapter.model_execution
+  - name: "{agent-id}-fix-{NN}-cycle{C}" (e.g., "autonomous-fix-05-cycle1")
+  - Additional parameters per adapter
 
 Step 5: Collect fix results
-  - Wait for all fix agents to send their SendMessage completion summaries
+  - Wait for all fix agents to report per adapter.collect_results
   - Track per-finding: fixed (by which agent), not-fixed (with reason)
   - Create an atomic git commit for the cycle's fixes:
 
@@ -440,7 +445,7 @@ Step 5: Collect fix results
   Fixed {count} issues: {brief comma-separated issue descriptions}
   Unresolved: {count unfixed findings, or "none"}
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+  {adapter.commit_signature}"
 ```
 
 ---
@@ -512,7 +517,7 @@ Step 3: Spawn review agents for re-review
     """
 
 Step 4: Process re-review results
-  - Collect SendMessage results from all re-review agents
+  - Collect results from all re-review agents per adapter.collect_results
   - Apply the same triage logic from Section 4
   - If new BLOCKERs or WARNINGs found: go back to Section 5 (Fix Cycle)
   - If all must-fix findings resolved AND all reviewers give PASS: go to Section 7
@@ -593,12 +598,12 @@ Step 3: Create review completion commit
   {blocker_count} blocker(s) fixed, {warning_count} warning(s) fixed.
   Reviewers: {comma-separated reviewer IDs}
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+  {adapter.commit_signature}"
 
-Step 4: Shutdown the review Team
-  - Send shutdown_request to all spawned review and fix agents via SendMessage
-  - Call TeamDelete to clean up the review Team
-  - This runs on both pass and escalation paths — never leave orphaned agents
+Step 4: Cleanup coordination
+  - Use adapter.shutdown_agents to gracefully terminate any spawned agents
+  - Use adapter.cleanup_coordination to clean up coordination infrastructure
+  - This runs on both pass and escalation paths — never leave orphaned agents or stale state
 
 Step 5: Route to next action
   Display to the user:
@@ -656,9 +661,9 @@ Step 2: Update STATE.md
     Options: fix manually then re-run /legion:review, or accept as-is and proceed."
   Write updated STATE.md
 
-Step 3: Shutdown the review Team
-  - Send shutdown_request to all spawned agents
-  - Call TeamDelete to clean up
+Step 3: Cleanup coordination
+  - Use adapter.shutdown_agents to gracefully terminate spawned agents
+  - Use adapter.cleanup_coordination to clean up
 
 Step 4: Present escalation report to user
 
@@ -734,8 +739,8 @@ Step 2: Update STATE.md
     Options: fix manually then re-run /legion:review, or try different review agents."
   Write updated STATE.md
 
-Step 3: Shutdown the review Team
-  Same as Section 7, Step 4 — send shutdown_request to all agents, TeamDelete
+Step 3: Cleanup coordination
+  Same as Section 7, Step 4 — use adapter.shutdown_agents + adapter.cleanup_coordination
 
 Step 4: Present stale loop report to user
 
@@ -778,13 +783,12 @@ How to handle failures during the review loop itself.
    - Document the spawn failure in the cycle report
    - Do NOT skip the review cycle because of a single agent spawn failure
 
-2. REVIEW AGENT SENDS NO MESSAGE
-   Symptom: A review agent goes idle without sending a SendMessage completion
+2. REVIEW AGENT SENDS NO REPORT
+   Symptom: A review agent goes idle without reporting results per adapter.collect_results
    Action:
    - Wait a reasonable interval (review agents read many files and may take time)
-   - Send a follow-up via SendMessage: "Your review appears complete but no findings
-     were received. Please send your structured review now with Finding blocks and
-     a Final Verdict."
+   - Follow up per adapter protocol: send a message asking for the structured review
+     with Finding blocks and a Final Verdict
    - If still no response: infer from filesystem (check if files were read recently)
    - Write a partial cycle report noting the non-responsive agent
    - Continue with findings from other reviewers — do not block the cycle

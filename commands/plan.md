@@ -44,7 +44,7 @@ skills/spec-pipeline/SKILL.md
    - Construct the phase directory path using workflow-common conventions:
      `.planning/phases/{NN}-{phase-slug}/`
    - Check if any {NN}-{PP}-PLAN.md files already exist in that directory
-   - If plans exist: use AskUserQuestion
+   - If plans exist: use adapter.ask_user
      - "Phase {N} already has {count} plan(s). What would you like to do?"
      - Option 1: "Re-plan from scratch" -- delete existing plans, proceed
      - Option 2: "Keep existing plans" -- abort, suggest /legion:build instead
@@ -130,7 +130,7 @@ skills/spec-pipeline/SKILL.md
       - If phase has ≤2 requirements AND only modifies existing markdown files: skip to step 3.6
       - Otherwise: offer proposals
 
-   b. Use AskUserQuestion:
+   b. Use adapter.ask_user:
       "Phase {N} has enough complexity to benefit from competing architecture proposals. Generate them?"
       Options:
       - "Yes, generate 2-3 proposals (Recommended for complex phases)"
@@ -163,14 +163,14 @@ skills/spec-pipeline/SKILL.md
    a. Check if a spec already exists:
       - Look for `.planning/specs/{NN}-{phase-slug}-spec.md`
       - If exists: inform user "Spec document already exists for Phase {N}."
-        Use AskUserQuestion:
+        Use adapter.ask_user:
         "Use existing spec or regenerate?"
         - "Use existing" — read spec, pass to step 4 as additional context
         - "Regenerate" — run spec pipeline, overwrite existing
       - If not exists: continue to step b
 
    b. Offer spec pipeline:
-      Use AskUserQuestion:
+      Use adapter.ask_user:
       "Run spec pipeline before planning Phase {N}?"
       Options:
       - "Yes, create a spec first"
@@ -211,7 +211,7 @@ skills/spec-pipeline/SKILL.md
    - Display the complete plan breakdown with wave structure
    - Show agent recommendations with rationale per plan
    - Show agent summary table
-   - Use AskUserQuestion: "Does this plan breakdown look right?"
+   - Use adapter.ask_user: "Does this plan breakdown look right?"
      - "Looks good, generate the plans" -- proceed
      - "Swap an agent" -- ask which plan, present alternatives, update
      - "Adjust the plan structure" -- discuss changes, revise decomposition
@@ -233,7 +233,7 @@ skills/spec-pipeline/SKILL.md
 8.5. PLAN CRITIQUE (optional)
    After plan files are generated, offer the user a chance to stress-test:
 
-   Use AskUserQuestion:
+   Use adapter.ask_user:
    "Plans generated. Stress-test before execution?"
    Options:
    - "Run plan critique (Recommended for complex phases)" — run pre-mortem + assumption hunting
@@ -249,7 +249,7 @@ skills/spec-pipeline/SKILL.md
       - Present selection to user for confirmation (same pattern as review panel)
 
    b. Spawn critique agents (read-only):
-      - Use subagent_type "Explore" (no Write/Edit tools)
+      - Use adapter.spawn_agent_readonly (no file modifications)
       - Agent 1 runs plan-critique Section 1 (Pre-Mortem Analysis)
       - Agent 2 runs plan-critique Section 2 (Assumption Hunting)
       - For quick critique (1 agent): single agent runs both sections sequentially

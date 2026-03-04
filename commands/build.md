@@ -71,7 +71,7 @@ skills/codebase-mapper/SKILL.md
      - Total plans and wave count
      - For each wave: plan names and their assigned agents (or "autonomous")
      - Aggregated list of files that will be created or modified across all plans
-   - Use AskUserQuestion: "Ready to execute Phase {N}: {phase_name}?"
+   - Use adapter.ask_user: "Ready to execute Phase {N}: {phase_name}?"
      Options:
      - "Execute all plans" — proceed with full wave execution
      - "Execute specific wave only" — ask which wave number, execute only that wave
@@ -92,13 +92,9 @@ skills/codebase-mapper/SKILL.md
 
    Follow wave-executor skill Section 4 (Wave Execution):
 
-   **Team Setup** (once, before wave loop — wave-executor Section 4, Step 0):
-   - Call TeamCreate with team_name: "phase-{NN}-execution" (e.g., "phase-04-execution")
-   - Call TaskCreate for each plan in the phase:
-     - subject: "Execute plan {NN}-{PP}: {plan_name}"
-   - Set cross-wave dependencies via TaskUpdate:
-     - For plans with depends_on, call TaskUpdate with addBlockedBy referencing
-       the task IDs of the dependency plans
+   **Coordination Setup** (once, before wave loop — wave-executor Section 4, Step 0):
+   Follow the active adapter's Execution Protocol to initialize phase coordination.
+   (e.g., TeamCreate + TaskCreate on Claude Code; WAVE-CHECKLIST.md on other CLIs)
 
    For each wave in ascending order (1, 2, 3, ...):
 
@@ -114,99 +110,39 @@ skills/codebase-mapper/SKILL.md
         - Stop execution
 
    c. For each plan in the wave, construct the agent prompt
-      (wave-executor Section 3 — Personality Injection):
-      - If autonomous: false
+      using the EXACT format from wave-executor Section 3, Step 4.
+      Do NOT use simplified templates. The canonical template includes:
+      - ## Important (with CRITICAL `> verification:` extraction instructions)
+      - ## Execution Resilience (error classification + auto-remediation)
+      - ## Reporting Results (adapter-conditional)
+
+      For personality-injected plans (autonomous: false):
         1. Identify the assigned agent from "Agent: {agent-id}" in the plan
         2. Cross-reference agent-registry.md to get the agent ID, then resolve the file path:
            {AGENTS_DIR}/{agent-id}.md   (AGENTS_DIR resolved above)
         3. Read the ENTIRE personality .md file (no truncation, no excerpts)
         4. Read the ENTIRE plan .md file
-        5. Construct the prompt:
-           {PERSONALITY_CONTENT}
-
-           ---
-
-           # Execution Task
-
-           You are executing a plan as part of The Legion Workflows. Follow the tasks below precisely.
-
-           {PLAN_CONTENT}
-
-           ## Important
-           - Execute each task in the order listed
-           - Run the <verify> commands after each task to confirm completion before moving on
-           - After all tasks complete, run the full <verification> checklist
-           - Create a summary of what you did: files created/modified, key decisions,
-             verification command outputs, and any issues encountered
-           - Do NOT modify files outside of the plan's files_modified list unless the task
-             explicitly requires it (e.g., updating an import in a file that uses the new file)
-           - If a task is ambiguous, apply your specialist expertise to resolve the ambiguity
-             and document the decision in your summary
-
-           ## Execution Resilience
-           - If you encounter an error, classify it before reporting failure:
-             BLOCKER: architecture/design/logic issues → stop, report in summary, move to next task
-             ENVIRONMENT: missing deps, wrong versions, missing dirs → auto-remediate and retry
-           - Auto-remediation steps:
-             1. Log: "ENVIRONMENT ISSUE: {error}. Attempting remediation..."
-             2. Generate and execute a fix (npm install, mkdir -p, etc.)
-             3. Retry the failed step once
-             4. If retry fails: escalate to BLOCKER in your summary
-           - Only remediate within autonomous scope (declared deps, expected dirs).
-             Do NOT install new unplanned dependencies.
-           - For verbose commands (npm/pip/cargo install, docker build, go build):
-             redirect output to a temp file, check exit code, only show last 20
-             lines if the command failed. Keep test/lint/typecheck output visible.
+        5. Construct the prompt per wave-executor Section 3, Step 4 format
         6. Agent name: "{agent-id}-{NN}-{PP}" (e.g., "engineering-senior-developer-04-01")
         - If personality file is missing at {AGENTS_DIR}/{agent-id}.md: fall back to autonomous mode, log the warning including the attempted path
 
-      - If autonomous: true
+      For autonomous plans (autonomous: true):
         1. Read the ENTIRE plan .md file
-        2. Construct the autonomous prompt:
-           # Execution Task
-
-           You are executing a plan as part of The Legion Workflows. No specialist agent
-           personality is needed for this plan — execute the tasks directly.
-
-           {PLAN_CONTENT}
-
-           ## Important
-           - Execute each task in the order listed
-           - Run the <verify> commands after each task to confirm completion
-           - After all tasks complete, run the full <verification> checklist
-           - Create a summary of what you did: files created/modified, key decisions,
-             verification command outputs, and any issues encountered
-
-           ## Execution Resilience
-           - If you encounter an error, classify it before reporting failure:
-             BLOCKER: architecture/design/logic issues → stop, report in summary, move to next task
-             ENVIRONMENT: missing deps, wrong versions, missing dirs → auto-remediate and retry
-           - Auto-remediation steps:
-             1. Log: "ENVIRONMENT ISSUE: {error}. Attempting remediation..."
-             2. Generate and execute a fix (npm install, mkdir -p, etc.)
-             3. Retry the failed step once
-             4. If retry fails: escalate to BLOCKER in your summary
-           - Only remediate within autonomous scope (declared deps, expected dirs).
-             Do NOT install new unplanned dependencies.
-           - For verbose commands (npm/pip/cargo install, docker build, go build):
-             redirect output to a temp file, check exit code, only show last 20
-             lines if the command failed. Keep test/lint/typecheck output visible.
+        2. Construct the autonomous prompt per wave-executor Section 3 (autonomous plan format)
         3. Agent name: "executor-{NN}-{PP}" (e.g., "executor-04-01")
 
-   d. Spawn all agents in the wave IN PARALLEL (wave-executor Section 4, Step 4):
-      - Issue ALL Agent tool calls for this wave in a SINGLE response message
-      - Each agent uses model: "sonnet" (cost profile: Sonnet for execution)
-      - Each Agent call MUST include team_name: "phase-{NN}-execution"
-      - Do NOT spawn agents one at a time — parallel dispatch is required
+   d. Execute plans for this wave (wave-executor Section 4, Step 4):
+      Follow the adapter-conditional execution from wave-executor:
+      - If adapter.parallel_execution: spawn all agents simultaneously
+      - If not: execute plans sequentially
+      - Each agent uses adapter.model_execution
 
-   e. Collect agent results via SendMessage (wave-executor Section 4, Step 5):
-      - Wait for every agent in the wave to send its completion message via SendMessage
-      - Each message contains a structured summary: Status, Files, Verification,
-        Decisions, Issues, Errors
-      - If an agent goes idle without sending a message, follow Scenario 9 recovery
+   e. Collect results (wave-executor Section 4, Step 5):
+      Per adapter.collect_results — wait for all plans in the wave to complete.
+      Each result contains: Status, Files, Verification, Decisions, Issues, Errors.
 
    f. Process results for each completed agent (wave-executor Section 5):
-      - Parse the agent's SendMessage content for the structured Status field
+      - Parse the agent's completion report for the structured Status field
       - Determine status: Complete | Complete with Warnings | Failed
       - Check the agent's summary for auto-remediation reports:
         If the summary contains "Auto-remediated:" lines, include them in the SUMMARY.md
@@ -226,7 +162,7 @@ skills/codebase-mapper/SKILL.md
         Wave: {W}
         Requirements: {comma-separated requirement IDs}
 
-        Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+        {adapter.commit_signature}
       - If the plan failed: do NOT commit — leave changes unstaged for diagnosis
 
    g2. Record outcome in memory (optional — follows memory-manager Section 6)
@@ -237,7 +173,7 @@ skills/codebase-mapper/SKILL.md
          - Outcome: "success" if plan passed all verification, "failed" if plan failed, "partial" if completed with warnings
          - Importance: per memory-manager Section 2 importance scoring (base 2 for success, 5 for failure, 3 for partial)
          - Tags: phase slug (e.g., "cross-session-learning"), agent division (e.g., "engineering"), key file types modified
-         - Summary: one-line from the agent's SendMessage completion summary (the Status field)
+         - Summary: one-line from the agent's completion report (the Status field)
          NOTE: Memory write happens AFTER the plan's git commit (step 4.g). The memory file change
          will be included in the wave completion commit (step 4.h) via git add.
        If memory is not available: skip silently. Do not warn. Do not suggest setup.
@@ -314,13 +250,11 @@ skills/codebase-mapper/SKILL.md
       All plans executed. {succeeded}/{total} passed.
       Overall progress: {completed}/{total_plans} ({pct}%)
 
-      Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+      {adapter.commit_signature}
 
-   d2. Shutdown the Team (wave-executor Section 4, Step 9):
-       - Send shutdown_request via SendMessage to every agent spawned during the phase
-       - Wait for shutdown confirmations
-       - Call TeamDelete to clean up the Team configuration
-       - This runs on BOTH success and failure paths — never leave orphaned agents
+   d2. Cleanup coordination (wave-executor Section 4, Step 9):
+       - Use adapter.shutdown_agents + adapter.cleanup_coordination
+       - This runs on BOTH success and failure paths — never leave orphaned agents or stale state
 
    e. Display final progress using execution-tracker Section 4, Step 4 format:
       ## Phase {N}: {phase_name} — Execution Complete
@@ -336,7 +270,7 @@ skills/codebase-mapper/SKILL.md
        - If github_available is false: skip to step 6
 
        If github_available is true:
-       a. Use AskUserQuestion: "Phase {N} complete. Create a GitHub PR?"
+       a. Use adapter.ask_user: "Phase {N} complete. Create a GitHub PR?"
           Options:
           - "Create PR" — proceed with PR creation
           - "Skip PR" — skip, proceed to step 6

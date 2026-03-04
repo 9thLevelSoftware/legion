@@ -36,10 +36,10 @@ Core rules that govern all execution tracking:
 
 ## Section 2: Plan Completion Tracking
 
-After receiving each agent's completion message (sent via SendMessage), follow these steps to update state and create the atomic commit.
+After receiving each agent's completion (via adapter.collect_results — e.g., SendMessage on Claude Code, result file on other CLIs), follow these steps to update state and create the atomic commit.
 
 ```
-After receiving each agent's completion message (sent via SendMessage):
+After receiving each agent's completion (per adapter.collect_results):
 
 Step 1: Determine plan result
   - Success: agent completed all tasks, verification passed
@@ -69,7 +69,7 @@ Step 2.5: Record outcome in memory (optional)
     - Outcome: "success" if plan passed, "failed" if plan failed, "partial" if plan had warnings
     - Importance: calculated per memory-manager Section 2 importance scoring
     - Tags: phase slug, agent division, primary file types modified
-    - Summary: one-line from the agent's SendMessage completion summary
+    - Summary: one-line from the agent's completion report (per adapter.collect_results)
   - If memory is not available: skip silently, proceed to Step 3
   - If memory write fails: output the intended record as text, continue to Step 3
   NOTE: The git add -A in Step 3 will include any memory file changes automatically.
@@ -83,7 +83,7 @@ Step 3: Create atomic git commit (success only)
   Wave: {W}
   Requirements: {comma-separated requirement IDs}
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+  {adapter.commit_signature}"
 
   If the plan failed: do NOT commit — leave changes unstaged for diagnosis
 
@@ -215,7 +215,7 @@ Plan completion commit (one per successful plan):
   Wave: {W}
   Requirements: {REQ-XX, REQ-YY}
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  {adapter.commit_signature}
 
 Wave completion state update (one per wave):
   chore(legion): update state after wave {W} of phase {N}
@@ -223,7 +223,7 @@ Wave completion state update (one per wave):
   {succeeded}/{total} plans completed
   Progress: {completed}/{total_plans} ({pct}%)
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  {adapter.commit_signature}
 
 Phase completion state update (one per phase):
   chore(legion): complete phase {N} execution — {phase_name}
@@ -231,7 +231,7 @@ Phase completion state update (one per phase):
   All plans executed. {succeeded}/{total} passed.
   Overall progress: {completed}/{total_plans} ({pct}%)
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  {adapter.commit_signature}
 
 Milestone completion commit (one per completed milestone):
   chore(legion): complete milestone {N} — {milestone_name}
@@ -240,7 +240,7 @@ Milestone completion commit (one per completed milestone):
   Requirements: {requirement_count} satisfied
   Summary: .planning/milestones/MILESTONE-{N}.md
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  {adapter.commit_signature}
 
 Milestone archive commit (one per archived milestone):
   chore(legion): archive milestone {N} — {milestone_name}
@@ -248,7 +248,7 @@ Milestone archive commit (one per archived milestone):
   Phases moved to .planning/archive/milestone-{N}/
   STATE.md and ROADMAP.md updated
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  {adapter.commit_signature}
 
 PR creation state update (one per phase PR):
   chore(legion): create PR for phase {N} — {phase_name}
@@ -257,7 +257,7 @@ PR creation state update (one per phase PR):
   Branch: {branch_name}
   Issues: #{issue_number}
 
-  Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+  {adapter.commit_signature}
 ```
 
 Scope `(legion)` is always used — never use plan-specific scopes in state commits. The brief plan name in plan completion commits comes from the `name` field in the plan's YAML frontmatter.

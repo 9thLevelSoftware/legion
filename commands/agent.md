@@ -45,7 +45,7 @@ skills/agent-creator/SKILL.md
    - Open with: "What kind of specialist do you want to add to your team? Give me the one-liner — what does this agent do?"
    - From the response, extract specialty domain, primary capability, differentiator
    - Infer division and suggested name (kebab-case, pattern: {division}-{specialty})
-   - Confirm via AskUserQuestion:
+   - Confirm via adapter.ask_user:
      "I'll create a {division} agent — '{suggested-name}'. Specialty: {description}. Correct, or would you like to adjust?"
    - If user adjusts: update inferred values and re-confirm
 
@@ -56,13 +56,13 @@ skills/agent-creator/SKILL.md
    - Ask: "Are there any hard rules it always follows?"
    - Skip questions already answered in Stage 1
    - Capture: capability list, personality traits, critical rules
-   - Confirm summary via AskUserQuestion before proceeding
+   - Confirm summary via adapter.ask_user before proceeding
 
 5. STAGE 3: REGISTRY TAGS
    Follow agent-creator.md Section 2, Stage 3 exactly:
    - Generate 3-5 task type tags from capabilities
    - Present suggested tags alongside existing registry tags for alignment
-   - Confirm via AskUserQuestion
+   - Confirm via adapter.ask_user
    - Generate and present the full agent file content and registry row for final review
 
 6. VALIDATE SCHEMA
@@ -106,7 +106,7 @@ skills/agent-creator/SKILL.md
      Task types: {tags}
      File: agents/{agent-name}.md
 
-     Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+     {adapter.commit_signature}"
      ```
    - Update STATE.md: add a line under Recent Decisions noting the custom agent creation
 

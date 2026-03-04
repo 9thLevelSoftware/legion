@@ -10,6 +10,69 @@ summary: "Shared constants, paths, and patterns for all /legion: commands. Defin
 
 Shared constants, paths, and patterns used across all /legion: commands.
 
+## CLI Detection and Adapter Loading
+
+Legion supports multiple AI CLIs through an adapter layer. Before any command executes, the active CLI must be detected and its adapter loaded.
+
+### Detection Protocol
+
+```
+Step 0: Check for override file
+  - Read .legion-cli in the project root (if it exists)
+  - If it contains a valid CLI identifier (e.g., "claude-code", "codex-cli"):
+    → Use that adapter directly, skip Steps 1-3
+    → Log: "CLI override: {cli} (from .legion-cli)"
+
+Step 1: Tool probe (primary detection)
+  - For each adapter in adapters/, check the detection.primary field:
+    - Claude Code: TeamCreate tool is available
+    - Codex CLI: CODEX_VERSION environment variable is set
+    - Cursor: CURSOR_VERSION environment variable is set
+    - Copilot CLI: COPILOT_CLI_VERSION environment variable is set
+    - Gemini CLI: GEMINI_CLI_VERSION environment variable is set
+    - Amazon Q: Q_CLI_VERSION environment variable is set
+    - Windsurf: WINDSURF_VERSION environment variable is set
+    - OpenCode: OPENCODE_CONFIG_DIR environment variable is set
+    - Aider: AIDER_VERSION environment variable is set
+  - If exactly one primary matches: use that adapter
+  - If multiple match: use the first match in the order above (Claude Code wins ties)
+
+Step 2: Secondary detection (fallback)
+  - If no primary matched, check each adapter's detection.secondary field
+  - These are filesystem markers (e.g., ~/.claude/ directory, ~/.codex/AGENTS.md)
+  - Use the first match
+
+Step 3: Default
+  - If no detection matched: default to Claude Code adapter
+  - Log: "No CLI detected — defaulting to Claude Code adapter"
+
+Step 4: After detection
+  - Read the full adapter file: adapters/{cli}.md
+  - Parse YAML frontmatter for capabilities and tool mappings
+  - Log: "Active adapter: {cli_display_name} (parallel: {parallel_execution}, messaging: {structured_messaging})"
+```
+
+### Adapter Reference Convention
+
+Throughout skills and commands, adapter fields are referenced with dot notation:
+- `adapter.spawn_agent_personality` — how to spawn an agent with personality
+- `adapter.model_execution` — which model to use for execution
+- `adapter.global_config_dir` — where global config lives (e.g., `~/.claude/legion/`)
+- `adapter.commit_signature` — Co-Authored-By line for commits
+- `adapter.ask_user` — how to present choices to the user
+
+These resolve to the active adapter's Tool Mappings table at runtime.
+
+### User Interaction Convention
+
+All commands use `adapter.ask_user` for user prompts. This maps to:
+- Claude Code: `AskUserQuestion` tool (structured questions with labeled options)
+- Codex CLI / Gemini CLI / Aider: plain numbered lists printed to stdout
+- Cursor: notification-based prompts
+- Other CLIs: per adapter's Interaction Protocol section
+
+Commands reference `adapter.ask_user` in their process body. The `allowed-tools` frontmatter retains the Claude Code tool name (`AskUserQuestion`) for backward compatibility.
+
 ## State File Locations
 
 | File | Path | Purpose |
@@ -20,7 +83,7 @@ Shared constants, paths, and patterns used across all /legion: commands.
 | Templates | `skills/questioning-flow/templates/` | Schema files for generating PROJECT/ROADMAP/STATE |
 | Phase Plans | `.planning/phases/{NN-name}/` | Plan and summary files per phase |
 | Compacted Summaries | `.planning/phases/{NN-name}/{NN}-COMPACTED.md` | AI-compacted phase summaries preserving decisions and outcomes while trimming verbose details (via memory-manager skill) |
-| PORTFOLIO.md | `~/.claude/legion/portfolio.md` | Global portfolio registry — all Legion projects |
+| PORTFOLIO.md | `{adapter.global_config_dir}/portfolio.md` | Global portfolio registry — all Legion projects |
 | Milestone Summaries | `.planning/milestones/MILESTONE-{N}.md` | Completion summaries with metrics per milestone |
 | Milestone Archive | `.planning/archive/milestone-{N}/` | Archived phase directories from completed milestones |
 | Memory Outcomes | `.planning/memory/OUTCOMES.md` | Agent performance and task outcome records for cross-session learning |
@@ -51,28 +114,42 @@ To load an agent personality: `Read {AGENTS_DIR}/{agent-id}.md`
 
 ### Agent Path Resolution Protocol
 
-Before loading ANY agent personality file, resolve `AGENTS_DIR` once per command invocation:
+Before loading ANY agent personality file, resolve `AGENTS_DIR` once per command invocation.
+
+Legion agents are installed via the npm installer (`npx @9thlevelsoftware/legion`). Resolution checks these locations in order:
 
 ```
-Step 1: Try local (CWD) path
+Step 1: Try Claude Code's native agents directory
+  - Run: Bash  ls ~/.claude/agents/agents-orchestrator.md 2>/dev/null && echo "FOUND"
+  - If output contains "FOUND":
+    - Run: Bash  cd ~/.claude/agents && pwd
+    - Store the absolute path as AGENTS_DIR
+    → Log: "AGENTS_DIR: {AGENTS_DIR} (installed)"
+    → Done.
+
+Step 2: Try local (CWD) path — for plugin development
   - Attempt to Read agents/agents-orchestrator.md from the current working directory
   - If the file exists and is readable:
     → AGENTS_DIR = "agents"   (relative — local dev mode)
     → Log: "AGENTS_DIR: agents (local)"
+    → Done.
 
-Step 2: If Step 1 failed, discover plugin installation
-  - Run: Glob ~/.claude/plugins/**/legion/**/agents/agents-orchestrator.md
-  - If one or more matches are returned:
-    → Extract the parent directory of the first match
-      (e.g., ~/.claude/plugins/cache/legion/legion/3.0.0/agents/agents-orchestrator.md
-       → AGENTS_DIR = ~/.claude/plugins/cache/legion/legion/3.0.0/agents)
-    → Log: "AGENTS_DIR: {resolved_path} (plugin)"
+Step 3: Fallback — read npm install manifest
+  - Try Claude Code manifest first:
+    Run: Bash  cat ~/.claude/legion/manifest.json 2>/dev/null
+  - If not found, try generic manifest:
+    Run: Bash  cat ~/.legion/manifest.json 2>/dev/null
+  - If the file exists and contains valid JSON:
+    - Extract the "paths.agents" value
+    - Set AGENTS_DIR = {paths.agents}
+    - Verify by attempting to Read {AGENTS_DIR}/agents-orchestrator.md
+    - If readable:
+      → Log: "AGENTS_DIR: {AGENTS_DIR} (npm manifest)"
+      → Done.
 
-Step 3: If both Step 1 and Step 2 failed
-  - Error: "Could not locate agent personality files. Checked:
-    1. agents/ (current directory)
-    2. ~/.claude/plugins/**/legion/**/agents/ (plugin installation)
-    Ensure the Legion plugin is properly installed."
+Step 4: If all steps failed
+  - Error: "Could not locate agent personality files. Install Legion:
+    npx @9thlevelsoftware/legion --claude --global"
   - Stop the command — do not proceed without agent access.
 ```
 
@@ -80,22 +157,23 @@ Step 3: If both Step 1 and Step 2 failed
 - Run this protocol ONCE at the start of each command, before any personality file is read
 - Store the resolved `AGENTS_DIR` value and reuse it for all subsequent agent file reads in the same command
 - All personality reads use `{AGENTS_DIR}/{agent-id}.md` — never bare `agents/{agent-id}.md`
+- Use Bash (not Glob) for `~` paths — the Glob tool does not expand tilde
 
 ## Personality Injection Pattern
 
-To spawn an agent with its full personality inside a Claude Code Team:
+To spawn an agent with its full personality via the active adapter:
 
 1. Read the agent's .md file to get the full personality content
-2. Construct a prompt that includes the personality as system instructions, plus a **Reporting Results** block instructing the agent to send its structured summary via SendMessage:
+2. Construct a prompt that includes the personality as system instructions, plus a **Reporting Results** block instructing the agent to report its structured summary per `adapter.collect_results`:
    ```
-   Agent tool call:
-     subagent_type: "general-purpose"
+   adapter.spawn_agent_personality:
      prompt: "{personality_content}\n\n---\n\nTask: {task_description}\n\n## Reporting Results\n..."
-     model: "{cost_profile_model}"
-     team_name: "{phase_team_name}"
+     model: adapter.model_execution
+     name: "{agent-id}-{NN}-{PP}"
+     + additional parameters per adapter (e.g., team_name on Claude Code)
    ```
 3. The agent operates in full character with access to its specialist knowledge
-4. When finished, the agent sends its structured summary to the coordinator via SendMessage (not via Agent return value). This keeps the coordinator's context window small.
+4. When finished, the agent reports its structured summary per the adapter's result collection method. On CLIs without agent spawning, personality is a prompt prefix in the current session and dropped after the plan completes.
 
 ## Plan File Convention
 
@@ -110,63 +188,68 @@ Example: `.planning/phases/01-plugin-foundation/01-02-PLAN.md`
 
 ## Wave Execution Pattern
 
-Plans declare a `wave` number in frontmatter. Execution uses a Claude Code Team per phase:
+Plans declare a `wave` number in frontmatter. Execution follows the active adapter's protocol:
 
-1. **TeamCreate** — create one Team for the entire phase (e.g., `"phase-{NN}-execution"`)
-2. **TaskCreate** — create one Task per plan, setting `addBlockedBy` for cross-wave dependencies
-3. Group plans by wave number
-4. For each wave, **spawn agents** via Agent tool with `team_name` set to the phase Team
-5. Agents execute their plans and **report results via SendMessage** to the coordinator
-6. Coordinator collects SendMessage summaries — wait for all agents in the wave before advancing
-7. Repeat steps 4-6 for subsequent waves
-8. **Shutdown + TeamDelete** — send `shutdown_request` to all agents, then TeamDelete to clean up
+**If adapter.parallel_execution is true AND adapter.structured_messaging is true** (e.g., Claude Code):
+1. Initialize coordination via `adapter.coordinate_parallel` (e.g., TeamCreate + TaskCreate on Claude Code)
+2. Group plans by wave number
+3. For each wave, spawn agents simultaneously via `adapter.spawn_agent_personality`
+4. Agents report results via `adapter.collect_results` (e.g., SendMessage on Claude Code)
+5. Coordinator collects summaries — wait for all agents in the wave before advancing
+6. Repeat steps 3-5 for subsequent waves
+7. Cleanup via `adapter.shutdown_agents` + `adapter.cleanup_coordination`
 
-Within a wave, plans have no dependencies on each other. Between waves, later waves may depend on earlier wave outputs. Agents send lightweight structured summaries (~200 tokens) via SendMessage instead of returning full execution traces, preserving the coordinator's context window.
+**If adapter.parallel_execution is true but adapter.structured_messaging is false** (e.g., Cursor):
+1. Write a WAVE-CHECKLIST.md tracking file to `.planning/phases/{NN}/`
+2. Spawn agents in parallel; each writes results to `{NN}-{PP}-RESULT.md`
+3. Coordinator reads result files to determine wave completion
 
-## Agent Team Conventions
+**If adapter.parallel_execution is false** (e.g., Codex CLI, Gemini CLI, Aider):
+1. Write a WAVE-CHECKLIST.md tracking file to `.planning/phases/{NN}/`
+2. Execute plans sequentially within each wave
+3. Each plan writes its result before the next begins
 
-### Agent Teams Requirement
+Within a wave, plans have no dependencies on each other. Between waves, later waves may depend on earlier wave outputs. Agents send lightweight structured summaries (~200 tokens) instead of returning full execution traces, preserving the coordinator's context window.
 
-All agent spawning in Legion MUST use Claude Code Agent Teams. Bare subagents (Agent tool without `team_name`) are prohibited. This ensures coordination, result collection, and lifecycle management work correctly across all commands.
+## Agent Coordination Conventions
 
-**Prerequisite**: The `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` setting must be enabled. If Teams are unavailable, commands MUST stop and instruct the user to enable the flag — they MUST NOT silently fall back to bare subagents.
+### Coordination Model
 
-### Teams Lifecycle
+Agent spawning and coordination follow the active CLI adapter's protocol. The adapter defines how agents are created, how they communicate, and how coordination infrastructure is managed.
 
-Every command that spawns agents follows this lifecycle:
+**If adapter.structured_messaging is true** (e.g., Claude Code):
+- Full coordination lifecycle: `adapter.coordinate_parallel` → spawn agents → `adapter.collect_results` → `adapter.shutdown_agents` → `adapter.cleanup_coordination`
+- Agents report via structured messaging (e.g., SendMessage on Claude Code)
+- One coordination context per phase (e.g., one Team on Claude Code) or per review lifecycle
 
-| Step | Tool | When | Purpose |
-|------|------|------|---------|
-| 1 | `TeamCreate` | Once per phase/review | Create a named team (e.g., `"phase-04-execution"`, `"phase-05-review"`) |
-| 2 | `TaskCreate` | Once per plan/finding | Create shared tasks with `addBlockedBy` for cross-wave dependencies |
-| 3 | `Agent` with `team_name` | Per agent spawn | Spawn agent as a teammate — MUST include `team_name` parameter |
-| 4 | `SendMessage` | Agent completion | Agent reports structured summary to coordinator (~200 tokens vs ~2000+ from Agent return) |
-| 5 | `SendMessage(type: "shutdown_request")` | Phase/review end | Graceful shutdown of all spawned agents |
-| 6 | `TeamDelete` | After all agents shut down | Clean up Team configuration |
+**If adapter.structured_messaging is false** (e.g., Codex CLI, Cursor, Aider):
+- File-based coordination: WAVE-CHECKLIST.md tracking file
+- Agents write results to `{NN}-{PP}-RESULT.md` files
+- Coordinator reads result files to determine completion
 
 ### Key Constraints
 
-- **One Team per phase** (`/legion:build`) or **one Team per review lifecycle** (`/legion:review`). Not per wave, not per cycle.
-- **No nested teams** — teammates cannot spawn their own Teams. Only the lead session (the command itself) creates and manages the Team.
-- **team_name is mandatory** — every `Agent` tool call MUST include the `team_name` parameter. This is enforced in `wave-executor` Section 1 and `review-loop` Section 1.
-- **Agents report via SendMessage, not Agent return** — keeps the coordinator's context window small by receiving lightweight summaries instead of full execution traces.
-- **Shutdown runs on ALL paths** — success, failure, and escalation. Never leave orphaned agents or stale Team configurations.
-- **Recommended team size**: 3-5 teammates per Team, 5-6 tasks per teammate. Larger teams increase coordination overhead.
+- **One coordination context per phase** (`/legion:build`) or **per review lifecycle** (`/legion:review`). Not per wave, not per cycle.
+- **No nested coordination** — spawned agents cannot create their own coordination contexts. Only the lead session (the command itself) manages coordination.
+- **Agent spawning uses adapter protocol** — every agent spawn uses `adapter.spawn_agent_personality` or `adapter.spawn_agent_autonomous`. The adapter handles CLI-specific parameters.
+- **Results collected per adapter** — agents report via `adapter.collect_results`, keeping the coordinator's context window small (~200 token summaries).
+- **Cleanup runs on ALL paths** — success, failure, and escalation. Never leave orphaned agents or stale coordination state.
+- **Recommended team size**: 3-5 agents per coordination context, 5-6 tasks per agent. Larger groups increase coordination overhead.
 
-### Command-to-Team Mapping
+### Command-to-Coordination Mapping
 
-| Command | Team Name Pattern | Agent Count | Team Lead |
-|---------|------------------|-------------|-----------|
-| `/legion:build` | `phase-{NN}-execution` | 1 per plan in wave (parallel within wave) | Build command orchestrator |
+| Command | Coordination Name Pattern | Agent Count | Coordinator |
+|---------|--------------------------|-------------|-------------|
+| `/legion:build` | `phase-{NN}-execution` | 1 per plan in wave (parallel if supported) | Build command orchestrator |
 | `/legion:review` | `phase-{NN}-review` | 2-4 reviewers + fix agents per cycle | Review command orchestrator |
 
 ### Implementation References
 
-The Agent Teams lifecycle is fully implemented in:
-- `wave-executor` SKILL.md — Section 1 (enforcement block), Section 4 (wave execution with Teams)
-- `review-loop` SKILL.md — Section 1 (enforcement block), Section 3 (review spawning with Teams)
-- `build` command — Step 4 (Team setup + wave execution)
-- `review` command — Step 4 (Team setup + review cycle)
+The coordination lifecycle is fully implemented in:
+- `wave-executor` SKILL.md — Section 1 (adapter enforcement block), Section 4 (wave execution)
+- `review-loop` SKILL.md — Section 1 (adapter enforcement block), Section 3 (review spawning)
+- `build` command — Step 4 (coordination setup + wave execution)
+- `review` command — Step 4 (coordination setup + review cycle)
 
 ## State Update Pattern
 
@@ -183,13 +266,13 @@ After any significant operation:
 
 ## Cost Profile Convention
 
-| Role | Model | When |
-|------|-------|------|
-| Planning/Decisions | Opus | /legion:start, /legion:plan, architecture choices |
-| Execution/Implementation | Sonnet | /legion:build, agent task execution |
-| Lightweight Checks | Haiku | /legion:status, quick validations, simple queries |
+| Role | Adapter Field | When |
+|------|---------------|------|
+| Planning/Decisions | `adapter.model_planning` | /legion:start, /legion:plan, architecture choices |
+| Execution/Implementation | `adapter.model_execution` | /legion:build, agent task execution |
+| Lightweight Checks | `adapter.model_check` | /legion:status, quick validations, simple queries |
 
-Set via `model` parameter on Agent tool calls.
+Set via the adapter's model fields. Each CLI maps these to its own model names (e.g., Claude Code: opus/sonnet/haiku; Codex CLI: o3/codex/o3-mini).
 
 ## Skill Loading Protocol
 
@@ -390,7 +473,7 @@ TOTAL_AGENTS = 51
 ## Portfolio Conventions
 
 ### Global Portfolio Path
-The portfolio registry lives at `~/.claude/legion/portfolio.md` — outside any project directory. This file is shared across all Legion projects on the machine.
+The portfolio registry lives at `{adapter.global_config_dir}/portfolio.md` — outside any project directory. This file is shared across all Legion projects on the machine. The exact path depends on the active CLI adapter (e.g., `~/.claude/legion/` for Claude Code, `~/.legion/` for Codex CLI).
 
 ### Portfolio Registration
 Projects are auto-registered in the portfolio when `/legion:start` completes. Registration stores the project name, absolute path, registration date, and one-line description.
@@ -491,20 +574,20 @@ Completed phases can be compacted into condensed summaries that preserve reasoni
 - Compaction is always opt-in — never automatic
 - When recalling phase context, prefer COMPACTED.md over individual SUMMARY files if available
 
-### Claude Code Memory Integration
+### CLI Platform Memory Integration
 
-Claude Code has its own built-in memory system at `~/.claude/projects/{project}/memory/MEMORY.md`. This is platform-level, auto-managed memory that stores user preferences, project patterns, and cross-session context.
+Some CLI platforms have their own built-in memory systems (e.g., Claude Code at `~/.claude/projects/{project}/memory/MEMORY.md`). These are platform-level, auto-managed memory stores for user preferences, project patterns, and cross-session context.
 
 **Relationship to Legion Memory:**
-- **Claude Code memory** = platform-level, auto-managed, general context (user preferences, project conventions)
+- **CLI platform memory** = platform-level, auto-managed, general context (user preferences, project conventions)
 - **Legion memory** = project-local, explicit, agent orchestration-specific, git-tracked (outcomes, patterns, errors, preferences)
 - These systems are **complementary, not competing** — they serve different audiences and purposes
 
 **Integration rules:**
-1. Legion MAY read from Claude Code memory when available (user preferences may inform agent selection)
-2. Legion MUST NOT write to Claude Code memory (different audience: platform vs agent routing)
-3. Legion MUST NOT duplicate its data into Claude Code memory
-4. If Claude Code memory is absent: skip silently (same degradation pattern as all Legion memory)
+1. Legion MAY read from platform memory when available (user preferences may inform agent selection)
+2. Legion MUST NOT write to platform memory (different audience: platform vs agent routing)
+3. Legion MUST NOT duplicate its data into platform memory
+4. If platform memory is absent: skip silently (same degradation pattern as all Legion memory)
 
 See `memory-manager` SKILL.md Section 14 for the full alignment documentation.
 

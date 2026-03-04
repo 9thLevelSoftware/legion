@@ -309,7 +309,7 @@ For agents not listed above, use the default rubric for their division:
 How to consolidate findings from multiple panel reviewers into a unified report.
 
 ```
-After all panel reviewers submit findings via SendMessage:
+After all panel reviewers submit findings (per adapter.collect_results):
 
 Step 1: Collect and parse
   Same as review-loop Section 4 (Feedback Collection):

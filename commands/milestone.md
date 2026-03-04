@@ -52,7 +52,7 @@ skills/github-sync/SKILL.md
       No milestones defined yet.
       Milestones group phases into major deliverables for tracking and archiving."
 
-     Present via AskUserQuestion:
+     Present via adapter.ask_user:
      "Would you like to define milestones for this project?"
      Options:
      - "Define milestones" — "Analyze phases and propose logical milestone groupings"
@@ -119,13 +119,13 @@ skills/github-sync/SKILL.md
    **If milestones need redefinition**:
    - "Redefine milestones" — "Re-analyze phase groupings and update milestone boundaries"
 
-   Present options via AskUserQuestion:
+   Present options via adapter.ask_user:
    "What would you like to do?"
 
 6. HANDLE USER CHOICE
 
    **Path A: View milestone details**
-   - If multiple milestones: ask which one (AskUserQuestion with milestone names)
+   - If multiple milestones: ask which one (adapter.ask_user with milestone names)
    - Display full details for the selected milestone:
      - Goal, phase range
      - Per-phase breakdown: plan count, key deliverables from SUMMARY.md files
@@ -152,7 +152,7 @@ skills/github-sync/SKILL.md
       Requirements: {req_count} satisfied
       Summary: .planning/milestones/MILESTONE-{N}.md
 
-      Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+      {adapter.commit_signature}"
       ```
    f2. CLOSE GITHUB MILESTONE (optional — follows github-sync Section 8)
        - Check GitHub availability: gh auth status && git remote get-url origin
@@ -191,7 +191,7 @@ skills/github-sync/SKILL.md
       Phases moved to .planning/archive/milestone-{N}/
       STATE.md and ROADMAP.md updated
 
-      Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+      {adapter.commit_signature}"
       ```
    g. Display:
       "Milestone {N}: {name} — Archived!
@@ -221,7 +221,7 @@ skills/github-sync/SKILL.md
       | 1 | {name} | {start}-{end} | {goal} |
       ...
 
-   d. Ask via AskUserQuestion:
+   d. Ask via adapter.ask_user:
       "Accept these milestone groupings?"
       Options:
       - "Accept" — "Use these milestone definitions"

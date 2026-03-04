@@ -18,16 +18,16 @@ skills/agent-registry/SKILL.md
 </execution_context>
 
 <context>
-Portfolio registry: ~/.claude/legion/portfolio.md
+Portfolio registry: {adapter.global_config_dir}/portfolio.md
 Studio Producer: {AGENTS_DIR}/project-management-studio-producer.md (resolve AGENTS_DIR via workflow-common Agent Path Resolution Protocol)
 </context>
 
 <process>
 1. LOAD PORTFOLIO REGISTRY
-   - Attempt to read `~/.claude/legion/portfolio.md`
+   - Attempt to read `{adapter.global_config_dir}/portfolio.md`
    - If not found:
      Display:
-     "No portfolio registry found at `~/.claude/legion/portfolio.md`
+     "No portfolio registry found at `{adapter.global_config_dir}/portfolio.md`
       Run `/legion:start` in a project to register it, or use Step 8 to register manually."
      Exit — do not proceed to Step 2
    - If found but empty (no `###` project headings under `## Projects`):
@@ -146,7 +146,7 @@ Studio Producer: {AGENTS_DIR}/project-management-studio-producer.md (resolve AGE
    If no agent overlap detected: "No agents are shared across projects."
 
 6. DISPLAY NEXT ACTIONS
-   Based on the portfolio state, present options via AskUserQuestion:
+   Based on the portfolio state, present options via adapter.ask_user:
 
    "What would you like to do?"
    Options:
@@ -158,7 +158,7 @@ Studio Producer: {AGENTS_DIR}/project-management-studio-producer.md (resolve AGE
 7. HANDLE USER CHOICE
 
    **Path A: View project details**
-   - If multiple projects: ask user to pick one (AskUserQuestion with project names as options)
+   - If multiple projects: ask user to pick one (adapter.ask_user with project names as options)
    - Read the selected project's STATE.md and ROADMAP.md
    - Display detailed project view:
      - Current phase, plans breakdown, phase history
@@ -167,7 +167,7 @@ Studio Producer: {AGENTS_DIR}/project-management-studio-producer.md (resolve AGE
    - After display, return to Step 6
 
    **Path B: Add dependency**
-   - Ask user via AskUserQuestion: "Which project is the source (blocker)?"
+   - Ask user via adapter.ask_user: "Which project is the source (blocker)?"
      Present registered project names as options
    - Ask: "Which phase in {source_project} must complete first?"
    - Ask: "Which project depends on this?"
@@ -185,6 +185,9 @@ Studio Producer: {AGENTS_DIR}/project-management-studio-producer.md (resolve AGE
    - RESOLVE AGENT PATH: Follow workflow-common Agent Path Resolution Protocol to resolve AGENTS_DIR
    - Read the Studio Producer personality file in full:
      `{AGENTS_DIR}/project-management-studio-producer.md`
+     If personality file is missing: skip Studio Producer analysis.
+     Report: "Studio Producer personality not found. Run /legion:update to reinstall agent files."
+     Return to Step 6.
    - Construct a prompt with full personality injection:
      ```
      {full Studio Producer personality content}
@@ -209,11 +212,10 @@ Studio Producer: {AGENTS_DIR}/project-management-studio-producer.md (resolve AGE
      - Keep the analysis concise (under 500 words) and actionable
      - Format as a brief executive summary, not a full portfolio plan
      ```
-   - Spawn via Agent tool:
-     - subagent_type: "general-purpose"
-     - model: "opus" (strategic decisions = Opus per cost profile)
-     - name: "studio-producer-portfolio"
+   - Use adapter.spawn_agent_personality:
      - prompt: {constructed prompt above}
+     - model: adapter.model_planning (strategic decisions per cost profile)
+     - name: "studio-producer-portfolio"
    - Display the Studio Producer's analysis to the user
    - Return to Step 6
 
@@ -228,8 +230,8 @@ Studio Producer: {AGENTS_DIR}/project-management-studio-producer.md (resolve AGE
    - Confirm current directory has `.planning/PROJECT.md`
    - If not: "This directory doesn't have a Legion project. Run `/legion:start` first."
    - If yes: Follow portfolio-manager Section 2 (Register Project):
-     a. Create `~/.claude/legion/` directory if needed
-     b. Read or initialize `~/.claude/legion/portfolio.md`
+     a. Create `{adapter.global_config_dir}` directory if needed
+     b. Read or initialize `{adapter.global_config_dir}/portfolio.md`
      c. Register the current project with name, path, date, description
      d. Update metadata counts
      e. Write the updated registry

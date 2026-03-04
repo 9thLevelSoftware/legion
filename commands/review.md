@@ -41,7 +41,12 @@ skills/design-workflows/SKILL.md
      - If no SUMMARY.md files found: error — "Phase {N} has no execution summaries. Run /legion:build first."
    - Display: "Reviewing Phase {N}: {phase_name}"
 
-2. GATHER PHASE CONTEXT
+2. RESOLVE AGENT PATH (must run before any agent references)
+   Follow workflow-common Agent Path Resolution Protocol to resolve AGENTS_DIR.
+   Store the resolved value for ALL personality loading in Steps 4 and 5.
+   This MUST complete before Step 4 — do not proceed to agent selection without a resolved AGENTS_DIR.
+
+3. GATHER PHASE CONTEXT
    Follow review-loop skill Section 3, Step 1 (Gather phase artifacts):
    - Read the phase CONTEXT.md at .planning/phases/{NN}-{slug}/{NN}-CONTEXT.md for the phase
      goal and success criteria
@@ -59,11 +64,7 @@ skills/design-workflows/SKILL.md
       Files to review: {count}
       {file list — one per line}"
 
-   2.1 RESOLVE AGENT PATH
-       Follow workflow-common Agent Path Resolution Protocol to resolve AGENTS_DIR.
-       Store the resolved value for all personality loading in Steps 3 and 4.
-
-   2.5 DETECT MANUAL EDITS (preference capture — optional)
+   3.5 DETECT MANUAL EDITS (preference capture — optional)
        Check for user manual edits to build-modified files before review begins:
        1. Build the files_modified list from plan YAML frontmatter (already done above)
        2. Run: git diff --name-only HEAD
@@ -83,10 +84,10 @@ skills/design-workflows/SKILL.md
        6. If git diff fails or memory not available: skip silently
        This is informational — manual edit detection never blocks review.
 
-3. SELECT REVIEW AGENTS
+4. SELECT REVIEW AGENTS
 
-   **3.0 Choose Review Mode**
-   Use AskUserQuestion to offer the review approach:
+   **4.0 Choose Review Mode**
+   Use adapter.ask_user to offer the review approach:
    "How should reviewers be selected for this phase?"
    Options:
    - "Dynamic review panel (Recommended)" — 2-4 agents selected by agent-registry scoring with domain-weighted rubrics
@@ -94,8 +95,8 @@ skills/design-workflows/SKILL.md
    - "Classic reviewer selection" — static mapping based on phase type
      Description: "Uses the predefined phase-type-to-agent table (testing-reality-checker + domain secondary)"
 
-   If user selects "Dynamic review panel": go to Step 3-PANEL below
-   If user selects "Classic reviewer selection": continue with existing Step 3.a-3.e unchanged
+   If user selects "Dynamic review panel": go to Step 4-PANEL below
+   If user selects "Classic reviewer selection": continue with existing Step 4.a-4.e unchanged
 
    **CLASSIC MODE** (unchanged from original):
    Follow review-loop skill Section 2 (Review Agent Selection):
@@ -121,11 +122,11 @@ skills/design-workflows/SKILL.md
       Always include testing-reality-checker as primary or secondary
 
    c. Validate each selected agent's personality file exists:
-      - Confirm file at: {AGENTS_DIR}/{agent-id}.md   (AGENTS_DIR resolved in Step 2.1)
+      - Confirm file at: {AGENTS_DIR}/{agent-id}.md   (AGENTS_DIR resolved in Step 2)
       - If missing: fall back to testing-reality-checker for that slot
       - Log any fallback: "Warning: {agent-id}.md not found. Using testing-reality-checker."
 
-   d. Present selected reviewers to user via AskUserQuestion:
+   d. Present selected reviewers to user via adapter.ask_user:
       Show the reviewer confirmation display from review-loop Section 2:
       "## Phase {N}: {phase_name} — Review Setup
        Phase Type(s): {detected types}
@@ -156,7 +157,7 @@ skills/design-workflows/SKILL.md
    - If not a design phase or no design documents:
      Use default review agent selection (no impact)
 
-   **3-PANEL: DYNAMIC REVIEW PANEL COMPOSITION** (only if panel mode selected in 3.0)
+   **4-PANEL: DYNAMIC REVIEW PANEL COMPOSITION** (only if panel mode selected in 4.0)
    Follow review-panel skill Section 1 (Panel Composition Algorithm):
 
    a. Extract review signals from phase artifacts (Section 1, Step 1):
@@ -186,17 +187,17 @@ skills/design-workflows/SKILL.md
    f. Present panel to user for confirmation (Section 1, Step 6):
       - Show the panel table with scores, rubric focus, and rationale
       - Allow adding, replacing, or customizing reviewers
-      - Store the confirmed panel for use in Step 4
+      - Store the confirmed panel for use in Step 5
 
-   **Panel mode reviewers are used in Step 4 identically to classic reviewers**, with one
+   **Panel mode reviewers are used in Step 5 identically to classic reviewers**, with one
    addition: each reviewer's prompt includes the rubric injection from review-panel Section 2.
 
-4. EXECUTE REVIEW CYCLE
+5. EXECUTE REVIEW CYCLE
    Initialize: cycle_count = 0
 
-   **Team Setup** (once, before review loop):
-   - Call TeamCreate with team_name: "phase-{NN}-review" (e.g., "phase-05-review")
-     description: "Phase {N}: {phase_name} — review cycle"
+   **Coordination Setup** (once, before review loop):
+   Follow the active adapter's Execution Protocol to initialize review coordination.
+   (e.g., TeamCreate on Claude Code; WAVE-CHECKLIST.md on other CLIs)
 
    **LOOP START** (max 3 iterations):
 
@@ -206,17 +207,17 @@ skills/design-workflows/SKILL.md
    b. Spawn review agents (follow review-loop Section 3):
       For each selected reviewer:
       1. Read the reviewer's personality .md file in full
-         (path: {AGENTS_DIR}/{agent-id}.md — AGENTS_DIR resolved in Step 2.1)
+         (path: {AGENTS_DIR}/{agent-id}.md — AGENTS_DIR resolved in Step 2)
       2. Construct the review prompt using the exact format in review-loop Section 3, Step 3:
          - Start with {PERSONALITY_CONTENT} (full file, no truncation)
          - Separator: "---"
          - "# Review Task" header with phase name, goal, success criteria, plans executed,
-           files to review, review instructions, required feedback format, and SendMessage
-           reporting requirement
+           files to review, review instructions, required feedback format, and
+           adapter-based reporting requirement
          - For re-review cycles (cycle_count > 1): include the re-review context block from
            review-loop Section 6, Step 3 with previous findings, what was fixed, and what
            remains unresolved
-      2.5. If PANEL MODE is active (selected in Step 3.0):
+      2.5. If PANEL MODE is active (selected in Step 4.0):
            After the "## Your Review Instructions" section and before "## Required Feedback Format",
            inject the reviewer's domain rubric from review-panel Section 2:
 
@@ -233,18 +234,17 @@ skills/design-workflows/SKILL.md
            This scopes the reviewer's evaluation to their assigned domain, ensuring non-overlapping
            coverage across the panel.
 
-      3. Spawn via Agent tool:
-         - subagent_type: "general-purpose"
-         - model: "sonnet"
+      3. Spawn per adapter.spawn_agent_personality:
+         - model: adapter.model_execution
          - name: "{agent-id}-review-{NN}-c{cycle_count}"
            (e.g., "testing-reality-checker-review-05-c1")
-         - team_name: "phase-{NN}-review"
          - prompt: {constructed prompt from step 2}
-      Issue ALL reviewer spawn calls in a SINGLE response message — spawn ALL reviewers
-      in parallel (do not spawn one at a time)
+         - Additional parameters per adapter
+      If adapter.parallel_execution: issue ALL reviewer spawn calls simultaneously
+      If not: spawn reviewers sequentially
 
-   c. Collect review results via SendMessage (follow review-loop Section 4):
-      - Wait for all review agents to send their findings via SendMessage
+   c. Collect review results (follow review-loop Section 4):
+      - Wait for all review agents to report findings per adapter.collect_results
       - Parse findings: extract each Finding block (file, line/section, severity, issue,
         details, suggested fix, reviewer agent ID)
       - Deduplicate across reviewers per review-loop Section 4, Step 2:
@@ -253,7 +253,7 @@ skills/design-workflows/SKILL.md
       - Triage: must-fix list = all BLOCKERs + all WARNINGs; nice-to-have = all SUGGESTIONs
 
    d. Display findings table (follow review-loop Section 4, Step 4):
-      ## Review Findings — Cycle {cycle_count}/3
+      ## Review Findings — Cycle {cycle_count}/3 — Phase {N}
 
       | #  | Severity   | File                    | Issue (brief)              | Reviewer           |
       |----|------------|-------------------------|----------------------------|--------------------|
@@ -272,10 +272,10 @@ skills/design-workflows/SKILL.md
        - Compute aggregate verdict using panel rules
        - Display the consolidated synthesis report
        The aggregate verdict from synthesis REPLACES the simple verdict computation —
-       use it for the pass/fail decision in steps 4.e and 4.f.
+       use it for the pass/fail decision in steps 5.e and 5.f.
 
    e. If aggregate verdict is PASS (must-fix list is empty AND all reviewers gave PASS):
-      - Break the loop — go to step 5, Path A
+      - Break the loop — go to step 6, Path A
 
    f. If verdict is NEEDS WORK or FAIL and cycle_count < 3:
       Route fixes per review-loop Section 5 (Fix Cycle):
@@ -289,13 +289,15 @@ skills/design-workflows/SKILL.md
         No clear match → autonomous
       - Group findings by fix agent to minimize spawns
       - Construct fix prompts per review-loop Section 5, Step 3:
-        For personality-injected agents: full personality + "# Fix Task" with findings list
+        For personality-injected agents:
+          1. Load personality from {AGENTS_DIR}/{agent-id}.md (AGENTS_DIR resolved in Step 2)
+          2. Full personality content + "# Fix Task" with findings list
+          If personality file is missing: fall back to autonomous mode, log the warning
         For autonomous agents: "# Fix Task" with findings list only
-      - Spawn fix agents in parallel (all Agent calls in a SINGLE response message):
-        subagent_type: "general-purpose", model: "sonnet"
+      - Spawn fix agents per adapter (parallel if supported, sequential if not):
+        model: adapter.model_execution
         name: "{agent-id}-fix-{NN}-cycle{cycle_count}"
-        team_name: "phase-{NN}-review"
-      - Wait for all fix agents to send their SendMessage completion summaries
+      - Wait for all fix agents to report per adapter.collect_results
       - Track per finding: fixed (by which agent) vs. not-fixed (with reason)
       - Create fix commit:
         git add {only files actually modified by fix agents}
@@ -305,23 +307,22 @@ skills/design-workflows/SKILL.md
         Fixed {count} issues: {brief comma-separated descriptions}
         Unresolved: {count or "none"}
 
-        Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+        {adapter.commit_signature}"
       - Update STATE.md: "Phase {N} under review — cycle {cycle_count}/3, {blocker_count}
         blocker(s) remaining"
       - Go back to LOOP START for re-review (re-review scopes to modified files per
         review-loop Section 6, Step 2)
 
    g. If cycle_count >= 3 AND blockers remain:
-      - Break the loop — go to step 5, Path B (escalation)
+      - Break the loop — go to step 6, Path B (escalation)
 
    **LOOP END**
 
-   **Team Teardown** (always runs — success, escalation, or error paths):
-   - Send shutdown_request to all agents via SendMessage before proceeding
-   - Wait for shutdown confirmations
-   - Call TeamDelete with team_name: "phase-{NN}-review" to clean up
+   **Coordination Cleanup** (always runs — success, escalation, or error paths):
+   - Use adapter.shutdown_agents to gracefully terminate spawned agents
+   - Use adapter.cleanup_coordination to clean up
 
-5. COMPLETE REVIEW
+6. COMPLETE REVIEW
    Determine outcome based on loop result:
 
    **Path A: Review Passed** (follow review-loop Section 7)
@@ -360,7 +361,7 @@ skills/design-workflows/SKILL.md
       {blocker_count} blocker(s) fixed, {warning_count} warning(s) fixed.
       Reviewers: {comma-separated reviewer IDs}
 
-      Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+      {adapter.commit_signature}"
 
    c1.5. GITHUB ISSUE CLOSE (optional — follows github-sync Section 8)
          - Check GitHub availability: gh auth status && git remote get-url origin
@@ -438,7 +439,7 @@ skills/design-workflows/SKILL.md
       |---|---------------|-----------------------|----------------------|
       | 1 | path/file.md  | {brief issue}         | {3 attempts summary} |
 
-   d. Use AskUserQuestion: "How would you like to proceed?"
+   d. Use adapter.ask_user: "How would you like to proceed?"
       Options:
       - "Fix manually and re-run /legion:review" — exit; let user address the issues
       - "Accept as-is and move to /legion:plan {N+1}" — mark phase complete despite issues
@@ -480,7 +481,7 @@ skills/design-workflows/SKILL.md
       indicating these types of issues may need human expertise for this task type.
       Exit immediately with no further state changes (existing behavior preserved).
 
-6. ROUTE TO NEXT ACTION
+7. ROUTE TO NEXT ACTION
    - If review passed (Path A) or user accepted as-is (Path B override):
      If more phases remain:
      "Phase {N}: {phase_name} complete.

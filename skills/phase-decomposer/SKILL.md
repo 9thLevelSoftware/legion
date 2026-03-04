@@ -393,7 +393,17 @@ For each plan:
    - For skills/markdown-only plans: may not need agents (autonomous execution)
    - For code-heavy plans: must include at least 1 engineering + 1 testing agent
 
-4. FORMAT recommendation for user presentation
+4. VALIDATE agent IDs before finalizing
+   For each recommended agent-id:
+   - Confirm it appears in agent-registry CATALOG.md Section 1 (Agent Catalog table)
+   - Confirm {AGENTS_DIR}/{agent-id}.md exists (use Bash `ls` for tilde paths, Glob for absolute paths)
+   - If an ID does NOT match any catalog entry: DO NOT use it.
+     Search the catalog for the closest match by role keyword and use that instead.
+   - Common mistake: abbreviating division prefixes (e.g., "dev-" instead of
+     "engineering-", "qa-" instead of "testing-"). Always use the FULL division prefix
+     as it appears in the catalog.
+
+5. FORMAT recommendation for user presentation
    For each plan, prepare:
    - Plan name and wave number
    - Recommended agent(s) with ID, division, and 1-sentence rationale
@@ -530,6 +540,7 @@ depends_on: [{list of "NN-PP" plan IDs this depends on}]
 files_modified:
   - {list of files this plan will create or modify}
 autonomous: {true if no agent needed, false if agent-delegated}
+agents: [{list of agent IDs — MUST match filenames in agents/ directory exactly}]
 requirements: [{list of requirement IDs covered}]
 user_setup: []
 
@@ -620,6 +631,7 @@ After completion, create `.planning/phases/{NN}-{phase-slug}/{NN}-{PP}-SUMMARY.m
 | `depends_on` | List of `"NN-PP"` IDs from earlier waves — e.g., `["03-01"]` |
 | `files_modified` | Every file the plan will create or modify — be exhaustive |
 | `autonomous` | `true` for skill/config/markdown-only plans; `false` when agents are assigned |
+| `agents` | List of agent IDs assigned to this plan. **MUST be exact filenames from agent-registry CATALOG.md Section 1** (e.g., `["engineering-senior-developer"]`, NOT `["dev-senior-developer"]`). Always use the full `{division}-{role}` format. Validate each ID exists by checking `{AGENTS_DIR}/{agent-id}.md` before writing the plan file. |
 | `requirements` | Requirement IDs from REQUIREMENTS.md covered by this plan's tasks |
 | `must_haves.truths` | 3-5 invariants that MUST be true about the output. Testable statements. |
 | `must_haves.artifacts` | Primary output files with min_lines and contains checks |
