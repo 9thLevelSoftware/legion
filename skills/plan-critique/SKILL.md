@@ -308,9 +308,12 @@ Fallback (if preferred agents unavailable or user swaps):
 Panel size:
   - 1 agent: Quick critique (single agent runs both passes sequentially)
   - 2 agents: Standard critique (one per pass — recommended)
-  Each agent is spawned with its full personality plus the relevant
-  section (1 or 2) as task instructions, using the read-only Explore
-  subagent type to prevent plan modification.
+  Each agent is spawned with its full personality file loaded from
+  {AGENTS_DIR}/{agent-id}.md (AGENTS_DIR resolved via workflow-common
+  Agent Path Resolution Protocol), plus the relevant section (1 or 2)
+  as task instructions, using adapter.spawn_agent_readonly to prevent
+  plan modification. If personality file is missing: run critique
+  autonomously without personality injection.
 ```
 
 ---

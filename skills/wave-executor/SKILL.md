@@ -1,9 +1,9 @@
 ---
 name: legion:wave-executor
-description: Executes wave-structured plans with parallel personality-injected agents via Claude Code Teams
+description: Executes wave-structured plans with personality-injected agents — parallel or sequential per CLI adapter
 triggers: [build, execute, parallel, wave, dispatch, spawn]
 token_cost: high
-summary: "Executes wave-structured plans via Claude Code Teams. Parallel within waves, sequential between. Full personality injection, SendMessage-based result collection. Core engine for /legion:build."
+summary: "Executes wave-structured plans via the active CLI adapter. Parallel within waves (if adapter supports it), sequential between. Full personality injection, adapter-based result collection. Core engine for /legion:build."
 ---
 
 # Wave Executor
@@ -16,35 +16,35 @@ Engine for `/legion:build`. Takes the plan files in a phase directory and execut
 
 These rules govern all execution decisions. Do not deviate from them.
 
-> **MANDATORY: Agent Teams are the ONLY execution method.**
+> **MANDATORY: Follow the active CLI adapter's Execution Protocol.**
 >
-> Every phase execution MUST use the full Claude Code Teams lifecycle:
-> 1. `TeamCreate` — before any agents are spawned
-> 2. `TaskCreate` — one task per plan, with cross-wave `addBlockedBy` dependencies
-> 3. `Agent` with `team_name` — every agent spawn MUST include the `team_name` parameter
-> 4. `SendMessage` — agents report results to the coordinator, coordinator communicates with agents
-> 5. `SendMessage(type: "shutdown_request")` — graceful shutdown of all agents
-> 6. `TeamDelete` — clean up after execution
+> Before executing any plans, load the active adapter (see workflow-common CLI Detection Protocol).
+> The adapter defines how agents are spawned, coordinated, and cleaned up.
 >
-> **Spawning agents without `team_name` is a violation of this skill.** Do not use bare
-> subagents (Agent tool without team_name). If Teams are unavailable (e.g., the
-> `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` setting is not enabled), stop and tell the
-> user to enable it — do not silently fall back to subagents.
+> **If adapter.parallel_execution is true AND adapter.structured_messaging is true** (e.g., Claude Code):
+> Use the adapter's full coordination lifecycle (e.g., TeamCreate → TaskCreate → Agent with team_name → SendMessage → TeamDelete on Claude Code).
+> On Claude Code specifically: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` must be enabled.
+> If Teams are unavailable, stop and tell the user to enable the flag.
 >
-> This is not optional. This is not a suggestion. If you are about to call the Agent
-> tool without `team_name`, STOP — you are skipping the coordination layer that makes
-> wave execution, result collection, and lifecycle management work correctly.
+> **If adapter.parallel_execution is true but adapter.structured_messaging is false** (e.g., Cursor):
+> Spawn agents in parallel. Collect results via file system per adapter.collect_results.
+>
+> **If adapter.parallel_execution is false** (e.g., Codex CLI, Gemini CLI, Aider):
+> Execute plans sequentially within each wave. No agent spawning may be needed —
+> use adapter.spawn_agent_personality or execute inline per adapter protocol.
+>
+> This is not optional. Always consult the adapter before spawning agents.
 
-1. **Wave-sequential, parallel-within** — all Wave 1 plans must complete before any Wave 2 plan begins. Within a wave, all plans run at the same time via a Claude Code Team.
-2. **Full personality injection** — each agent receives the ENTIRE contents of its assigned personality `.md` file as system instructions. No summaries, no excerpts, no paraphrasing.
-3. **Sonnet for execution** — all spawned agents use `model: "sonnet"`. This matches the Cost Profile Convention from `workflow-common.md`.
+1. **Wave-sequential, parallel-within** — all Wave 1 plans must complete before any Wave 2 plan begins. Within a wave, plans run simultaneously if `adapter.parallel_execution` is true, or sequentially if false.
+2. **Full personality injection** — each agent receives the ENTIRE contents of its assigned personality `.md` file. No summaries, no excerpts, no paraphrasing. On CLIs without agent spawning, personality is a prompt prefix in the current session.
+3. **Adapter model for execution** — all spawned agents use `adapter.model_execution`. This matches the Cost Profile Convention from `workflow-common.md`.
 4. **No automatic retries** — if an agent fails, capture the error output and stop the wave. Report to the user. Do not re-spawn the failed agent. See Error Handling Pattern in `workflow-common.md`.
 5. **Each plan produces a summary** — after an agent completes, write a `{NN}-{PP}-SUMMARY.md` file to the phase directory, whether the result is success or failure.
-6. **Orchestrator stays in main context** — the `/legion:build` command itself does not execute plan work. It reads, validates, dispatches, and collects. Agents get fresh contexts.
+6. **Orchestrator stays in main context** — the `/legion:build` command itself does not execute plan work. It reads, validates, dispatches, and collects. On CLIs without spawning, personality injection is temporary and dropped after each plan.
 7. **Failed wave blocks subsequent waves** — if any plan in a wave fails, do not proceed to the next wave. Report wave status and pause for user decision.
 8. **Files isolation per wave** — plans within the same wave must not share files_modified entries. This is guaranteed by plan authoring (see phase-decomposer.md), but flag a warning if a conflict is detected.
-9. **One Team per phase (mandatory)** — call `TeamCreate` once before any agents are spawned. One Team per phase, not per wave. Every `Agent` call MUST pass `team_name`. If you find yourself spawning an Agent without `team_name`, you are violating this skill — see the enforcement block above.
-10. **Agents report via SendMessage** — spawned agents send their structured completion summary to the coordinator via SendMessage, not via Agent tool return. This keeps the coordinator's context window small (~200 tokens per agent instead of ~2000+).
+9. **One coordination context per phase** — per adapter protocol: one Team on Claude Code, one checklist file on other CLIs. Not per wave.
+10. **Agents report via adapter.collect_results** — spawned agents send their structured completion summary per the adapter's result collection method. This keeps the coordinator's context window small.
 11. **Verification-gated completion** — after each task, the agent MUST run all `> verification:` commands from the task's action block. If any verification command returns a non-zero exit code, the task is marked as failed and the agent must report the failure. Do not proceed to the next task until all verifications pass.
 
 ---
@@ -117,10 +117,30 @@ How to load a full agent personality and construct the execution prompt for each
 For each plan where autonomous: false:
 
 Step 1: Identify the assigned agent
-  - Check the plan's <objective> or <context> block for "Agent: {agent-id}"
-  - Cross-reference agent-id against agent-registry.md to confirm file path
+  - Read the agent-id from the plan's frontmatter `agents:` field
   - Path format: {AGENTS_DIR}/{agent-id}.md  (AGENTS_DIR resolved via workflow-common Agent Path Resolution Protocol)
   - Example: {AGENTS_DIR}/engineering-senior-developer.md
+
+Step 1.5: Validate the agent-id against actual files
+  - Attempt to Read {AGENTS_DIR}/{agent-id}.md
+  - If the file EXISTS: proceed to Step 2 with this agent-id
+  - If the file does NOT exist: the plan may have a hallucinated or abbreviated agent-id.
+    Run a fuzzy match:
+    a) Extract the suffix after the last hyphen-delimited division prefix
+       (e.g., "dev-senior-developer" → "senior-developer",
+              "backend-architect" → "backend-architect")
+    b) Run: Glob {AGENTS_DIR}/*-{suffix}.md
+    c) If exactly ONE match is returned: use that file's agent-id instead
+       Log: "Agent ID corrected: {original-id} → {matched-id}"
+    d) If MULTIPLE matches: pick the first and log a warning:
+       "Multiple agent matches for {original-id}: {matches}. Using {selected}."
+    e) If ZERO matches: try a broader search:
+       Run: Glob {AGENTS_DIR}/*{last-word-of-id}*.md
+       (e.g., "dev-senior-developer" → *developer*.md)
+       If exactly one match: use it and log correction
+       If multiple matches: use the first and log warning
+       If ZERO matches: fall back to autonomous mode and log:
+       "No agent file found for {original-id}. Executing plan autonomously."
 
 Step 2: Read the complete personality file
   - Use the Read tool to load the ENTIRE agent .md file
@@ -192,13 +212,20 @@ Step 4: Construct the agent execution prompt
   - If a task is ambiguous, apply your specialist expertise to resolve the ambiguity
     and document the decision in your summary
 
-  ## Reporting Results
-  When all tasks and verification are complete, you MUST:
-  1. Use the SendMessage tool to send your structured summary to the coordinator:
-     SendMessage(type: "message", recipient: "coordinator", summary: "Plan {NN}-{PP} complete", content: "...")
-  2. Use TaskUpdate to mark your task as completed.
+  ## Reporting Results (adapter-conditional)
+  When all tasks and verification are complete, report your results:
 
-  Your SendMessage content MUST include these fields:
+  **If adapter.structured_messaging is true** (e.g., Claude Code):
+  1. Use the adapter's messaging tool to send your structured summary to the coordinator
+     (e.g., SendMessage on Claude Code)
+  2. Use the adapter's task tracking to mark your task as completed
+     (e.g., TaskUpdate on Claude Code)
+
+  **If adapter.structured_messaging is false** (e.g., Codex CLI, Cursor, Aider):
+  1. Write your structured summary to: `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
+  2. The coordinator will read this file after your execution completes
+
+  Your summary MUST include these fields:
   - **Status**: Complete | Complete with Warnings | Failed
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
@@ -210,13 +237,17 @@ Step 4: Construct the agent execution prompt
   - **Errors**: error details if failed (or "None")
   """
 
-Step 5: Spawn the agent via the Agent tool
-  Parameters:
-  - subagent_type: "general-purpose"
+Step 5: Spawn the agent per adapter protocol
+  Use adapter.spawn_agent_personality with:
   - prompt: {constructed prompt from Step 4}
-  - model: "sonnet"              -- cost profile: Sonnet for execution
+  - model: adapter.model_execution
   - name: "{agent-id}-{NN}-{PP}" -- e.g., "engineering-senior-developer-04-01"
-  - team_name: "{phase_team_name}" -- e.g., "phase-04-execution"
+  - Additional parameters per adapter (e.g., team_name on Claude Code)
+
+  On CLIs without agent spawning (adapter.agent_spawning = false):
+  - Prepend the personality content to the current session context
+  - Execute the plan tasks inline within the current session
+  - Write the result per adapter.collect_results when complete
 
 For autonomous plans (autonomous: true):
 
@@ -249,13 +280,20 @@ For autonomous plans (autonomous: true):
   - Run verifications in order — they may have implicit dependencies
   - After all tasks complete, run the full <verification> checklist
 
-  ## Reporting Results
-  When all tasks and verification are complete, you MUST:
-  1. Use the SendMessage tool to send your structured summary to the coordinator:
-     SendMessage(type: "message", recipient: "coordinator", summary: "Plan {NN}-{PP} complete", content: "...")
-  2. Use TaskUpdate to mark your task as completed.
+  ## Reporting Results (adapter-conditional)
+  When all tasks and verification are complete, report your results:
 
-  Your SendMessage content MUST include these fields:
+  **If adapter.structured_messaging is true** (e.g., Claude Code):
+  1. Use the adapter's messaging tool to send your structured summary to the coordinator
+     (e.g., SendMessage on Claude Code)
+  2. Use the adapter's task tracking to mark your task as completed
+     (e.g., TaskUpdate on Claude Code)
+
+  **If adapter.structured_messaging is false** (e.g., Codex CLI, Cursor, Aider):
+  1. Write your structured summary to: `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
+  2. The coordinator will read this file after your execution completes
+
+  Your summary MUST include these fields:
   - **Status**: Complete | Complete with Warnings | Failed
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
@@ -267,13 +305,12 @@ For autonomous plans (autonomous: true):
   - **Errors**: error details if failed (or "None")
   """
 
-  Step 4: Spawn the agent via the Agent tool
-  Parameters:
-  - subagent_type: "general-purpose"
+  Step 4: Spawn the agent per adapter protocol
+  Use adapter.spawn_agent_autonomous with:
   - prompt: {constructed autonomous prompt}
-  - model: "sonnet"
+  - model: adapter.model_execution
   - name: "executor-{NN}-{PP}" -- e.g., "executor-04-01"
-  - team_name: "{phase_team_name}" -- e.g., "phase-04-execution"
+  - Additional parameters per adapter (e.g., team_name on Claude Code)
 ```
 
 ### Personality Loading Notes
@@ -300,17 +337,20 @@ This would reduce context consumption for large agents (currently 600+ lines) du
 How to execute each wave in order, dispatching plans in parallel within each wave.
 
 ```
-Step 0: Set up the phase Team (once, before the wave loop)
-  - Call TeamCreate with team_name: "phase-{NN}-execution"
-    (e.g., "phase-04-execution"). One Team per phase — not per wave.
-  - Call TaskCreate for each plan in the phase:
-    - subject: "Execute plan {NN}-{PP}: {plan_name}"
-    - description: brief plan summary
-  - Set cross-wave dependencies via TaskUpdate:
-    - For each plan with depends_on references, call TaskUpdate with
-      addBlockedBy pointing to the task IDs of the dependency plans
-  - The coordinator is auto-registered as a Team member when TeamCreate is called.
-    Use the coordinator's name consistently in agent prompt templates for SendMessage recipient.
+Step 0: Initialize phase coordination (once, before the wave loop)
+  Follow the active adapter's Execution Protocol for initialization:
+
+  **If adapter.parallel_execution is true AND adapter.structured_messaging is true** (e.g., Claude Code):
+  - Use adapter.coordinate_parallel to set up coordination infrastructure
+    (e.g., TeamCreate, TaskCreate, TaskUpdate on Claude Code — see adapter for exact calls)
+
+  **If adapter.parallel_execution is true but no structured messaging** (e.g., Cursor):
+  - Write a WAVE-CHECKLIST.md tracking file to .planning/phases/{NN}/
+  - No coordination infrastructure needed — agents work independently
+
+  **If adapter.parallel_execution is false** (e.g., Codex CLI, Aider):
+  - Write a WAVE-CHECKLIST.md tracking file to .planning/phases/{NN}/
+  - No agent coordination — plans execute sequentially
 
 For each wave number in ascending order (1, 2, 3, ...):
 
@@ -332,26 +372,38 @@ Step 3: Construct agent prompts for all plans in the wave
   - For each plan, run the Personality Injection flow from Section 3
   - Prepare all prompts before spawning any agents
 
-Step 4: Spawn agents in parallel via the Team
+Step 4: Execute plans for this wave (adapter-conditional)
+
+  **If adapter.parallel_execution is true** (e.g., Claude Code, Cursor):
   - For a SINGLE plan in the wave:
-    - Spawn one agent via the Agent tool with team_name: "{phase_team_name}"
+    - Spawn one agent per adapter.spawn_agent_personality
   - For MULTIPLE plans in the wave:
-    - Issue ALL Agent tool calls in a SINGLE message response
-    - Each Agent call MUST include team_name: "{phase_team_name}"
-    - This maximizes parallelism — Claude Code will run them concurrently
+    - Issue ALL agent spawn calls simultaneously per adapter.coordinate_parallel
+    - This maximizes parallelism — agents run concurrently
     - Do NOT spawn agents one at a time for multi-plan waves
     - Each agent gets its own fully-constructed prompt (personality + plan)
-    - Agents in the same wave are fully independent — they share no state or
-      communication during execution
+    - Agents in the same wave are fully independent — they share no state
 
-Step 5: Collect agent results via SendMessage
-  - Wait for every agent in the wave to send its completion message via SendMessage
-  - Each agent's SendMessage contains a structured summary with Status, Files,
-    Verification, Decisions, Issues, and Errors fields
-  - Track: which plans succeeded (Status: Complete), which failed (Status: Failed),
-    what files were modified (from the Files field)
-  - If an agent goes idle without sending a message, send a follow-up message
-    asking for status. If still no response, check the filesystem for partial work.
+  **If adapter.parallel_execution is false** (e.g., Codex CLI, Gemini CLI, Aider):
+  - Execute plans SEQUENTIALLY within the wave:
+    For each plan in ascending order:
+    1. Load personality and construct prompt (Section 3)
+    2. Execute per adapter.spawn_agent_personality (may be inline on non-spawning CLIs)
+    3. Collect result per adapter.collect_results
+    4. Write SUMMARY.md before moving to the next plan
+
+Step 5: Collect results (adapter-conditional)
+
+  **If adapter.structured_messaging is true** (e.g., Claude Code):
+  - Wait for every agent to send its completion message per adapter.collect_results
+  - Each message contains a structured summary (Status, Files, Verification, etc.)
+  - If an agent goes idle without sending: follow up per adapter protocol
+
+  **If adapter.structured_messaging is false** (e.g., Cursor, Codex CLI):
+  - Read result files written by each agent: .planning/phases/{NN}/{NN}-{PP}-RESULT.md
+  - Or read the SUMMARY.md files if already written during Step 4 (sequential execution)
+
+  In all cases, track: which plans succeeded, which failed, what files were modified.
 
 Step 6: Process wave results
   - For each completed agent, run the Agent Result Processing flow (Section 5)
@@ -376,53 +428,34 @@ Step 8: After all waves complete
   - Update .planning/STATE.md: mark phase as complete, record completion timestamp
   - Suggest next action: "/legion:review to validate the phase output"
 
-Step 9: Shutdown the Team
-  - Send shutdown_request via SendMessage to every agent spawned during the phase:
-    SendMessage(type: "shutdown_request", recipient: "{agent-name}", content: "Phase execution complete")
-  - Wait for shutdown confirmations
-  - Call TeamDelete to clean up the Team configuration
+Step 9: Cleanup coordination (adapter-conditional)
+  - Use adapter.shutdown_agents to gracefully terminate any spawned agents
+  - Use adapter.cleanup_coordination to clean up coordination infrastructure
+  - On CLIs without agent spawning: no cleanup needed (no-op per adapter)
   - This step runs on BOTH success and failure paths — never leave orphaned agents
-    or stale Team configs behind
+    or stale coordination state behind
 ```
 
-### Parallelism Implementation via Claude Code Teams
+### CLI-Specific Execution Details
 
-The full Teams lifecycle for parallel execution:
+The exact tools and lifecycle depend on the active adapter. See the adapter's Execution Protocol section for the complete implementation.
 
-1. **TeamCreate** (once per phase, in Step 0):
-   ```
-   TeamCreate(team_name: "phase-04-execution", description: "Phase 4: Parallel Execution")
-   ```
+**Claude Code example** (parallel execution with Teams):
+- TeamCreate → TaskCreate → parallel Agent calls → SendMessage collection → TeamDelete
+- See `adapters/claude-code.md` for the full lifecycle
 
-2. **TaskCreate** (one per plan, in Step 0):
-   ```
-   TaskCreate(subject: "Execute plan 04-01: wave-executor skill", ...)
-   TaskCreate(subject: "Execute plan 04-02: execution-tracker skill", ...)
-   TaskCreate(subject: "Execute plan 04-03: build command", ...)
-   TaskUpdate(taskId: "3", addBlockedBy: ["1", "2"])  -- wave 2 depends on wave 1
-   ```
+**Codex CLI / Gemini CLI example** (sequential execution):
+- WAVE-CHECKLIST.md → sequential plan execution → RESULT.md files
+- See `adapters/codex-cli.md` or `adapters/gemini-cli.md`
 
-3. **Spawn with team_name** (per wave, in Step 4):
-   ```
-   [In a single response, issue all Agent tool calls for the wave:]
-   Agent(name="engineering-senior-developer-04-01", prompt="...", model="sonnet", team_name="phase-04-execution")
-   Agent(name="executor-04-02", prompt="...", model="sonnet", team_name="phase-04-execution")
-   ```
+**Cursor example** (parallel execution via async subagents):
+- Spawn subagents asynchronously → poll for RESULT.md files
+- See `adapters/cursor.md`
 
-4. **Collect via SendMessage** (per wave, in Step 5):
-   Each agent sends a structured summary via SendMessage to the coordinator.
-   The coordinator receives ~200 tokens per agent instead of the full ~2000+ execution trace.
-   Wait for all agents in the wave before advancing.
-
-5. **Shutdown + TeamDelete** (once per phase, in Step 9):
-   ```
-   SendMessage(type: "shutdown_request", recipient: "engineering-senior-developer-04-01", content: "Phase complete")
-   SendMessage(type: "shutdown_request", recipient: "executor-04-02", content: "Phase complete")
-   SendMessage(type: "shutdown_request", recipient: "design-ux-architect-04-03", content: "Phase complete")
-   TeamDelete()
-   ```
-
-All Team members in a wave run concurrently. The orchestrator waits until all agents send their SendMessage summaries before writing SUMMARY.md files or advancing to the next wave. Within the Team, agents share no state — each operates on its own plan in its own fresh context.
+All execution models share these invariants:
+- The orchestrator waits until all plans in a wave complete before advancing
+- Within a wave, agents share no state — each operates on its own plan
+- Results are written to SUMMARY.md files regardless of the collection mechanism
 
 ---
 
@@ -433,8 +466,8 @@ How to interpret what each agent returns and write the plan summary file.
 ```
 For each completed agent (success or failure):
 
-Step 1: Parse the agent's SendMessage content
-  The agent's SendMessage contains a structured summary with these fields:
+Step 1: Parse the agent's completion report
+  The agent's report (received per adapter.collect_results) contains a structured summary with these fields:
   - **Status**: Complete | Complete with Warnings | Failed
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
@@ -629,15 +662,13 @@ How to handle common failure modes without retrying or hiding problems.
    - If skip: filter the wave map to exclude plans with existing SUMMARY.md files
    - If re-run: delete existing SUMMARY.md files and execute all plans fresh
 
-9. AGENT COMPLETES BUT DOESN'T SEND MESSAGE
-   Symptom: An agent goes idle without sending a SendMessage to the coordinator.
+9. AGENT COMPLETES BUT DOESN'T REPORT
+   Symptom: An agent goes idle without reporting results per adapter.collect_results.
             The agent may have completed its work but forgot the Reporting Results step.
-   Detection: Agent shows as idle in the Team but no SendMessage was received
+   Detection: Agent appears idle but no completion report was received per adapter protocol.
    Action:
-   - Send a follow-up message to the agent via SendMessage:
-     "Your task appears complete but no summary was received. Please send your
-      structured summary now using SendMessage with Status, Files, Verification,
-      Decisions, Issues, and Errors fields."
+   - Follow up per adapter protocol: send a message asking for the structured summary
+     with Status, Files, Verification, Decisions, Issues, and Errors fields.
    - Wait for the agent's response
    - If the agent still doesn't respond: infer the result from the filesystem
      - Check if the plan's files_modified list has been created/updated

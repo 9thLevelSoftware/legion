@@ -25,7 +25,7 @@ skills/codebase-mapper/SKILL.md
 <process>
 1. PRE-FLIGHT CHECK
    - Check if `.planning/PROJECT.md` already exists by attempting to read it
-   - If it exists: use AskUserQuestion to confirm reinitialize
+   - If it exists: use adapter.ask_user to confirm reinitialize
      - "A project already exists in .planning/. Reinitialize from scratch?"
      - Option 1: "Yes, start fresh" — continue (will overwrite PROJECT.md, ROADMAP.md, STATE.md)
      - Option 2: "No, keep existing" — abort and suggest `/legion:status` instead
@@ -34,11 +34,11 @@ skills/codebase-mapper/SKILL.md
 2. BROWNFIELD DETECTION
    Follow codebase-mapper skill Section 1 (Source Code Detection Heuristic):
    - Check for non-Legion source files in the current directory:
-     - Any source files outside .planning/ and .claude/?
+     - Any source files outside .planning/, .claude/, .codex/, .cursor/, .windsurf/, .gemini/, .opencode/, and .aider/?
      - Any package.json, Gemfile, pyproject.toml, requirements.txt, go.mod at root?
      - Any src/, app/, lib/, components/ directories?
    - If existing source code detected:
-     Use AskUserQuestion:
+     Use adapter.ask_user:
        "I see an existing codebase here. Should I map it before we plan?"
        Option 1: "Yes, analyze the codebase first"
          → Run codebase-mapper Sections 2-4 to build the structural map
@@ -75,7 +75,7 @@ skills/codebase-mapper/SKILL.md
 
 6. QUESTIONING STAGE 3: WORKFLOW PREFERENCES
    Follow the questioning-flow skill's Stage 3 exactly:
-   - Use AskUserQuestion with 3 structured choice questions:
+   - Use adapter.ask_user with 3 structured choice questions:
      - Execution mode: Guided (Recommended) / Autonomous / Collaborative
      - Planning depth: Standard (Recommended) / Quick Sketch / Deep Analysis
      - Cost profile: Balanced (Recommended) / Economy / Premium
@@ -115,8 +115,8 @@ skills/codebase-mapper/SKILL.md
 
 10. REGISTER IN PORTFOLIO
    Follow portfolio-manager Section 2 (Register Project):
-   a. Check if `~/.claude/legion/` directory exists; create it if not (including parent directories)
-   b. Read `~/.claude/legion/portfolio.md` if it exists; otherwise initialize with empty structure:
+   a. Check if `{adapter.global_config_dir}` directory exists; create it if not (including parent directories)
+   b. Read `{adapter.global_config_dir}/portfolio.md` if it exists; otherwise initialize with empty structure:
       ```
       # Legion Portfolio
       ## Projects
@@ -140,8 +140,8 @@ skills/codebase-mapper/SKILL.md
         - **Description**: {one-line from PROJECT.md}
         ```
    e. Update Metadata: Last Updated, Total Projects count, Active Projects count
-   f. Write the updated `~/.claude/legion/portfolio.md`
-   g. Display: "Registered in portfolio: ~/.claude/legion/portfolio.md"
+   f. Write the updated `{adapter.global_config_dir}/portfolio.md`
+   g. Display: "Registered in portfolio: {adapter.global_config_dir}/portfolio.md"
 
 11. DISPLAY SUMMARY
    - Show the user a concise summary:
@@ -150,7 +150,7 @@ skills/codebase-mapper/SKILL.md
      - For each phase: name and recommended agent count
      - Workflow: {mode}, {depth}, {cost_profile}
      - Files created: PROJECT.md, ROADMAP.md, STATE.md
-     - Portfolio: Registered at ~/.claude/legion/portfolio.md
+     - Portfolio: Registered at {adapter.global_config_dir}/portfolio.md
    - End with: "Run `/legion:plan 1` to begin Phase 1: {first_phase_name}"
    - Do NOT dump full file contents — summary only
 </process>
