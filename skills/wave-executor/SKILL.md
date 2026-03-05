@@ -176,6 +176,36 @@ Step 3.5: Load brownfield context (optional)
 
   - If CODEBASE.md does not exist: set CODEBASE_CONTEXT = "" (empty string, no block injected)
 
+Step 3.6: Load authority constraints
+  - Load active agents for this wave from wave map
+  - For current agent, identify its exclusive_domains from authority matrix
+  - Build AUTHORITY_CONTEXT block:
+
+    ## Authority Boundaries
+
+    You have exclusive authority over these domains:
+    {list of exclusive_domains for this agent}
+
+    When you are active, other agents defer to you on these topics.
+
+    Other agents active in this wave with their exclusive domains:
+    {for each other agent in wave:
+      - {agent-id}: {exclusive_domains}}
+
+    You must NOT critique or override findings from other agents in their exclusive domains.
+    You may critique general code quality, but defer to domain owners for specialist topics.
+
+  - If authority matrix does not exist: AUTHORITY_CONTEXT = "" (no constraints)
+
+Step 3.7: Enforce authority during agent spawn
+  Before spawning each agent:
+  1. Load authority matrix: `.planning/config/authority-matrix.yaml`
+  2. Get list of all agents in current wave
+  3. For target agent, identify other agents with overlapping domains
+  4. If conflicts detected, add warning to wave report:
+     "Warning: Agents {agent1} and {agent2} both claim domain {domain}. 
+      Both will be active — findings will be merged with severity escalation."
+
 Step 4: Construct the agent execution prompt
   Combine personality and plan using this exact format:
 
@@ -187,6 +217,8 @@ Step 4: Construct the agent execution prompt
   # Execution Task
 
   You are executing a plan as part of Legion. Follow the tasks below precisely.
+
+  {AUTHORITY_CONTEXT}
 
   {CODEBASE_CONTEXT}
 
