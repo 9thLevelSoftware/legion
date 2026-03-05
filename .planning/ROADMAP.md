@@ -101,6 +101,17 @@ Plans:
 4. Wave executor places files in correct existing directories
 5. CODEBASE.md auto-updates when structure changes
 
+**Plans:** 5 plans in 3 waves
+
+Plans:
+- [ ] 39-00-PLAN.md — Create test scaffolding for environment mapping features
+- [x] 39-01-PLAN.md — Add directory mappings to CODEBASE.md (ENV-01, ENV-02)
+- [ ] 39-02-PLAN.md — Integrate path enforcement into spec pipeline (ENV-03)
+- [ ] 39-03-PLAN.md — Add file placement validation to wave executor (ENV-04)
+- [ ] 39-04-PLAN.md — Implement auto-update mechanism for mappings (ENV-05)
+
+**Phase Status:** 1/5 plans complete (39-01 finished, ENV-01 and ENV-02 satisfied)
+
 **Phase Completion:** When new features are placed in correct directories per CODEBASE.md
 
 ---

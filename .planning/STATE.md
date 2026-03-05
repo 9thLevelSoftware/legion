@@ -4,14 +4,14 @@ milestone: v5.0
 milestone_name: — Production-Grade Architecture
 status: building
 last_updated: "2026-03-05"
-last_session: "2026-03-05 — Completed 38-03 plan (Review Command Integration)"
+last_session: "2026-03-05 — Completed 39-01 plan (Directory Mappings for CODEBASE.md)"
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 9
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
   total_requirements: 32
-  completed_requirements: 21
+  completed_requirements: 23
 ---
 
 # Project State
@@ -99,9 +99,36 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
 - All 4 plans complete (38-00, 38-01, 38-02, 38-03)
 - Requirements satisfied: INTENT-01, INTENT-02, INTENT-03, INTENT-04, INTENT-05, INTENT-06
 
-**Next:** Phase 39 — Environment Mapping (ENV-01 through ENV-05)
+**Phase 39 — Environment Mapping:**
+- Plan 00: Create test scaffolding for environment mapping features
+- Plan 01: Add directory mappings to CODEBASE.md (ENV-01, ENV-02)
+  - Extended codebase-mapper skill with Sections 2.5 and 15
+  - Created `.planning/templates/codebase-mappings.yaml` (167 lines, 13 categories)
+  - Generated `.planning/config/directory-mappings.yaml` for Legion (85 lines, 7 categories)
+  - 37/38 directory mapping tests passing
+  - Requirements satisfied: ENV-01, ENV-02
+- Plan 02: Integrate path enforcement into spec pipeline (ENV-03)
+- Plan 03: Add file placement validation to wave executor (ENV-04)
+- Plan 04: Implement auto-update mechanism for mappings (ENV-05)
+
+**Phase Status:** In Progress — 1/5 plans complete (39-01)
 
 ## Recent Activity
+
+### Completed: Plan 39-01 — Directory Mappings for CODEBASE.md
+- Extended `skills/codebase-mapper/SKILL.md` with directory mapping capabilities
+  - Section 2.5: Directory Mapping Extraction with 12 standard categories
+  - Section 15: Machine-Readable Mappings Output with YAML schema
+  - Updated Section 5: Added Directory Mappings template to CODEBASE.md format
+- Created `.planning/templates/codebase-mappings.yaml` — Reference template
+  - 167 lines covering 13 standard categories
+  - Priority levels, file patterns, descriptions, and examples
+  - Enforcement configuration section
+- Generated `.planning/config/directory-mappings.yaml` — Legion-specific mappings
+  - 85 lines with 7 Legion-specific categories (commands, skills, agents, adapters, tests, bin, planning)
+  - Configured enforcement with exceptions for planning files
+- Status: ✓ Complete, 3 commits, 37/38 tests passing
+- Requirements satisfied: ENV-01, ENV-02
 
 ### Completed: Plan 38-03 — Review Command Integration
 - Added intent detection to commands/review.md (Step 0.5)
@@ -328,3 +355,7 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
 - Parallel execution streams: Execution tests and Remediation chaos run simultaneously, not sequentially
 - Service group parallelization for Wave A builds
 - Three-verdict production readiness: PASS, NEEDS_WORK, or FAIL
+- Directory mapping extraction: Priority-based resolution (explicit/inferred/default) enables automatic conflict resolution without human intervention
+- Dual-format output: Human-readable CODEBASE.md section + machine-readable YAML file supports different consumption patterns
+- Legion-specific categories: Mapped project's unique structure (commands, skills, agents, adapters) rather than generic web framework categories
+
