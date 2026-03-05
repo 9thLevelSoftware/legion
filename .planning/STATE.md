@@ -4,14 +4,14 @@ milestone: v5.0
 milestone_name: — Production-Grade Architecture
 status: planning
 last_updated: "2026-03-05"
-last_session: "2026-03-05 — Completed 36-02 plan (Polymath engine skill + exploration summary template)"
+last_session: "2026-03-05 — Completed 36-03 plan (Polymath integration with /legion:start)"
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 3
+  completed_plans: 3
   total_requirements: 32
-  completed_requirements: 3
+  completed_requirements: 4
 ---
 
 # Project State
@@ -53,9 +53,30 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
 - Plan 01 complete (Polymath agent + /legion:explore command)
 - Plan 02 complete (Polymath engine skill + exploration summary template)
 
-**Next:** Execute Plan 03 — Integration testing with `/legion:start` handoff
+**Phase 36 — Polymath Integration: COMPLETE**
+- All 3 plans complete (36-01, 36-02, 36-03)
+- Requirements satisfied: POLY-01, POLY-02, POLY-03, POLY-04, POLY-05, POLY-06
+
+**Next:** Phase 37 — select next phase from v5.0 roadmap
 
 ## Recent Activity
+
+### Completed: Plan 36-03 — Polymath Integration
+- Updated `commands/start.md` — Integrated exploration workflow into `/legion:start`
+  - New Step 2: EXPLORATION OFFER with "Explore first with Polymath" option
+  - Seamless proceed/park transition handling
+  - Stage 1 questioning pre-population with crystallized summary
+  - Decision matrix for exploration states
+- Updated `skills/workflow-common/SKILL.md` — Command registry and relationships
+  - Added /legion:explore to Command-to-Skill Mapping
+  - Added exploration documents to State File Locations
+  - Documented Command Relationships (explore ↔ start integration)
+  - Added Polymath agent reference
+- Updated `skills/agent-registry/CATALOG.md` — Task Type Index
+  - Verified polymath entry with correct task types
+  - Added "Exploration & Clarification" section
+- Status: ✓ Complete, 3 commits, all verification criteria passed
+- Requirements satisfied: POLY-06
 
 ### Completed: Plan 36-02 — Polymath Integration
 - Created `skills/polymath-engine/SKILL.md` — Execution engine with research-first workflow
@@ -97,3 +118,6 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
 - Polymath structured choice: arrow keys + Enter, max 7 exchanges
 - Gap detection taxonomy: 5 categories (technical, scope, constraint, dependency, risk)
 - Exploration output: crystallized summary or explicit park decision
+- Exploration integration: Optional Step 2 in /legion:start, default "Yes" but skippable
+- Seamless transition: Crystallized summary pre-populates Stage 1 questioning
+- Park preservation: Exploration output saved to `.planning/exploration-{timestamp}.md`
