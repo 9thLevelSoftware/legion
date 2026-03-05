@@ -1,0 +1,115 @@
+# Authority Matrix Test Fixture
+# Defines agent exclusive domains for testing authority boundary validation
+# Addresses: AUTH-01 (Domain Ownership), AUTH-05 (Overlap Detection)
+
+agents:
+  security-engineer:
+    name: "Security Engineer"
+    description: "OWASP, STRIDE, and security vulnerability specialist"
+    exclusive_domains:
+      - owasp-top-10
+      - stride-model
+      - vulnerability-assessment
+      - penetration-testing
+      - security-audit
+      - threat-modeling
+    agent_file: "agents/security-engineer.md"
+
+  sre-chaos:
+    name: "SRE Chaos Engineer"
+    description: "Reliability, SLOs, chaos engineering, and infrastructure resilience"
+    exclusive_domains:
+      - service-level-objectives
+      - chaos-engineering
+      - incident-response
+      - disaster-recovery
+      - reliability-engineering
+      - observability
+    agent_file: "agents/sre-chaos.md"
+
+  code-reviewer:
+    name: "Code Reviewer"
+    description: "Code style, patterns, idioms, and maintainability specialist"
+    exclusive_domains:
+      - code-style
+      - design-patterns
+      - language-idioms
+      - code-maintainability
+      - refactoring-suggestions
+      - code-complexity
+    agent_file: "agents/code-reviewer.md"
+
+  frontend-developer:
+    name: "Frontend Developer"
+    description: "UI/UX implementation, accessibility, and frontend architecture"
+    exclusive_domains:
+      - user-interface
+      - user-experience
+      - accessibility
+      - frontend-performance
+      - responsive-design
+      - component-architecture
+    agent_file: "agents/frontend-developer.md"
+
+  qa-automation:
+    name: "QA Automation Engineer"
+    description: "Test strategy, automation frameworks, and coverage analysis"
+    exclusive_domains:
+      - test-strategy
+      - test-automation
+      - test-coverage
+      - regression-testing
+      - integration-testing
+      - test-frameworks
+    agent_file: "agents/qa-automation.md"
+
+# Overlap scenarios for testing conflict detection
+overlap_tests:
+  valid_no_overlap:
+    description: "No domain overlap between security-engineer and frontend-developer"
+    agents:
+      - security-engineer
+      - frontend-developer
+    expected_overlap: false
+    overlapping_domains: []
+
+  conflict_scenario:
+    description: "Two agents claiming the same domain (hypothetical)"
+    agents:
+      - security-engineer
+      - security-engineer
+    expected_overlap: true
+    overlapping_domains:
+      - owasp-top-10
+
+# Domain validation rules
+domain_rules:
+  format: "kebab-case"
+  min_length: 3
+  max_length: 50
+  allowed_chars: "a-z0-9-"
+  reserved_domains:
+    - system
+    - admin
+    - root
+
+# Authority lookup examples
+authority_lookups:
+  - domain: "owasp-top-10"
+    expected_agent: "security-engineer"
+    expected_unique: true
+  
+  - domain: "accessibility"
+    expected_agent: "frontend-developer"
+    expected_unique: true
+  
+  - domain: "test-coverage"
+    expected_agent: "qa-automation"
+    expected_unique: true
+
+# Matrix metadata
+matrix_version: "1.0.0"
+last_updated: "2026-03-05"
+requirements_validated:
+  - AUTH-01
+  - AUTH-05
