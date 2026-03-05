@@ -4,14 +4,14 @@ milestone: v5.0
 milestone_name: — Production-Grade Architecture
 status: building
 last_updated: "2026-03-05"
-last_session: "2026-03-05 — Completed 37-01 plan (Authority matrix infrastructure)"
-progress:
+last_session: "2026-03-05 — Completed 37-00 plan (Test scaffolding for authority boundaries)"
+  progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 7
+  completed_plans: 7
   total_requirements: 32
-  completed_requirements: 10
+  completed_requirements: 14
 ---
 
 # Project State
@@ -26,7 +26,7 @@ Milestone: v5.0 — Production-Grade Architecture
 Status: **Ready to Build** — Requirements defined, roadmap created
 Last activity: 2026-03-05 — Milestone v5.0 initialized (32 requirements, 5 phases)
 
-Progress: [███       ] 20% (5 phases planned, 3 plans executed, 6 requirements delivered)
+Progress: [███▌      ] 35% (5 phases planned, 7 plans executed, 14 requirements delivered)
 
 ## Shipped Milestones
 
@@ -60,6 +60,22 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
 **Next:** Phase 37 — select next phase from v5.0 roadmap
 
 ## Recent Activity
+
+### Completed: Plan 37-00 — Test Scaffolding
+- Created `tests/authority-matrix.test.js` — 28 tests for domain ownership validation
+  - Validates AUTH-01 (Domain Ownership) and AUTH-05 (Overlap Detection)
+  - Tests kebab-case format, agent references, authority lookup
+  - Validates 5 agents with 30 unique domains
+- Created `tests/deduplication.test.js` — 30 tests for finding consolidation  
+  - Validates AUTH-03 (Finding Consolidation)
+  - Deduplicate by file:line with severity prioritization
+  - Domain-based filtering for agent authority
+- Created `tests/two-wave-detection.test.js` — 32 tests for wave pattern detection
+  - Validates WAVE-01 (Two-Wave Execution)
+  - Wave assignment, gate validation, circular dependency detection
+  - Parallel execution safety checks
+- Created test fixtures: `authority-matrix.json`, `authority-matrix.yaml`, `sample-findings.json`
+- Status: ✓ Complete, 3 commits, all 90 tests passing
 
 ### Completed: Plan 37-01 — Authority Matrix Infrastructure
 - Created `.planning/config/authority-matrix.yaml` — Exclusive domain ownership for 53 agents
