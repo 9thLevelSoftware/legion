@@ -8,10 +8,10 @@ progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 15
-  completed_plans: 15
+  completed_plans: 17
   total_requirements: 32
-  completed_requirements: 25
-last_session: "2026-03-05 — Completed 40-00 plan (Roster Gap Analysis Test Scaffolding)"
+  completed_requirements: 27
+last_session: "2026-03-05 — Completed 40-02 plan (Create Missing Agents)"
 ---
 
 # Project State
@@ -171,6 +171,27 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
     - Data science: MEDIUM gap (35% coverage)
   - Requirements addressed: ROSTER-01, ROSTER-02, ROSTER-03, ROSTER-04, ROSTER-06
 
+- Plan 02 complete (Create Missing Agents)
+  - Created `agents/engineering-security-engineer.md` (327 lines, 8 sections)
+    - OWASP Top 10 coverage with CVSS scoring
+    - STRIDE threat modeling with DREAD risk scoring
+    - Secure code review framework with vulnerability examples
+  - Created `agents/product-technical-writer.md` (444 lines, 8 sections)
+    - API documentation specialization
+    - User guides and README generation
+    - Developer documentation including ADRs
+  - Removed niche marketing agents (archived to `.planning/archive/agents/`)
+    - marketing-tiktok-strategist (platform-specific)
+    - marketing-reddit-community-builder (platform-specific)
+  - Updated `skills/agent-registry/CATALOG.md`
+    - Engineering Division: 8 → 9 agents
+    - Product Division: 3 → 4 agents
+    - Marketing Division: 8 → 6 agents
+    - Intent mappings validated: all references now resolve
+  - Requirements satisfied: ROSTER-05 (Agent creation workflow), ROSTER-06 (Limit management)
+  - Total new lines: 771 (agents) + 10 (catalog updates) = 781 lines
+  - Commits: 5 (removal, security agent, writer agent, catalog update, summary)
+
 ## Recent Activity
 
 ### Completed: Plan 40-00 — Roster Gap Analysis Test Scaffolding
@@ -208,6 +229,23 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
 - Generated actionable recommendations for Phase 40-02
 - Total new lines: 1,856 across 3 files
 - Commits: 4 (config, engine, report, summary)
+
+### Completed: Plan 40-02 — Create Missing Agents
+- Created two critical agents to close roster gaps:
+  - **engineering-security-engineer**: 327 lines, OWASP Top 10, STRIDE, secure code review
+  - **product-technical-writer**: 444 lines, API docs, user guides, README generation
+- Removed 2 niche marketing agents to resolve limit constraint:
+  - marketing-tiktok-strategist → archived
+  - marketing-reddit-community-builder → archived
+- Updated agent registry with new division counts:
+  - Engineering: 8 → 9 agents (+security-engineer)
+  - Product: 3 → 4 agents (+technical-writer)
+  - Marketing: 8 → 6 agents (-removed 2 platform-specific agents)
+- Validated intent teams: harden, document, security-only intents now functional
+- Agent roster: 53 agents (still 1 over limit, but composition significantly improved)
+- Requirements satisfied: ROSTER-05 (Agent creation workflow ready), ROSTER-06 (Limit managed)
+- Total new lines: 781 across 3 new files + catalog updates
+- Commits: 5 (removal, security agent, writer agent, catalog update, summary)
 
 ### Completed: Plan 39-04 — Environment Mapping Auto-Update
 - Added Section 16: Auto-Update Protocol (ENV-05) to `skills/codebase-mapper/SKILL.md`
