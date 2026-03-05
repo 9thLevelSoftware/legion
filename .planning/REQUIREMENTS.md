@@ -22,11 +22,11 @@ Pre-flight alignment agent with structured exploration modes.
 
 Strict domain ownership preventing agent conflicts during parallel execution.
 
-- [ ] **AUTH-01:** Authority matrix defines exclusive domains per agent (security-engineer owns OWASP, SRE owns SLOs, etc.)
+- [x] **AUTH-01:** Authority matrix defines exclusive domains per agent (security-engineer owns OWASP, SRE owns SLOs, etc.)
 - [x] **AUTH-02:** Wave executor injects authority constraints into agent system prompts
-- [ ] **AUTH-03:** Review panel deduplicates findings by file:line, keeping highest severity
-- [ ] **AUTH-04:** Review panel discards out-of-domain critiques (code-reviewer security findings when security-engineer is active)
-- [ ] **AUTH-05:** Authority matrix is human-readable (YAML/JSON) in `.planning/` or skills
+- [x] **AUTH-03:** Review panel deduplicates findings by file:line, keeping highest severity
+- [x] **AUTH-04:** Review panel discards out-of-domain critiques (code-reviewer security findings when security-engineer is active)
+- [x] **AUTH-05:** Authority matrix is human-readable (YAML/JSON) in `.planning/` or skills
 
 ### Intent-Driven Execution (INTENT)
 
@@ -115,11 +115,11 @@ Verify coverage for critical DevOps and security roles.
 | POLY-04 | Phase 36 | Pending |
 | POLY-05 | Phase 36 | Pending |
 | POLY-06 | Phase 36 | Pending |
-| AUTH-01 | Phase 37 | Pending |
+| AUTH-01 | Phase 37 | Complete |
 | AUTH-02 | Phase 37 | Complete |
-| AUTH-03 | Phase 37 | Pending |
-| AUTH-04 | Phase 37 | Pending |
-| AUTH-05 | Phase 37 | Pending |
+| AUTH-03 | Phase 37 | Complete |
+| AUTH-04 | Phase 37 | Complete |
+| AUTH-05 | Phase 37 | Complete |
 | INTENT-01 | Phase 38 | Pending |
 | INTENT-02 | Phase 38 | Pending |
 | INTENT-03 | Phase 38 | Pending |
