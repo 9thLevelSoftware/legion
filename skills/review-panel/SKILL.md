@@ -383,17 +383,80 @@ Step 2.6: Filter by confidence
     reviewers, keep the HIGHER confidence rating (if one reviewer is HIGH and
     another is MEDIUM on the same finding, it's HIGH)
 
-Step 3: Group by domain lens
-  Organize findings by each reviewer's rubric focus area:
+Step 3: Filter out-of-domain critiques
 
-  ### {Rubric Name} — {agent-id}
+Input: Findings[] (after deduplication), Active panel agents[]
+Output: Filtered findings[] with out-of-domain critiques removed
+
+Algorithm:
+1. Build domain ownership map from active panel agents:
+   - For each agent in panel:
+     - Load exclusive_domains from authority matrix
+     - Create mapping: domain → owning_agent_id
+
+2. Detect domain for each finding:
+   - From finding.criterion tag (e.g., "security", "performance")
+   - From finding description keywords:
+     - Security keywords: "auth", "encrypt", "sanitize", "injection", "xss", "csrf"
+     - Performance keywords: "slow", "cache", "optimize", "memory", "cpu"
+     - API keywords: "endpoint", "route", "request", "response", "status code"
+     - Accessibility keywords: "aria", "screen reader", "contrast", "keyboard"
+   - Default: "general" (no domain owner)
+
+3. Apply filtering rules:
+   
+   Rule 1: Domain owner present → filter out-of-domain
+   - If finding.domain has an owner in active panel
+   - AND finding.reviewer != owner
+   - THEN: Discard finding
+   - Log: "Filtered: {reviewer} critique on {domain} — {owner} is domain authority"
+   
+   Rule 2: No domain owner → allow all critiques
+   - If finding.domain has no owner in active panel
+   - THEN: Keep finding
+   - Reason: No authority to defer to, general critique allowed
+   
+   Rule 3: Owner critiquing own domain → always allow
+   - If finding.reviewer == owner
+   - THEN: Keep finding
+   - Note: Owner's findings are authoritative
+
+4. Special cases:
+   - Multiple owners for overlapping domains: Use most specific match
+   - Finding spans multiple domains: Split into separate findings per domain
+   - Domain detection uncertain (confidence < 70%): Keep finding, flag as "uncertain domain"
+
+Example:
+```
+Panel: [security-engineer, code-reviewer, ux-architect]
+Findings:
+- security-engineer: src/auth.ts:45 "Missing input sanitization" [BLOCKER, security]
+- code-reviewer: src/auth.ts:45 "Auth logic should use bcrypt" [WARNING, security]
+- code-reviewer: src/auth.ts:50 "Variable naming unclear" [SUGGESTION, general]
+- ux-architect: src/auth.ts:45 "Form lacks aria-label" [WARNING, accessibility]
+
+After filtering:
+- Keep: security-engineer (owner of security domain)
+- Filter: code-reviewer on security domain (security-engineer present)
+- Keep: code-reviewer on general domain (no owner)
+- Keep: ux-architect on accessibility domain (owner present, is owner)
+```
+
+Step 4: Group by domain lens
+  Organize findings by each reviewer's rubric focus area.
+  
+  Note: Some findings may have been filtered in Step 3. The domain lens
+  grouping only includes findings that passed authority filtering.
+  
+  ### {Rubric Name} — {agent-id} (Domain Authority: {domains})
   **Verdict**: {PASS | NEEDS WORK | FAIL}
+  **Authority Note**: {agent-id} is domain authority for {domains} — findings are authoritative
 
   | # | Severity | File | Criterion | Issue |
   |---|----------|------|-----------|-------|
   | 1 | BLOCKER  | path | {criterion_name} | {issue} |
 
-Step 4: Identify cross-cutting themes
+Step 5: Identify cross-cutting themes
   Scan across all domain groupings for patterns:
   - Multiple reviewers flagging the same file (from different criteria) → "Hot spot"
   - Findings clustering around the same success criterion → "Criterion at risk"
@@ -404,12 +467,12 @@ Step 4: Identify cross-cutting themes
   - **Criteria at risk**: Success criteria with 2+ findings against them: {list}
   - **Strong areas**: Aspects with no findings from any reviewer: {list}
 
-Step 5: Compute aggregate verdict
+Step 6: Compute aggregate verdict
   - PASS: No BLOCKERs, no WARNINGs, all reviewers gave PASS
   - NEEDS WORK: Has BLOCKERs or WARNINGs, at least one reviewer gave NEEDS WORK
   - FAIL: Any reviewer gave FAIL, or 3+ BLOCKERs across reviewers
 
-Step 6: Produce consolidated report
+Step 7: Produce consolidated report
   Display the synthesis to the user:
 
   ## Review Panel Synthesis — Phase {N}: {phase_name}
@@ -425,9 +488,9 @@ Step 6: Produce consolidated report
   | Warnings | {N} |
   | Suggestions | {N} |
 
-  {Domain lens groupings from Step 3}
+  {Domain lens groupings from Step 4}
 
-  {Cross-cutting themes from Step 4}
+  {Cross-cutting themes from Step 5}
 
   ### Panel Verdicts
   | Reviewer | Rubric Focus | Verdict | Key Finding |
@@ -442,6 +505,19 @@ Step 6: Produce consolidated report
   | # | Confidence | Reviewer | File | Issue |
   |---|------------|----------|------|-------|
   | 1 | MEDIUM (65%) | {agent-id} | path | {issue} |
+
+  ### Authority Filtering Report
+  | Metric | Count |
+  |--------|-------|
+  | Findings before filtering | {N} |
+  | Out-of-domain critiques filtered | {M} |
+  | Domain owner findings kept | {K} |
+  | General domain findings kept | {L} |
+  
+  ### Filtered Findings (for reference)
+  | Reviewer | File | Issue | Filtered Because |
+  |----------|------|-------|------------------|
+  | code-reviewer | src/auth.ts:45 | "Auth logic" | security-engineer is domain owner |
 
   The aggregate verdict and must-fix list then feed back into the standard
   review-loop cycle (Section 5: Fix Cycle if NEEDS WORK, Section 7 if PASS,
