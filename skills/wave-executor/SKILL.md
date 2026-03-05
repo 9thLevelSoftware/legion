@@ -710,6 +710,116 @@ How to handle common failure modes without retrying or hiding problems.
 
 ---
 
+## Section 7: Two-Wave Pattern
+
+Enhanced execution model with distinct Build/Analysis and Execution waves for maximum parallelism.
+
+### Wave Pattern Overview
+
+```
+Wave A: Build + Analysis (Parallel)
+├── Plan A1: Build service/page group 1 (e.g., frontend components)
+├── Plan A2: Build service/page group 2 (e.g., backend API)
+├── Plan A3: Analyze architecture (backend-architect reviews A1, A2 outputs)
+└── Plan A4: Security audit (security-engineer reviews A1, A2 outputs)
+
+[Gate: Architecture Review Complete]
+
+Wave B: Execution + Remediation (Parallel)
+├── Plan B1: Execute tests against Wave A outputs
+├── Plan B2: Performance benchmark
+├── Plan B3: SRE chaos testing (parallel to validation)
+└── Plan B4: Data scientist validation (parallel to remediation)
+
+[Gate: Production Readiness]
+```
+
+### Two-Wave Plan Structure
+
+Plans in two-wave mode have extended frontmatter:
+
+```yaml
+---
+phase: XX-name
+plan: NN
+type: execute
+wave: A | B                    # Wave A or Wave B
+depends_on: []                 # Can depend on other wave plans
+wave_a_outputs: []             # For Wave B plans: which Wave A plans produced inputs
+wave_role: build | analysis | execution | remediation
+authority_scope: []            # Domains this plan touches
+---
+```
+
+### Wave A Execution
+
+**Step 1: Dynamic agent spawning per service group**
+- Parse plans for service/page group identifiers
+- Group plans by service: all plans touching "auth-service" spawn together
+- Within service group: build plans run parallel with analysis plans
+- Cross-service: independent services run in parallel
+
+**Step 2: Authority-aware parallel composition**
+- When spawning multiple agents in Wave A:
+  - Build agents get full personality injection
+  - Analysis agents get read-only context of build outputs
+  - Security and architecture agents are spawned last (review position)
+
+**Step 3: Wave A output collection**
+- Collect all SUMMARY.md files
+- Build aggregate outputs manifest: `{service: {files: [], status: complete|failed}}`
+- Pass manifest to Wave B via dependency tracking
+
+### Wave B Execution
+
+**Step 1: Dependency validation**
+- Verify all Wave A outputs referenced in `wave_a_outputs` have SUMMARY.md
+- If any Wave A plan failed: skip Wave B, report "Wave A incomplete"
+
+**Step 2: Parallel execution and remediation**
+- Tests, benchmarks, and validation run in parallel (standard wave execution)
+- Remediation agents (SRE chaos, data scientist) also run parallel
+- Both streams produce findings independently
+
+**Step 3: Finding synthesis**
+- Test findings + chaos findings → consolidated validation report
+- If validation fails: remediation recommendations from chaos/data scientist
+- User decides: fix and re-run Wave B, or accept risks
+
+### Gates Between Waves
+
+Three checkpoint types between Wave A and Wave B:
+
+1. **Requirements Gate** (implicit in plan dependencies)
+   - All Wave A `depends_on` satisfied
+   - Automatically enforced by wave executor
+
+2. **Architecture Gate** (optional checkpoint)
+   - If phase has `architecture_review: true` in CONTEXT.md:
+   - Pause after Wave A
+   - Prompt user: "Wave A complete. Architecture findings:
+     - {architecture-agent} recommends: {findings}
+     - Proceed to Wave B, or revise Wave A outputs?"
+
+3. **Production Readiness Gate** (after Wave B)
+   - Review panel synthesis from Wave B
+   - Verdict: PASS, NEEDS_WORK, or FAIL
+   - FAIL blocks phase completion
+
+### Two-Wave Activation
+
+Two-wave pattern activates when:
+- Phase plan count >= 4 (needs enough work to parallelize)
+- Plans span multiple service/page groups OR include explicit analysis tasks
+- `two_wave: true` in phase CONTEXT.md (optional override)
+
+Standard single-wave execution when:
+- Phase has < 4 plans
+- All plans touch same files (no parallelization benefit)
+- `two_wave: false` in phase CONTEXT.md
+
+---
+
 ## References
 
 This skill implements patterns defined in `workflow-common.md`:
