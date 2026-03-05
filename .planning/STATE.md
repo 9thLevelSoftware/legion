@@ -4,7 +4,7 @@ milestone: v5.0
 milestone_name: — Production-Grade Architecture
 status: building
 last_updated: "2026-03-05"
-last_session: "2026-03-05 — Completed 39-01 plan (Directory Mappings for CODEBASE.md)"
+last_session: "2026-03-05 — Completed 39-00 plan (Environment Mapping Test Scaffolding)"
 progress:
   total_phases: 5
   completed_phases: 0
@@ -100,20 +100,33 @@ v5.0 milestone initialized with 32 requirements across 5 phases.
 - Requirements satisfied: INTENT-01, INTENT-02, INTENT-03, INTENT-04, INTENT-05, INTENT-06
 
 **Phase 39 — Environment Mapping:**
-- Plan 00: Create test scaffolding for environment mapping features
-- Plan 01: Add directory mappings to CODEBASE.md (ENV-01, ENV-02)
+- Plan 00 complete (Environment Mapping Test Scaffolding)
+  - Created `tests/directory-mappings.test.js` with 38 tests for mapping extraction
+  - Created `tests/path-enforcement.test.js` with 45 tests for path validation
+  - Created `tests/environment-mapping.test.js` with 34 integration tests
+  - Created `tests/fixtures/sample-codebase-mappings.yaml` (211 lines, 10 categories)
+  - 117/117 tests passing
+  - Requirements satisfied: ENV-01, ENV-02, ENV-03, ENV-04, ENV-05
+- Plan 01 complete (Directory Mappings for CODEBASE.md)
   - Extended codebase-mapper skill with Sections 2.5 and 15
   - Created `.planning/templates/codebase-mappings.yaml` (167 lines, 13 categories)
   - Generated `.planning/config/directory-mappings.yaml` for Legion (85 lines, 7 categories)
-  - 37/38 directory mapping tests passing
   - Requirements satisfied: ENV-01, ENV-02
 - Plan 02: Integrate path enforcement into spec pipeline (ENV-03)
 - Plan 03: Add file placement validation to wave executor (ENV-04)
 - Plan 04: Implement auto-update mechanism for mappings (ENV-05)
 
-**Phase Status:** In Progress — 1/5 plans complete (39-01)
+**Phase Status:** In Progress — 2/5 plans complete (39-00, 39-01)
 
 ## Recent Activity
+
+### Completed: Plan 39-00 — Environment Mapping Test Scaffolding
+- Created comprehensive test suite with 117 passing tests
+- `tests/directory-mappings.test.js`: 38 tests for standard location detection, mapping validation, edge cases
+- `tests/path-enforcement.test.js`: 45 tests for path validation, spec pipeline integration, wave executor
+- `tests/environment-mapping.test.js`: 34 integration tests for full workflow, auto-update detection
+- `tests/fixtures/sample-codebase-mappings.yaml`: Sample mappings with 10 categories
+- Requirements satisfied: ENV-01, ENV-02, ENV-03, ENV-04, ENV-05
 
 ### Completed: Plan 39-01 — Directory Mappings for CODEBASE.md
 - Extended `skills/codebase-mapper/SKILL.md` with directory mapping capabilities
