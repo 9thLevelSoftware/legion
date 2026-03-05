@@ -197,6 +197,55 @@ Detect how the codebase is organized by examining directory layout:
 Module structure: Component-based (components/, modules/ directories detected)
 ```
 
+### 2.5: Directory Mapping Extraction (ENV-01, ENV-02)
+
+Automatically identifies standard directory locations based on codebase structure and conventions.
+
+#### 2.5.1: Standard Category Detection
+
+Detect these standard categories by examining directory structure:
+
+| Category | Detection Patterns | Priority |
+|----------|-------------------|----------|
+| routes | `app/routes/`, `src/routes/`, `pages/api/`, `routes/`, `api/` | explicit (10) if framework-specific |
+| tests | `tests/`, `__tests__/`, `*.test.*` co-location, `spec/`, `test/` | explicit (10) if dedicated dir |
+| components | `src/components/`, `app/components/`, `components/`, `ui/`, `widgets/` | explicit (10) |
+| services | `src/services/`, `services/`, `lib/services/`, `core/` | inferred (5) |
+| utils | `src/utils/`, `utils/`, `lib/`, `helpers/`, `common/` | inferred (5) |
+| types | `src/types/`, `types/`, `interfaces/`, `models/` | inferred (5) |
+| config | `config/`, `.config/`, `configuration/` | inferred (5) |
+| middleware | `src/middleware/`, `middleware/`, `plugins/` | inferred (5) |
+| assets | `public/`, `static/`, `assets/`, `resources/` | inferred (5) |
+| styles | `styles/`, `css/`, `scss/`, `sass/`, `src/styles/` | inferred (5) |
+| hooks | `src/hooks/`, `hooks/`, `composables/` | inferred (5) |
+| stores | `src/stores/`, `stores/`, `state/`, `redux/`, `pinia/` | inferred (5) |
+
+**Detection Protocol:**
+```
+Step 1: List all directories up to depth 3
+Step 2: Match directory names against patterns above
+Step 3: For each match, determine priority:
+  - explicit (10): Framework-standard location (e.g., Next.js app/routes/)
+  - inferred (5): Common convention but not framework-mandated
+  - default (1): Fallback or generic location
+Step 4: Handle conflicts (same category, multiple dirs):
+  - Use explicit over inferred
+  - Use higher file count as tiebreaker
+  - Document both if significant usage (>20% of files)
+```
+
+#### 2.5.2: Monorepo Package Boundaries
+
+For monorepos (detected in Section 2.4), create per-package mappings:
+```
+packages/web/:
+  - routes: packages/web/app/routes/ (explicit)
+  - components: packages/web/src/components/ (explicit)
+packages/api/:
+  - routes: packages/api/src/routes/ (explicit)
+  - services: packages/api/src/services/ (explicit)
+```
+
 ---
 
 ## Section 3: Pattern Detection (BROWN-02)
@@ -552,6 +601,19 @@ If no patterns detected: "No recurring code patterns detected."}
 
 {Section 14 output — package map, cross-package dependencies.
 If not a monorepo: omit this section entirely — no placeholder.}
+
+## Directory Mappings
+
+Standard locations for different file categories:
+
+| Category | Primary Location | Priority | Pattern |
+|----------|-----------------|----------|---------|
+| {category} | {path} | {explicit/inferred/default} | {file pattern} |
+
+### Path Enforcement Rules
+- **Strictness**: {strict/warn/off}
+- New files should follow these mappings where applicable
+- Exceptions require explicit override
 ```
 
 ### Confidence Scoring
@@ -1291,3 +1353,64 @@ If the project is not a monorepo (Section 14.1 conditions not met):
 - This section is omitted entirely from CODEBASE.md
 - No placeholder, no fallback message
 - The analysis silently skips monorepo-specific steps
+
+---
+
+## Section 15: Machine-Readable Mappings Output (ENV-01)
+
+In addition to the human-readable CODEBASE.md, generate a machine-readable
+YAML file for programmatic access: `.planning/config/directory-mappings.yaml`
+
+### 15.1: YAML Schema
+
+```yaml
+generated: "2026-03-05"
+source: "CODEBASE.md"
+version: "1.0"
+
+# Project root mappings (single-package projects)
+mappings:
+  routes:
+    paths:
+      - "app/routes"
+      - "src/routes"
+    priority: 10
+    pattern: "**/*route*.{ts,js}"
+    description: "API and page routes"
+  tests:
+    paths:
+      - "tests"
+      - "__tests__"
+    priority: 10
+    pattern: "**/*.test.{ts,js}"
+    description: "Test files"
+  # ... other categories
+
+# For monorepos, per-package mappings
+packages:
+  web:
+    routes:
+      paths: ["packages/web/app/routes"]
+      priority: 10
+    # ...
+  api:
+    routes:
+      paths: ["packages/api/src/routes"]
+      priority: 10
+    # ...
+
+# Validation rules for path enforcement
+rules:
+  strictness: warn  # strict | warn | off
+  exceptions: []    # List of allowed exceptions
+```
+
+### 15.2: Generation Protocol
+
+```
+Step 1: After completing CODEBASE.md sections 1-14
+Step 2: Extract directory mappings from Section 2.5 findings
+Step 3: Write to .planning/config/directory-mappings.yaml
+Step 4: Verify file is valid YAML
+Step 5: Log: "Directory mappings written to .planning/config/directory-mappings.yaml"
+```
