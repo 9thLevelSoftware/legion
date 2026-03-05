@@ -1,3 +1,18 @@
+---
+intent_mappings:
+  harden:
+    - testing-reality-checker
+    - engineering-security-engineer
+    - testing-api-tester
+    - testing-evidence-collector
+  document:
+    - product-technical-writer
+    - engineering-frontend-developer
+  security-only:
+    - engineering-security-engineer
+    - testing-api-tester
+---
+
 # Agent Catalog
 
 Complete catalog of all 52 built-in agents across 9 divisions, plus any custom agents created via `/legion:agent`. Also contains the Task Type Index (reverse mapping from project need to recommended agents).
@@ -123,7 +138,36 @@ Custom agents created via `/legion:agent` appear here. This section is populated
 
 ---
 
-## Section 2: Task Type Index
+## Section 2: Intent Routing
+
+Intent flags (`--just-*`, `--skip-*`) dynamically compose agent teams for specific execution modes. These are not fixed assignments — intents are resolved at runtime from `.planning/config/intent-teams.yaml`.
+
+### Intent-to-Agent Mappings
+
+| Intent | Mode | Primary Agents | Secondary Agents | Description |
+|--------|------|----------------|------------------|-------------|
+| harden | ad_hoc | testing-reality-checker, engineering-security-engineer | testing-api-tester, testing-evidence-collector | Security audit with Testing + Security divisions |
+| document | filter_plans | product-technical-writer | engineering-frontend-developer | Generate documentation without implementation |
+| skip-frontend | filter_plans | — | — | Exclude frontend/UI tasks and agents |
+| skip-backend | filter_plans | — | — | Exclude backend/API tasks and agents |
+| security-only | filter_review | engineering-security-engineer | testing-api-tester | Security-only review audit |
+
+### Cross-Reference with Divisions
+
+- **harden**: Combines Testing (reality-checker, api-tester, evidence-collector) + Engineering (security-engineer)
+- **document**: Uses Product (technical-writer) + Engineering (frontend-developer for component docs)
+- **security-only**: Security-focused subset of harden team for review filtering
+
+### Notes
+
+- Intent teams are **dynamic compositions**, not fixed agent assignments
+- Agents may appear in multiple intent mappings
+- Primary agents are always spawned; secondary agents are spawned based on workload
+- Filter intents (`skip-*`, `document`) don't spawn agents directly — they filter existing plans
+
+---
+
+## Section 3: Task Type Index
 
 Reverse mapping from common project needs to recommended agents.
 
