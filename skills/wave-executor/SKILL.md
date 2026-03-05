@@ -95,7 +95,9 @@ Step 5: Validate the plan structure
   d) All files_modified lists are disjoint within each wave (no two plans in the
      same wave modify the same file). If a conflict is found: warn the user —
      do not abort, but flag for review.
-  If validation fails on (a), (b), or (c): stop and report the error. Do not execute.
+  e) If directory mappings exist, verify files_modified paths are valid or have overrides.
+     If invalid and strictness=strict: error before execution begins.
+  If validation fails on (a), (b), (c), or (e): stop and report the error. Do not execute.
 
 Step 6: Report discovery results
   Before executing, show a discovery summary:
@@ -198,6 +200,7 @@ Step 3.6: Load authority constraints
   - If authority matrix does not exist: AUTHORITY_CONTEXT = "" (no constraints)
 
 Step 3.7: Enforce authority during agent spawn
+
   Before spawning each agent:
   1. Load authority matrix: `.planning/config/authority-matrix.yaml`
   2. Get list of all agents in current wave
@@ -206,8 +209,120 @@ Step 3.7: Enforce authority during agent spawn
      "Warning: Agents {agent1} and {agent2} both claim domain {domain}. 
       Both will be active — findings will be merged with severity escalation."
 
+Step 3.8: Validate file placement against directory mappings (ENV-04)
+
+  Before constructing the agent prompt, validate that the plan's files_modified
+  are consistent with the project's directory structure. This prevents files
+  from being created in incorrect locations during execution.
+
+  3.8.1: Load directory mappings
+
+  Check if `.planning/config/directory-mappings.yaml` exists:
+  - If yes: Load mappings and enforcement configuration
+  - If no: Skip placement validation (no mappings available)
+
+  3.8.2: Validate each file in files_modified
+
+  For each file path in the plan's `files_modified` frontmatter:
+
+  a. Skip validation for exempt patterns:
+     - Files in `.planning/` (planning state has flexible structure)
+     - Root-level config files (README.md, .gitignore, etc.)
+     - Files matching enforcement.exceptions patterns
+
+  b. Infer the expected category for the file:
+     - Use same inference logic as spec-pipeline Section 8.1
+     - Check file extension, name patterns, and content type
+     - Examples:
+       - `**/*.test.js` → tests
+       - `**/routes/**` → routes
+       - `**/components/**` → components
+       - `**/SKILL.md` → skills (Legion-specific)
+       - `commands/*.md` → commands (Legion-specific)
+
+  c. Look up allowed directories for the category:
+     - Find category in mappings.mappings
+     - Get the list of allowed paths
+     - Note the enforcement strictness (strict/warn/off)
+
+  d. Validate the file path:
+     - Extract directory portion of file path
+     - Check if directory matches any allowed path for category
+     - Handle nested directories (child of allowed path is valid)
+
+  3.8.3: Handle validation results
+
+  Collect validation results:
+
+  | File | Category | Directory | Valid | Action |
+  |------|----------|-----------|-------|--------|
+  | {file} | {category} | {dir} | {yes/no} | {allow/warn/block} |
+
+  Action based on strictness and violations:
+
+  - strict + violations: Block wave execution
+    ```
+    ERROR: File placement violations detected in plan {NN}-{PP}:
+      - {file}: Expected in {allowed_dirs} for {category}, got {actual_dir}
+    
+    Fix: Move files to correct directories or update directory mappings.
+    Execution blocked until resolved.
+    ```
+    Halt wave execution and report to user.
+
+  - warn + violations: Add warning to wave report, allow execution
+    ```
+    WARNING: File placement issues in plan {NN}-{PP}:
+      - {file}: Should be in {suggested_path} for {category}
+    
+    Files will be created as specified, but this may deviate from project conventions.
+    ```
+    Continue execution but flag in wave summary.
+
+  - no violations: Continue normally
+    Log: "All {N} files validated against directory mappings ✓"
+
+  3.8.4: Allow plan-level overrides
+
+  Plans can override placement validation via frontmatter:
+  ```yaml
+  ---
+  phase: XX-name
+  plan: NN
+  path_override: true
+  path_override_reason: "Creating new category not yet in mappings"
+  ---
+  ```
+
+  When override is present:
+  - Skip validation for this plan
+  - Log: "Path validation overridden: {reason}"
+  - Note in wave summary
+
 Step 4: Construct the agent execution prompt
   Combine personality and plan using this exact format:
+
+  Step 4.1: Add file placement guidance (conditional)
+
+  If placement validation found warnings or suggestions:
+  - Add a FILE_PLACEMENT_CONTEXT block to the prompt
+
+  FILE_PLACEMENT_CONTEXT = """
+  ## File Placement Guidance
+
+  This plan includes files that should be placed in specific directories:
+
+  | File | Target Directory | Category |
+  |------|-----------------|----------|
+  | {file} | {directory} | {category} |
+
+  **Important**: Create files in the specified directories to maintain project structure.
+  If a directory doesn't exist, create it first before writing the file.
+  """
+
+  If no warnings: FILE_PLACEMENT_CONTEXT = "" (empty)
+
+  Step 4.2: Assemble the full prompt
 
   """
   {PERSONALITY_CONTENT}
@@ -221,6 +336,8 @@ Step 4: Construct the agent execution prompt
   {AUTHORITY_CONTEXT}
 
   {CODEBASE_CONTEXT}
+
+  {FILE_PLACEMENT_CONTEXT}
 
   {PLAN_CONTENT}
 
