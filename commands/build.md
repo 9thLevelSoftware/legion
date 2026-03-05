@@ -23,6 +23,86 @@ skills/execution-tracker/SKILL.md
 @.planning/STATE.md
 </context>
 
+## Two-Wave Execution Mode
+
+The build command automatically activates two-wave mode when:
+1. Phase has >= 4 plans
+2. Plans span multiple service groups OR include explicit analysis tasks
+3. `two_wave: true` in phase CONTEXT.md (optional override)
+
+### Wave Detection Algorithm
+
+```
+Step 1: Analyze plan structure
+  - Group plans by files_modified directory patterns:
+    - src/frontend/** → "frontend" service group
+    - src/backend/** → "backend" service group
+    - src/shared/** → "shared" (cross-cutting)
+
+Step 2: Detect analysis plans
+  - Plans with `wave_role: analysis` in frontmatter
+  - Plans assigned to architecture or security agents
+  - Plans with "review", "audit", "analyze" in objective
+
+Step 3: Decide execution mode
+  - IF (service_groups >= 2 OR analysis_plans >= 1) AND total_plans >= 4:
+    → Activate two-wave mode
+  - ELSE:
+    → Standard single-wave mode
+```
+
+### Two-Wave Execution Flow
+
+**Wave A: Build + Analysis**
+```
+1. Identify service groups from plan files_modified
+2. For each service group:
+   a. Spawn build agents (autonomous: false) in parallel
+   b. Wait for all build agents to complete
+   c. Collect outputs: files created, SUMMARY.md files
+3. Spawn analysis agents (architecture, security) in parallel
+   - Analysis agents get read-only access to Wave A build outputs
+4. Collect analysis findings
+5. Gate: Architecture Review
+   - Show analysis findings to user
+   - Ask: "Proceed to Wave B, or revise Wave A outputs?"
+6. If proceed: Generate Wave A manifest
+   If revise: Pause, user fixes, re-run Wave A
+```
+
+**Wave B: Execution + Remediation**
+```
+1. Load Wave A manifest (files produced, service groups built)
+2. Spawn Wave B agents in parallel:
+   - Execution agents: tests, benchmarks, validation
+   - Remediation agents: SRE chaos, data scientist (optional)
+3. All Wave B agents run simultaneously
+4. Collect findings from both streams
+5. Synthesize consolidated validation report
+6. Gate: Production Readiness
+   - Verdict: PASS, NEEDS_WORK, or FAIL
+   - FAIL blocks phase completion
+   - NEEDS_WORK offers fix cycle
+```
+
+### Single-Wave Fallback
+
+When two-wave mode is NOT activated:
+- Execute all plans in standard wave order (1, 2, 3...)
+- No Wave A/Wave B distinction
+- Standard review panel after all waves complete
+
+### Command Options
+
+`/legion:build` — Execute current phase plans
+`/legion:build {phase}` — Execute specific phase
+`/legion:build --two-wave` — Force two-wave mode (even if auto-detection says single-wave)
+`/legion:build --single-wave` — Force single-wave mode (disable auto-detection)
+`/legion:build --skip-gates` — Skip architecture/production readiness gates (for CI)
+
+Options can combine:
+`/legion:build 37 --two-wave --skip-gates`
+
 <process>
 DRY-RUN MODE (deterministic, no side effects)
    - If `$ARGUMENTS` contains `--dry-run`, DO NOT write files, spawn agents, open Teams, create Tasks, send messages, commit, or call external side-effecting integrations.
