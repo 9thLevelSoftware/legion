@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "description": "Defines how control_mode presets adjust authority enforcement behavior",
+  "profiles": {
+    "autonomous": {
+      "description": "Full agent autonomy -- authority enforcement disabled, agents decide freely",
+      "authority_enforcement": false,
+      "domain_filtering": false,
+      "human_approval_required": false,
+      "file_scope_restriction": false,
+      "read_only": false
+    },
+    "guarded": {
+      "description": "Default -- authority boundaries active, domain filtering on, human approval for out-of-scope",
+      "authority_enforcement": true,
+      "domain_filtering": true,
+      "human_approval_required": true,
+      "file_scope_restriction": false,
+      "read_only": false
+    },
+    "advisory": {
+      "description": "Read-only mode -- agents suggest but don't execute, all findings shown unfiltered",
+      "authority_enforcement": false,
+      "domain_filtering": false,
+      "human_approval_required": false,
+      "file_scope_restriction": false,
+      "read_only": true
+    },
+    "surgical": {
+      "description": "Maximum restriction -- agents only touch listed files, all changes require confirmation",
+      "authority_enforcement": true,
+      "domain_filtering": true,
+      "human_approval_required": true,
+      "file_scope_restriction": true,
+      "read_only": false
+    }
+  },
+  "flag_descriptions": {
+    "authority_enforcement": "When true, authority-enforcer validates domain ownership before agent actions",
+    "domain_filtering": "When true, out-of-domain findings are filtered during review synthesis",
+    "human_approval_required": "When true, agents must escalate out-of-scope decisions per authority matrix",
+    "file_scope_restriction": "When true, agents can only modify files explicitly listed in plan files_modified",
+    "read_only": "When true, agents suggest changes but do not execute them; auto-commit is suppressed"
+  },
+  "when_to_use": {
+    "autonomous": "Trusted workflows, solo development, rapid prototyping where speed matters more than guardrails",
+    "guarded": "Default for team workflows -- balances agent productivity with human oversight",
+    "advisory": "Code review, architecture exploration, learning a codebase -- no changes, only suggestions",
+    "surgical": "Production hotfixes, sensitive codebases, compliance-critical changes -- maximum safety"
+  }
+}
