@@ -171,7 +171,7 @@
 | 2 — Wave Safety | 2 | 2 | Complete |
 | 3 — Control Modes | 3 | 3 | Complete ✓ |
 | 4 — Observability | 3 | 3 | Complete ✓ |
-| 5 — Agent Metadata Enrichment | 3 | 0 | Not started |
+| 5 — Agent Metadata Enrichment | 3 | 3 | Complete ✓ |
 | 6 — Recommendation Engine v2 | 3 | 0 | Not started |
 | 7 — Validation & Conformance | 3 | 0 | Not started |
 | 8 — Codebase Mapper Enrichment | 2 | 0 | Not started |
