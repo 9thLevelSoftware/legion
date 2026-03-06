@@ -549,10 +549,21 @@ wave: {wave_number}
 depends_on: [{list of "NN-PP" plan IDs this depends on}]
 files_modified:
   - {list of files this plan will create or modify}
+files_forbidden:
+  - {list of files/directories this plan MUST NOT modify}
+expected_artifacts:
+  # Contract — declares what outputs this plan produces (existence check)
+  # Distinct from must_haves.artifacts which declares quality checks on those outputs
+  - path: "{primary output file}"
+    provides: "{what it delivers}"
+    required: {true if plan fails without this artifact, false if optional}
 autonomous: {true if no agent needed, false if agent-delegated}
 agents: [{list of agent IDs — MUST match filenames in agents/ directory exactly}]
 requirements: [{list of requirement IDs covered}]
 user_setup: []
+verification_commands:
+  - "{bash command 1 that proves plan success — exit 0 on pass}"
+  - "{bash command 2}"
 
 must_haves:
   truths:
@@ -648,9 +659,28 @@ After completion, create `.planning/phases/{NN}-{phase-slug}/{NN}-{PP}-SUMMARY.m
 | `must_haves.key_links` | How this plan's output connects to other files (grep-able patterns) |
 | `<context>` | Always include PROJECT.md, ROADMAP.md, and the phase CONTEXT.md. Add source files relevant to the plan's tasks. For wave 2+ plans, include prior plan summaries. |
 | `<tasks>` | Max `{max_tasks_per_plan}` tasks (default 3). Each with name, files, action, verify, done. |
+| `files_forbidden` | List of file paths and directory patterns this plan MUST NOT modify. Include files owned by other plans in the same wave (prevents parallel conflicts), shared config files not in scope, and any file the plan reads but should not write. Use glob patterns for directories (e.g., `agents/`, `commands/`). Empty array `[]` is valid if no restrictions apply, but prefer explicit declarations for code-modifying plans. |
+| `expected_artifacts` | Structured list of output files this plan produces. Each entry has `path` (file path), `provides` (1-sentence description of what it delivers), and `required` (true/false — true means plan fails without this artifact). This is the **contract** — it declares what outputs exist after execution. Distinct from `must_haves.artifacts` which declares quality checks (min_lines, contains) on those outputs. |
+| `verification_commands` | **Mandatory** array of bash commands that prove plan-level success. Each command must return exit code 0 on success, be self-contained (no variables or prior setup), and run from repository root. These are plan-level aggregation checks — they may echo task-level `> verification:` lines but should also include integration checks (e.g., "all generated files exist", "no regressions in test suite"). Plan-critique flags plans missing this field as BLOCKER. |
 | `<verify>` inside tasks | Bash commands only — `wc -l`, `grep`, `test -f`, etc. |
 | `<verification>` | Checklist of all conditions for plan completion |
 | `<success_criteria>` | Bulleted testable outcomes |
+
+### Schema Field Relationships
+
+| Field | Purpose | Enforced By |
+|-------|---------|-------------|
+| `files_modified` | What this plan WILL touch | Wave executor (scope check) |
+| `files_forbidden` | What this plan MUST NOT touch | Plan-critique (overlap detection) |
+| `expected_artifacts` | What this plan MUST produce (contract) | Plan-critique (existence check) |
+| `must_haves.artifacts` | How good outputs must be (quality) | Review agents (quality check) |
+| `verification_commands` | Bash commands proving success | Wave executor (automated run) |
+
+`expected_artifacts` and `must_haves.artifacts` are complementary:
+- `expected_artifacts` answers: "Does the output exist?"
+- `must_haves.artifacts` answers: "Is the output good enough?"
+
+Both should reference the same files, but serve different validation stages.
 
 ### Writing Detailed Task Actions
 
@@ -697,6 +727,55 @@ The `> verification:` lines and `<verify>` blocks contain the SAME commands. The
 - `<verify>` blocks are the human-readable executable form used during manual review
 
 Both exist for redundancy — inline format for automation, block format for readability.
+
+**Three-layer verification hierarchy:**
+
+| Layer | Location | Purpose | Consumed By |
+|-------|----------|---------|-------------|
+| `> verification:` lines | Inline in task `<action>` blocks | Task-level checks | Wave-executor (automated per-task) |
+| `<verify>` blocks | Per task | Same commands in executable form | Manual review |
+| `verification_commands` | Plan frontmatter | Plan-level aggregation for go/no-go | Wave-executor (automated plan-level) |
+
+All three layers should reference the same underlying checks but serve different automation stages. Task-level lines prove individual tasks succeeded; plan-level `verification_commands` prove the plan as a whole succeeded (and may include integration checks that span multiple tasks).
+
+### Writing files_forbidden Declarations
+
+Every plan that modifies code or skill files SHOULD declare `files_forbidden`. Guidelines:
+
+**What to include:**
+- Files owned by other plans in the same wave (prevents parallel write conflicts)
+- Shared config files not in this plan's scope (e.g., `package.json` if only modifying skills)
+- Agent personality files (unless this plan explicitly modifies agents)
+- Command entry points (unless this plan explicitly wires commands)
+
+**What NOT to include:**
+- Files that don't exist yet (only forbid existing files)
+- Entire repository root (`/`) — be specific
+- Files in `files_modified` (contradiction — a file can't be both modified and forbidden)
+
+**Validation rule:** Plan-critique checks that `files_modified` and `files_forbidden` have no overlap. Overlap triggers a BLOCKER.
+
+### Writing expected_artifacts Declarations
+
+Every plan SHOULD declare `expected_artifacts` for its primary outputs. Guidelines:
+
+- List every file that must exist after plan completion
+- Set `required: true` for files that are the plan's primary deliverable
+- Set `required: false` for auxiliary outputs (logs, temp files, optional docs)
+- Use the same paths as `files_modified` but with semantic annotations
+
+**Example:**
+```yaml
+expected_artifacts:
+  - path: "skills/new-skill/SKILL.md"
+    provides: "New skill definition with 3 sections"
+    required: true
+  - path: "commands/new-command.md"
+    provides: "Command entry point wiring the new skill"
+    required: true
+```
+
+**Validation rule:** Plan-critique checks that all `required: true` artifacts appear in `files_modified`. Missing entries trigger a WARNING.
 
 ---
 
