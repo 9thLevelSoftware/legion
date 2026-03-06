@@ -43,9 +43,10 @@ These rules govern all execution decisions. Do not deviate from them.
 6. **Orchestrator stays in main context** — the `/legion:build` command itself does not execute plan work. It reads, validates, dispatches, and collects. On CLIs without spawning, personality injection is temporary and dropped after each plan.
 7. **Failed wave blocks subsequent waves** — if any plan in a wave fails, do not proceed to the next wave. Report wave status and pause for user decision.
 8. **Files isolation per wave** — plans within the same wave must not share files_modified entries. This is guaranteed by plan authoring (see phase-decomposer.md), but flag a warning if a conflict is detected.
-9. **One coordination context per phase** — per adapter protocol: one Team on Claude Code, one checklist file on other CLIs. Not per wave.
-10. **Agents report via adapter.collect_results** — spawned agents send their structured completion summary per the adapter's result collection method. This keeps the coordinator's context window small.
-11. **Verification-gated completion** — after each task, the agent MUST run all `> verification:` commands from the task's action block. If any verification command returns a non-zero exit code, the task is marked as failed and the agent must report the failure. Do not proceed to the next task until all verifications pass.
+9. **Sequential file ordering** — when plans in the same wave declare `sequential_files`, the wave-executor must serialize dispatch for plans that share a sequential file. Plans with no sequential file overlap still execute in parallel. This constraint applies even when `adapter.parallel_execution` is true.
+10. **One coordination context per phase** — per adapter protocol: one Team on Claude Code, one checklist file on other CLIs. Not per wave.
+11. **Agents report via adapter.collect_results** — spawned agents send their structured completion summary per the adapter's result collection method. This keeps the coordinator's context window small.
+12. **Verification-gated completion** — after each task, the agent MUST run all `> verification:` commands from the task's action block. If any verification command returns a non-zero exit code, the task is marked as failed and the agent must report the failure. Do not proceed to the next task until all verifications pass.
 
 ---
 
@@ -72,6 +73,7 @@ Step 3: Read each plan file's YAML frontmatter
   - depends_on: list of "NN-PP" strings (plans that must complete before this one)
   - autonomous: boolean (true = no agent needed, false = agent-delegated)
   - files_modified: list of file paths this plan creates or modifies
+  - sequential_files: list of file paths requiring single-agent sequential access (optional)
   - requirements: list of requirement IDs covered by this plan
 
 Step 4: Build the wave map
@@ -519,6 +521,17 @@ Step 3: Construct agent prompts for all plans in the wave
   - For each plan, run the Personality Injection flow from Section 3
   - Prepare all prompts before spawning any agents
 
+Sequential Files Pre-Dispatch Check (before Step 4 agent spawning):
+  - Collect sequential_files from all plans in the current wave
+  - Build a conflict map: file -> [plan IDs that declare this file]
+  - If any file has 2+ plans declaring it:
+    The ENTIRE wave falls back to fully sequential dispatch (plan-number order),
+    even when adapter.parallel_execution is true.
+    This is the simple, safe model -- no mixed parallel+sequential complexity.
+  - If no sequential_files overlap exists: dispatch all plans in parallel as before
+  - If no sequential_files declared in any plan: skip this check entirely
+  - Log: "Sequential file constraint detected: {files}. Wave {N} executing fully sequentially."
+
 Step 4: Execute plans for this wave (adapter-conditional)
 
   **If adapter.parallel_execution is true** (e.g., Claude Code, Cursor):
@@ -559,6 +572,8 @@ Step 6: Process wave results
     Completed: [list of plan names that succeeded]
     Failed: [list of plan names that failed, with error summaries]
     Files modified: [aggregate list across all plans in the wave]
+    If sequential ordering was applied:
+      "Sequential file ordering applied: plans {list} executed in order due to shared access to {files}"
 
 Step 7: Post-wave decision
   - If ALL plans in the wave completed successfully:

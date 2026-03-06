@@ -551,6 +551,8 @@ files_modified:
   - {list of files this plan will create or modify}
 files_forbidden:
   - {list of files/directories this plan MUST NOT modify}
+sequential_files:
+  - {files requiring single-agent sequential access within the wave}
 expected_artifacts:
   # Contract — declares what outputs this plan produces (existence check)
   # Distinct from must_haves.artifacts which declares quality checks on those outputs
@@ -660,6 +662,7 @@ After completion, create `.planning/phases/{NN}-{phase-slug}/{NN}-{PP}-SUMMARY.m
 | `<context>` | Always include PROJECT.md, ROADMAP.md, and the phase CONTEXT.md. Add source files relevant to the plan's tasks. For wave 2+ plans, include prior plan summaries. |
 | `<tasks>` | Max `{max_tasks_per_plan}` tasks (default 3). Each with name, files, action, verify, done. |
 | `files_forbidden` | List of file paths and directory patterns this plan MUST NOT modify. Include files owned by other plans in the same wave (prevents parallel conflicts), shared config files not in scope, and any file the plan reads but should not write. Use glob patterns for directories (e.g., `agents/`, `commands/`). Empty array `[]` is valid if no restrictions apply, but prefer explicit declarations for code-modifying plans. |
+| `sequential_files` | Optional list of file paths that require single-agent sequential access within the wave. Use when multiple plans in the same wave read/write a shared file that isn't in `files_modified` (e.g., a shared config file read by all plans, a lock file, or a generated index file that multiple plans append to). Files in `sequential_files` must NOT also appear in `files_modified` -- if a plan modifies a file, declare it in `files_modified` and use `files_forbidden` in other plans to prevent conflicts. Empty array `[]` or omission means no sequential constraints. |
 | `expected_artifacts` | Structured list of output files this plan produces. Each entry has `path` (file path), `provides` (1-sentence description of what it delivers), and `required` (true/false — true means plan fails without this artifact). This is the **contract** — it declares what outputs exist after execution. Distinct from `must_haves.artifacts` which declares quality checks (min_lines, contains) on those outputs. |
 | `verification_commands` | **Mandatory** array of bash commands that prove plan-level success. Each command must return exit code 0 on success, be self-contained (no variables or prior setup), and run from repository root. These are plan-level aggregation checks — they may echo task-level `> verification:` lines but should also include integration checks (e.g., "all generated files exist", "no regressions in test suite"). Plan-critique flags plans missing this field as BLOCKER. |
 | `<verify>` inside tasks | Bash commands only — `wc -l`, `grep`, `test -f`, etc. |
@@ -776,6 +779,31 @@ expected_artifacts:
 ```
 
 **Validation rule:** Plan-critique checks that all `required: true` artifacts appear in `files_modified`. Missing entries trigger a WARNING.
+
+### Writing sequential_files Declarations
+
+Use `sequential_files` when multiple plans in the same wave need ordered access to a shared file that none of them owns (i.e., the file is not in any plan's `files_modified`).
+
+**When to use:**
+- A shared config file (e.g., `settings.json`) that multiple plans read and may append to
+- A lock file or generated index that multiple plans contribute to
+- Any file where concurrent reads/writes from parallel agents could produce race conditions
+
+**When NOT to use:**
+- If a plan modifies the file, declare it in `files_modified` and use `files_forbidden` in other plans to prevent conflicts -- that is the primary isolation mechanism
+- If plans only read a file without writing, no sequential constraint is needed
+- If plans are already in different waves (waves are inherently sequential)
+
+**Validation rules:**
+- Files in `sequential_files` must NOT also appear in the same plan's `files_modified` (contradiction -- if you modify it, own it)
+- The wave-executor uses `sequential_files` to detect overlap: if two plans in the same wave both declare the same sequential file, the entire wave falls back to fully sequential dispatch
+
+**Example:**
+```yaml
+sequential_files:
+  - ".planning/config/shared-registry.yaml"
+  - "CHANGELOG.md"
+```
 
 ---
 
