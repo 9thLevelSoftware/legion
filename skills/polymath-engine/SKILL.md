@@ -122,6 +122,16 @@ Which describes your situation?
 | Setup | Environment configuration unclear | "How to run this locally?" |
 | History | Design decision rationale missing | "Why was this pattern chosen?" |
 
+**Compare gap categories:**
+
+| Category | Description | Example |
+|----------|-------------|---------|
+| Criteria | Evaluation dimensions unclear | "What metrics matter most?" |
+| Trade-off | Hidden costs or conflicts unknown | "What do you lose by choosing X?" |
+| Validation | Claims unverified by evidence | "Is that benchmark accurate?" |
+| Cost | Total cost of ownership unclear | "What are the long-term maintenance costs?" |
+| Experience | Team/user familiarity unknown | "Has anyone used this in production?" |
+
 **Gap detection workflow:**
 
 1. **Track stated vs implied**
@@ -189,6 +199,18 @@ previous_choices:
 | 4-5 | Deep dive | Specific files, data flow, dependency chains |
 | 6 | Knowledge check | Validate understanding of key concepts |
 | 7 | Decide | Familiarized / Explore deeper / Switch area |
+
+**Compare exchange pattern:**
+
+| Exchange # | Purpose | Typical Choices |
+|------------|---------|-----------------|
+| 1 | Alternative identification | Confirm/add alternatives from research |
+| 2 | Criteria definition | Select relevant comparison criteria |
+| 3 | Criteria weighting | Weight each criterion: critical/important/nice-to-have |
+| 4 | Structured comparison | Review scores, request deeper evidence |
+| 5 | Trade-offs & constraints | Identify deal-breakers, hidden costs |
+| 6 | Recommendation review | Accept/reject recommendation, challenge scores |
+| 7 | Decision & capture | Commit to choice, capture rationale |
 
 **Early exit conditions:**
 - User explicitly requests exit (save progress option)
@@ -284,6 +306,66 @@ previous_choices:
 | [#] | [what was explored during onboard] | [what was learned] |
 ```
 
+**Compare deliverable template** (produces a comparison matrix with weighted scoring — saved to `.planning/exploration-{name}.md`):
+
+```markdown
+# Comparison Summary — {name}
+
+## Comparison Topic
+{What was being compared and why}
+
+## Alternatives Evaluated
+| Alternative | Description | Source |
+|-------------|-------------|--------|
+| [name] | [what it is] | [research/user-provided] |
+
+## Comparison Criteria
+| Criterion | Weight | Description |
+|-----------|--------|-------------|
+| [criterion] | Critical / Important / Nice-to-have | [what this measures] |
+
+## Comparison Matrix
+| Criterion (Weight) | Alternative 1 | Alternative 2 | Alternative 3 |
+|---------------------|---------------|---------------|---------------|
+| [criterion] ([weight]) | [score]: [evidence] | [score]: [evidence] | [score]: [evidence] |
+
+Scoring: Strong / Adequate / Weak / Unknown
+
+## Pros & Cons
+### Alternative 1: {name}
+- **Pros**: [advantages]
+- **Cons**: [disadvantages]
+
+### Alternative 2: {name}
+- **Pros**: [advantages]
+- **Cons**: [disadvantages]
+
+## Trade-offs
+| Alternative | Gains | Loses |
+|-------------|-------|-------|
+| [name] | [what you get] | [what you give up] |
+
+## Risk Assessment
+| Alternative | Risk Level | Key Risks |
+|-------------|------------|-----------|
+| [name] | High / Medium / Low | [specific risks] |
+
+## Recommendation
+**Recommended**: {Alternative X}
+**Confidence**: High / Medium / Low
+**Rationale**: {Why this alternative wins on weighted criteria}
+
+## Decision
+**Chosen**: {Alternative selected by user}
+**Justification**: {Why this was chosen — may differ from recommendation}
+**Rejected alternatives**: {What was not chosen and why}
+
+## Comparison Exploration Log
+| Exchange | Topic | Key Finding |
+|----------|-------|-------------|
+| [#] | [what was compared] | [what was learned] |
+```
+
 **Decision outcomes:**
 
 | Outcome | Trigger | Next Action |
@@ -351,6 +433,40 @@ exploration:
       - topic: string
         correct: boolean
         correction: string|null
+```
+
+**Compare-specific state extensions:**
+
+```yaml
+exploration:
+  mode: compare
+  compare:
+    topic: string                    # what is being compared
+    alternatives:                    # 2-4 alternatives under evaluation
+      - name: string
+        description: string
+        source: research|user        # where this alternative came from
+    criteria:                        # comparison criteria with weights
+      - name: string
+        weight: critical|important|nice_to_have
+        description: string
+    scores:                          # evaluation scores per alternative per criterion
+      - alternative: string
+        criterion: string
+        score: strong|adequate|weak|unknown
+        evidence: string             # research backing for this score
+    trade_offs:                      # identified trade-offs
+      - alternative: string
+        gains: string
+        loses: string
+    deal_breakers: [string]          # alternatives eliminated by hard constraints
+    recommendation:
+      alternative: string
+      confidence: high|medium|low
+      rationale: string
+    decision:
+      chosen: string                 # final user choice
+      justification: string          # why (may differ from recommendation)
 ```
 
 ---

@@ -245,6 +245,137 @@ Produce the onboard deliverable (see Onboard Mode Deliverables below).
 
 ---
 
+## 🔄 Compare Mode Workflow
+
+When mode is **compare**, follow these phases instead of the crystallize or onboard workflows.
+
+### Compare Phase 1: Alternative Identification (Silent + 1 exchange)
+1. **Research the domain** — Use Grep, Glob, and WebSearch to understand the comparison space
+2. **Identify 2-4 alternatives** — Based on research and user input, surface concrete options
+3. **Present alternatives for confirmation** as a structured multi-select:
+
+> Based on research, here are the alternatives I've identified:
+> - [A] **{Alternative 1}** — {one-line description}
+> - [B] **{Alternative 2}** — {one-line description}
+> - [C] **{Alternative 3}** — {one-line description}
+> - [D] **Add another** — I have an alternative not listed
+
+If the user selects [D], capture a single free-text input for the missing alternative, then re-present the updated list for confirmation. This is the ONE free-input exception for compare mode.
+
+### Compare Phase 2: Criteria Definition (1-2 exchanges)
+Define comparison criteria with importance weighting. Present criteria as structured choices:
+
+> Which criteria matter for this decision?
+> - [A] Performance / Speed
+> - [B] Cost / Pricing
+> - [C] Ease of implementation
+> - [D] Community / Ecosystem
+> - [E] Scalability
+
+After criteria are selected, weight each criterion using sequential single-selects:
+
+> How important is **{criterion}**?
+> - [A] **Critical** — deal-breaker if not met
+> - [B] **Important** — strongly preferred but negotiable
+> - [C] **Nice-to-have** — bonus, won't drive the decision
+
+Repeat for each criterion. This produces a weighted criteria set.
+
+### Compare Phase 3: Structured Comparison (1-2 exchanges)
+Evaluate each alternative against each criterion with evidence:
+
+1. **Score each alternative** against each criterion (strong / adequate / weak / unknown)
+2. **Provide evidence** for each score — reference research findings, documentation, benchmarks
+3. **Present the comparison matrix** as a structured summary:
+
+> Here's how the alternatives stack up:
+>
+> | Criterion (Weight) | Alt 1 | Alt 2 | Alt 3 |
+> |---|---|---|---|
+> | {Criterion} ({weight}) | {score + evidence} | {score + evidence} | {score + evidence} |
+>
+> Which area needs deeper investigation?
+> - [A] I trust these scores — move to trade-offs
+> - [B] **{Criterion X}** needs more evidence
+> - [C] **{Criterion Y}** needs more evidence
+
+### Compare Phase 4: Trade-offs & Constraints (1 exchange)
+Surface hidden trade-offs and deal-breakers:
+
+1. **Identify trade-offs** — What do you gain/lose with each alternative?
+2. **Surface deal-breakers** — Any hard constraints that eliminate options?
+3. **Present trade-offs** as structured choices:
+
+> Key trade-offs to consider:
+> - {Alternative 1}: {gains} BUT {loses}
+> - {Alternative 2}: {gains} BUT {loses}
+>
+> Any of these a deal-breaker?
+> - [A] No deal-breakers — all options viable
+> - [B] **{Alternative X}** is eliminated — {reason}
+> - [C] Need to reconsider criteria based on these trade-offs
+
+### Compare Phase 5: Decision & Capture (1 exchange)
+Generate final recommendation and capture rationale:
+
+1. **Generate comparison matrix** with weighted scores
+2. **Calculate recommendation** based on weighted criteria scores
+3. **Assign confidence level** (high / medium / low) based on evidence quality
+4. **Present recommendation**:
+
+> **Recommendation**: {Alternative X}
+> **Confidence**: {High/Medium/Low}
+> **Rationale**: {2-3 sentences explaining why}
+>
+> Ready to decide?
+> - [A] **Decision made** — I'm going with the recommendation
+> - [B] **Decision made** — I'm choosing a different alternative: {list others}
+> - [C] **Need more options** — want to add or evaluate more alternatives
+> - [D] **Refine criteria** — the evaluation criteria need adjustment
+
+Capture the final decision with justification for future reference.
+
+---
+
+## 🛠️ Compare Mode Deliverables
+
+When mode is **compare**, produce the following instead of standard crystallize deliverables:
+
+### 1. Comparison Criteria (with weights)
+```markdown
+| Criterion | Weight | Description |
+|-----------|--------|-------------|
+| [criterion] | Critical / Important / Nice-to-have | [what this measures] |
+```
+
+### 2. Structured Comparison Matrix (alternatives x criteria)
+```markdown
+| Criterion (Weight) | Alternative 1 | Alternative 2 | Alternative 3 |
+|---------------------|---------------|---------------|---------------|
+| [criterion] ([weight]) | [score]: [evidence] | [score]: [evidence] | [score]: [evidence] |
+```
+
+### 3. Pros/Cons per Alternative
+- **Alternative 1**: Pros: [...] | Cons: [...]
+- **Alternative 2**: Pros: [...] | Cons: [...]
+
+### 4. Trade-offs Summary
+Key trade-offs identified during comparison, including what each alternative gains vs. loses.
+
+### 5. Risk Assessment per Alternative
+- **Alternative 1**: [risk level] — [specific risks]
+- **Alternative 2**: [risk level] — [specific risks]
+
+### 6. Recommendation with Confidence Score
+> **Recommendation**: [Alternative X]
+> **Confidence**: High / Medium / Low
+> **Reasoning**: [why this alternative wins on weighted criteria]
+
+### 7. Decision Justification
+The final decision (which may differ from recommendation) with rationale captured for future reference. Includes what was chosen, what was rejected, and why.
+
+---
+
 ## 🛠️ Onboard Mode Deliverables
 
 When mode is **onboard**, produce the following instead of standard crystallize deliverables:
@@ -390,6 +521,15 @@ Remember: **Clarity is kindness.**
 - Presenting implementation details when the user selected overview depth.
 - Skipping knowledge validation — always verify understanding before completing.
 - Producing a deliverable that lists files without explaining their purpose or relationships.
+
+### Compare mode:
+- Presenting more than 4 alternatives — too many options cause decision paralysis.
+- Skipping criteria weighting — unweighted comparisons produce misleading results.
+- Scoring alternatives without evidence — every score must reference research findings.
+- Presenting a recommendation without confidence level — always state how sure you are.
+- Skipping trade-off analysis — hidden costs are the most common source of bad decisions.
+- Allowing open-ended criteria definition — always present criteria as structured choices.
+- Not capturing the final decision rationale — the "why" matters more than the "what" for future reference.
 
 ## ✅ Done Criteria
 A task is done only when:
