@@ -123,11 +123,15 @@ Polymath presents final structured choice after 5-7 exchanges.
 > - [C] **Park for now** — not ready, capture what we know and exit
 
 ### If "Proceed to planning" selected:
+- Save crystallized output to `.planning/exploration-{name}.md` (automatic — never skip)
+  - Use a slugified version of the concept as {name} (e.g., "finance-dashboard")
+  - Follow the document structure from polymath-engine Section 5
 - Display crystallized summary from Polymath
 - Confirm readiness: "Ready to run `/legion:start` with this concept?"
 - If yes: Transition to `/legion:start` flow with pre-populated concept
 
 ### If "Explore more" selected:
+- Save current exploration progress to `.planning/exploration-{name}.md` (automatic — capture partial state)
 - Ask: "Which area needs deeper exploration?"
 - Present specific sub-topics as structured choices:
   - Technical approach
@@ -136,29 +140,36 @@ Polymath presents final structured choice after 5-7 exchanges.
   - Timeline/constraints
   - Dependencies
 - Loop back to step 4 with narrowed scope (limit 2-3 more exchanges)
+- After narrowed exploration completes, update the saved exploration file with new findings
 
 ### If "Park for now" selected:
+- Save crystallized output to `.planning/exploration-{name}.md` (automatic — always persist)
 - Display summary of what was crystallized
-- Optionally save to `.planning/exploration-{timestamp}.md`
 - Exit gracefully with guidance on next steps
 
 ## 6. HANDLE DECISION OUTCOME
 
 ### Outcome: Proceed to planning
 
-1. Display Polymath's deliverables:
+1. **Save exploration (automatic)**:
+   - Write to `.planning/exploration-{name}.md` using polymath-engine Section 5 format
+   - {name} is a slugified version of the concept (e.g., "finance-dashboard", "checkout-redesign")
+   - This is NOT optional — exploration context must persist across sessions
+   - Display: "Exploration saved to `.planning/exploration-{name}.md`"
+
+2. Display Polymath's deliverables:
    - Crystallized Summary (1-2 paragraphs)
    - Knowns List
    - Unknowns List
    - Decision Recommendation
 
-2. Confirm transition:
+3. Confirm transition:
    - "Ready to run `/legion:start` with this crystallized concept?"
    - Option 1: "Yes, start planning" → Transition to `/legion:start`
    - Option 2: "Review the summary first" → Display again
    - Option 3: "Explore a different idea" → Return to step 2
 
-3. If proceeding to `/legion:start`:
+4. If proceeding to `/legion:start`:
    - Pre-populate the "What are you building?" question with crystallized summary
    - Skip to brownfield detection or questioning stages as appropriate
    - Note: "Concept crystallized via `/legion:explore`"
@@ -179,14 +190,15 @@ Polymath presents final structured choice after 5-7 exchanges.
 
 ### Outcome: Park for now
 
-1. Display what was learned:
+1. **Save exploration (automatic)**:
+   - Write to `.planning/exploration-{name}.md` using polymath-engine Section 5 format
+   - This is NOT optional — exploration context must persist across sessions
+   - Display: "Exploration saved to `.planning/exploration-{name}.md`"
+
+2. Display what was learned:
    - Crystallized Summary so far
    - Knowns (what's clear)
    - Unknowns (what remains unclear)
-
-2. Optional save:
-   - "Save exploration notes for later?"
-   - If yes: Write to `.planning/exploration-{timestamp}.md`
 
 3. Exit message:
    - "Exploration parked. When you're ready, run `/legion:explore` again or go directly to `/legion:start` if clarity emerges."
@@ -240,7 +252,7 @@ Display exploration summary:
 - **Do NOT let exploration continue indefinitely** — max 7 exchanges (10 if "explore more" selected once)
 - **Do NOT let Polymath ask open-ended questions** — verify structured choices format
 - **Do NOT automatically proceed to planning** — explicit user decision required at step 5
-- **Do NOT save exploration notes without permission** — always ask before writing files
+- **Do NOT skip saving exploration output** — always write to `.planning/exploration-{name}.md` regardless of outcome (Proceed, Explore more, Park). Context loss across sessions is the #1 user complaint.
 - **Do NOT override Polymath's choices** — command orchestrates, agent makes decisions
 </anti_patterns>
 

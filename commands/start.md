@@ -93,14 +93,22 @@ skills/codebase-mapper/SKILL.md
 
 5. QUESTIONING STAGE 1: VISION & IDENTITY
    Follow the questioning-flow skill's Stage 1 exactly, with exploration integration:
-   
-   **If exploration was completed:**
+
+   **First: Check for saved exploration files (even if explore wasn't run this session)**
+   - Look for `.planning/exploration-*.md` files
+   - If found: read the most recent one (by filename or modification time)
+   - Extract: Crystallized Summary, Knowns, Unknowns, Decisions Made
+   - Set exploration_context = extracted data
+   - This covers the case where `/legion:explore` ran in a PREVIOUS session
+
+   **If exploration was completed (inline or from saved file):**
    - Skip: "What are you building? Give me the elevator pitch."
    - Instead open with: "Here's what we crystallized in exploration: [summary]. Let's confirm the details."
    - Pre-populate: project_name, project_description, value_proposition from exploration
    - Focus questioning on what's still missing or needs confirmation
-   
-   **If no exploration (user chose "No, jump straight to planning"):**
+   - Display source: "Loaded from `.planning/exploration-{name}.md`" (if from saved file)
+
+   **If no exploration (user chose "No, jump straight to planning" AND no saved exploration files):**
    - Keep existing Stage 1 flow unchanged:
      - Open with: "What are you building? Give me the elevator pitch."
      - Ask follow-up questions adaptively based on what's missing from the response
@@ -200,8 +208,9 @@ skills/codebase-mapper/SKILL.md
 <decision_matrix>
 | Situation | Action | Notes |
 |-----------|--------|-------|
-| Exploration completed | Use crystallized summary in Stage 1 | Pre-populate questioning with exploration output |
-| User skipped exploration | Run standard Stage 1 questioning | No changes to existing flow |
-| Exploration parked | Exit start command, preserve exploration file | User can re-run start later with clarity |
+| Exploration completed (inline) | Use crystallized summary in Stage 1 | Pre-populate questioning with exploration output |
+| Exploration file found from previous session | Load and use in Stage 1 | Check `.planning/exploration-*.md` — context persists across sessions |
+| User skipped exploration, no saved files | Run standard Stage 1 questioning | No changes to existing flow |
+| Exploration parked | Exit start command, exploration already saved | User can re-run start later — file will be found automatically |
 </decision_matrix>
 </process>
