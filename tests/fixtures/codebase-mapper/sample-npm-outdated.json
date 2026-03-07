@@ -1,0 +1,37 @@
+{
+  "express": {
+    "current": "4.18.2",
+    "wanted": "4.21.0",
+    "latest": "5.0.1",
+    "dependent": "my-app",
+    "location": "node_modules/express"
+  },
+  "lodash": {
+    "current": "4.17.15",
+    "wanted": "4.17.21",
+    "latest": "4.17.21",
+    "dependent": "my-app",
+    "location": "node_modules/lodash"
+  },
+  "webpack": {
+    "current": "4.46.0",
+    "wanted": "4.47.0",
+    "latest": "5.94.0",
+    "dependent": "my-app",
+    "location": "node_modules/webpack"
+  },
+  "chalk": {
+    "current": "4.1.2",
+    "wanted": "4.1.2",
+    "latest": "5.3.0",
+    "dependent": "my-app",
+    "location": "node_modules/chalk"
+  },
+  "debug": {
+    "current": "4.3.4",
+    "wanted": "4.3.7",
+    "latest": "4.3.7",
+    "dependent": "my-app",
+    "location": "node_modules/debug"
+  }
+}

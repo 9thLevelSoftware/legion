@@ -499,6 +499,94 @@ Produce a consolidated risk table:
 - Calibrate complexity thresholds to the project's average file size
 - When in doubt, use MEDIUM -- avoid both false alarms (all HIGH) and false comfort (all LOW)
 
+### 4.6: Package-Level Dependency Risk (MAP-01)
+
+Enriches the config-level checks (Section 4.4) with deeper analysis: outdated packages, unmaintained dependencies, and heavy transitive dependency chains. Agents need to know if the project's dependencies are outdated, abandoned, or bloated -- not just whether a lockfile exists.
+
+#### 4.6.1: Ecosystem Detection
+
+Use the framework detection from Section 3.1 to determine which package manager commands to run:
+
+| Ecosystem | Package Manager | Outdated Command | Output Format |
+|-----------|----------------|-----------------|---------------|
+| Node.js | npm | `npm outdated --json 2>/dev/null` | JSON with current/wanted/latest |
+| Node.js | yarn | `yarn outdated --json 2>/dev/null` | JSON lines format |
+| Python | pip | `pip list --outdated --format=json 2>/dev/null` | JSON array |
+| Ruby | bundler | `bundle outdated --parseable 2>/dev/null` | Parseable text |
+| Rust | cargo | `cargo outdated --format json 2>/dev/null` | JSON (requires cargo-outdated) |
+| Go | go | `go list -m -u -json all 2>/dev/null` | JSON per module |
+
+Detection order: check for the presence of the corresponding manifest file (package.json, requirements.txt/pyproject.toml, Gemfile, Cargo.toml, go.mod) before running any command. If multiple ecosystems are present (e.g., monorepo), run checks for each detected ecosystem.
+
+#### 4.6.2: Outdated Package Detection
+
+Run the appropriate outdated command from 4.6.1. Parse the output:
+- Count packages with available updates
+- Categorize: major version behind (HIGH), minor version behind (MEDIUM), patch only (LOW)
+- Report top 5 most outdated packages with current -> latest version
+
+Risk calibration (relative to total dependency count):
+- More than 50% of dependencies outdated: HIGH
+- 20-50% outdated: MEDIUM
+- Less than 20% outdated: LOW
+- Any package with a major version behind: flag individually as HIGH regardless of percentage
+
+**Skip condition:** If package manager not available or command fails, output: "Package manager not available or no lockfile found. Dependency currency check skipped."
+
+#### 4.6.3: Heavy Dependency Detection
+
+For Node.js projects, check transitive dependency count:
+```bash
+npm ls --all --json 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); const count=(o)=>o.dependencies?Object.keys(o.dependencies).reduce((s,k)=>s+1+count(o.dependencies[k]),0):0; console.log(count(d))"
+```
+
+Thresholds (calibrated to direct dependency count):
+- Ratio > 50 transitive per direct dep: HIGH (bloated dependency tree)
+- Ratio 20-50: MEDIUM (normal growth)
+- Ratio < 20: LOW (lean tree)
+
+For other ecosystems: skip heavy dependency check (no reliable cross-ecosystem tool).
+
+**Skip condition:** If `npm ls` fails or not a Node.js project, output: "Heavy dependency analysis requires Node.js/npm. Skipped for {ecosystem}."
+
+#### 4.6.4: Unmaintained Package Heuristic
+
+For Node.js projects, check the `time` field in `package-lock.json` for packages not updated in >2 years:
+```
+Read package-lock.json
+For each direct dependency in package.json:
+  Find its entry in lockfile
+  Check resolved URL date or version publish date if available
+  Flag packages where latest version is >2 years old
+```
+
+For non-Node.js: Check lockfile modification dates as a rough proxy. If lockfile is >2 years old and manifest has been updated recently, flag as potential staleness.
+
+**Skip condition:** If no lockfile or parsing fails, output: "Lockfile unavailable for unmaintained package detection. Skipped."
+
+#### 4.6.5: Dependency Risk Summary
+
+Produce a consolidated dependency risk assessment:
+
+| Metric | Value | Risk Level |
+|--------|-------|-----------|
+| Outdated packages | {N}/{total} ({pct}%) | {HIGH/MEDIUM/LOW} |
+| Major version behind | {N} packages | {HIGH if >0} |
+| Heavy dependencies | {transitive_count} transitive ({ratio}x) | {HIGH/MEDIUM/LOW} |
+| Potentially unmaintained | {N} packages | {MEDIUM if >0} |
+
+**Calibration:** Risk levels are relative to total dependency count, not absolute numbers. A project with 5 deps and 3 outdated is HIGH; a project with 200 deps and 3 outdated is LOW. This mirrors the calibration approach in Section 4.5.
+
+#### 4.6.6: Graceful Degradation
+
+Every subsection degrades independently -- a failure in one check must not block others:
+
+- If no package manifest detected (no package.json, requirements.txt, Gemfile, Cargo.toml, or go.mod): skip entire Section 4.6 silently
+- If package manager command fails (not installed, network error, malformed output): report which check was skipped and why, continue remaining checks
+- If lockfile is absent: outdated detection still runs (uses package manager command), but unmaintained heuristic degrades (noted in 4.6.4)
+- If transitive count command fails: skip heavy dependency check, report skip reason
+- Never error, never block analysis completion -- partial results are always better than no results
+
 ---
 
 ## Section 5: CODEBASE.md Format
@@ -563,6 +651,37 @@ This section is the executive summary -- agents read this first for orientation.
 - **Large files (>500 lines)**: {list of files with line counts}
 - **Files without tests**: {observation if detectable}
 - **Git hotspots**: {top 3 most-changed files, or "N/A -- not a git repo"}
+
+## Dependency Risk
+
+**Ecosystem**: {ecosystem, e.g., "Node.js (npm)"}
+**Direct dependencies**: {count} | **Outdated**: {count} ({pct}%)
+
+### Outdated Packages
+| Package | Current | Latest | Severity |
+|---------|---------|--------|----------|
+| {name} | {current_version} | {latest_version} | {major/minor/patch} |
+
+### Heavy Dependencies
+**Transitive count**: {count} ({ratio}x direct count) -- {HIGH|MEDIUM|LOW}
+
+### Potentially Unmaintained
+| Package | Last Updated | Risk Note |
+|---------|-------------|-----------|
+| {name} | {date or "unknown"} | {e.g., "No updates in 3 years"} |
+
+### Dependency Risk Summary
+| Metric | Value | Risk Level |
+|--------|-------|-----------|
+| Outdated packages | {N}/{total} ({pct}%) | {HIGH/MEDIUM/LOW} |
+| Major version behind | {N} packages | {risk} |
+| Heavy dependencies | {transitive_count} ({ratio}x) | {risk} |
+| Potentially unmaintained | {N} packages | {risk} |
+
+{If no package manifest detected (package.json, requirements.txt, Gemfile, Cargo.toml, go.mod),
+replace all of the above with:
+"No package manifest detected (package.json, requirements.txt, Gemfile, Cargo.toml, go.mod).
+Dependency risk analysis requires a recognized package ecosystem."}
 
 ## Agent Guidance
 
@@ -814,7 +933,7 @@ Step 3: Confirm with user
 
 Step 4: Execute analysis
   Run Section 2 (Map Generation), Section 3 (Pattern Detection),
-  Section 4 (Risk Assessment) in sequence.
+  Section 4 (Risk Assessment), Section 4.6 (Package-Level Dependency Risk) in sequence.
   If Sections 8-14 are available in this SKILL.md, also run:
   - Section 8 (Dependency Graph)
   - Section 9 (Test Coverage Map)
