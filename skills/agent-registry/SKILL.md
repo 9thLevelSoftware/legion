@@ -14,19 +14,19 @@ Complete catalog of all agent personalities. Includes 53 built-in agents across 
 
 ---
 
-## Section 3: Recommendation Algorithm
+## Section 3: Recommendation Algorithm (v2 Four-Layer Scoring)
 
-When assembling a team for a task, follow this semantic-first process:
+When assembling a team for a task, the engine applies four scoring layers in sequence. Each layer is additive; later layers only activate when the baseline (Layer 1 + Layer 2) is greater than zero.
 
-### Step 1: Parse Intent and Constraints
-Extract:
-- Primary objective (build, review, optimize, diagnose, launch)
-- Domain signals (engineering, design, marketing, testing, product, support, spatial)
-- Hard constraints (platform, runtime, deadline, no-new-dependencies, etc.)
+```
+total = semantic + heuristic + metadataBoost + memoryBoost + archetypeBoost
+```
 
-**Custom agents:** Custom agents added via `/legion:agent` are first-class candidates in every step below.
+**Gating rule**: Layers 3 and 4 (metadata, memory, archetype) are only applied when `baseline = semantic + heuristic > 0`. This prevents irrelevant agents from being promoted by metadata or historical data alone.
 
-### Step 2: Build a Semantic Shortlist (Primary Ranking)
+**Custom agents:** Custom agents added via `/legion:agent` are first-class candidates in every layer.
+
+### Layer 1: Semantic Score (Primary Ranking)
 Map natural-language intent to normalized concepts before any point scoring.
 
 Baseline concept normalization:
@@ -37,14 +37,20 @@ Baseline concept normalization:
 - `refactor`, `cleanup`, `maintainability` -> `code-quality`
 - `onboarding`, `activation`, `retention` -> `product`
 
+Scoring:
+- **Exact taskType match**: +4
+- **Partial taskType match** (substring): +2
+- **Specialty text match**: +1
+
 Shortlist rules:
 1. Prefer agents with direct semantic overlap between normalized concepts and `task_types`.
 2. Include cross-division specialists when their specialty text clearly matches intent.
 3. Keep shortlist to top 6-8 agents before tie-breaking.
 
-### Step 3: Apply Heuristic Tiebreak (Secondary)
+### Layer 2: Heuristic Score (Tiebreak)
 Use points only to break ties inside the semantic shortlist:
 - **Exact task-type match**: +3
+- **Partial task-type match**: +1
 - **Partial specialty match**: +1
 - **Division alignment**: +2
 
@@ -52,11 +58,67 @@ Notes:
 - Heuristics refine ranking; they do not replace semantic intent matching.
 - If no semantic shortlist forms, fall back to heuristic scoring across all agents and label low confidence.
 
-### Step 4: Confidence Classification
+### Layer 3: Metadata Boost (from agent frontmatter)
+Scores agents based on `languages`, `frameworks`, `artifact_types`, and `review_strengths` fields in agent `.md` frontmatter.
+
+Scoring rules:
+- **Exact language match**: +3
+- **Exact framework match**: +3
+- **Exact artifact_type match**: +2
+- **Exact review_strength match**: +2
+- **Partial match** (substring in any field): +1
+
+Only applied when `baseline > 0`.
+
+### Layer 4: Memory and Archetype Boost (from OUTCOMES.md)
+
+#### Memory Boost
+If `.planning/memory/OUTCOMES.md` exists:
+1. Recall agent scores via memory-manager (memoryScores).
+2. Add memory score to shortlisted agents only (gated behind baseline > 0).
+
+#### Archetype Boost
+If archetypeScores are provided by the caller for the detected task_type:
+
+**Task Type Detection**: Prompt concepts are mapped to task types via TASK_TYPE_MAP:
+- `react`, `frontend`, `css`, `html` -> `web-development`
+- `api`, `endpoint`, `rest`, `graphql` -> `api-development`
+- `mobile`, `ios`, `android`, `flutter` -> `mobile-development`
+- `ml`, `ai`, `model`, `training` -> `ai-ml`
+- `test`, `qa`, `benchmark` -> `quality-testing`
+- `campaign`, `social`, `content` -> `content-marketing`
+- `visionos`, `xr`, `webxr`, `spatial` -> `spatial-computing`
+- `security`, `owasp`, `stride` -> `security-audit`
+- `deploy`, `ci-cd`, `infrastructure` -> `devops`
+- `design`, `ui`, `ux` -> `design-ux`
+
+**Archetype scoring formula**:
+```
+base_boost = successRate * 3.0
+volume_modifier = min(totalOutcomes / 5, 1.0)
+top_agent_bonus = 1.0 if agent is topAgent, else 0
+archetype_boost = clamp(base_boost * volume_modifier + top_agent_bonus, 0, 5)
+```
+
+Constraints:
+- Archetype boost is gated behind baseline > 0 (same as metadata and memory).
+- Memory/archetype boosts are additive and cannot override mandatory-role constraints.
+- Memory/archetype boosts cannot promote unrelated agents with zero semantic/heuristic relevance.
+- archetypeScores are consumed only when available; if absent, fall back to flat memoryScores.
+- If memory is unavailable, skip silently.
+- Engine produces identical results when metadata fields are absent and archetypeScores is not provided (backward compatible).
+
+### Step 1: Parse Intent and Constraints
+Extract:
+- Primary objective (build, review, optimize, diagnose, launch)
+- Domain signals (engineering, design, marketing, testing, product, support, spatial)
+- Hard constraints (platform, runtime, deadline, no-new-dependencies, etc.)
+
+### Step 2: Confidence Classification
 Classify confidence from top-candidate quality:
-- **High confidence**: strong semantic alignment + top score >= 8
-- **Medium confidence**: partial semantic alignment or top score 5-7
-- **Low confidence**: weak semantic evidence or top score <= 4
+- **High confidence**: strong semantic alignment (>= 6) or (semantic >= 4 and heuristic >= 8). Metadata boost >= 6 can elevate effective semantic to 4.
+- **Medium confidence**: partial semantic alignment (>= 2) or heuristic >= 5
+- **Low confidence**: weak semantic evidence
 
 If confidence is low:
 1. Label recommendation explicitly as low confidence.
@@ -69,19 +131,21 @@ After scoring, produce a structured score breakdown for each recommended agent:
 
 ```
 score_export:
-  task_type_detected: "{extracted task type from intent parsing}"
+  task_type_detected: "{extracted task type from TASK_TYPE_MAP}"
   candidates:
     - agent_id: "{agent-id}"
-      semantic_score: "{quality of semantic overlap: strong|moderate|weak}"
-      heuristic_score: {numeric total from tiebreak rules}
-      memory_boost: {numeric boost from OUTCOMES.md or 0}
-      total_score: {heuristic_score + memory_boost}
+      semantic_score: {numeric from Layer 1}
+      heuristic_score: {numeric from Layer 2}
+      metadata_score: {numeric from Layer 3}
+      memory_boost: {numeric from OUTCOMES.md or 0}
+      archetype_boost: {numeric from archetype formula or 0}
+      total_score: {semantic + heuristic + metadata + memory + archetype}
       confidence: "{HIGH|MEDIUM|LOW}"
     - agent_id: "{agent-id-2}"
       ...
   adapter: "{adapter name from current CLI}"
   model_tier: "{planning|execution|check}"
-  recommendation_source: "{semantic|heuristic|memory|override}"
+  recommendation_source: "{semantic|heuristic|memory|archetype|override}"
 ```
 
 This score breakdown is:
@@ -89,30 +153,11 @@ This score breakdown is:
 - **Consumed** by wave-executor when writing SUMMARY.md (see OBS-01)
 - **Optional** — if recommendation was skipped (autonomous task), no export is generated
 
-### Step 5: Team Size and Composition Guardrails
+### Step 3: Team Size and Composition Guardrails
 - **2 agents** for single-domain tasks.
 - **3 agents** for standard feature work.
 - **4 agents** for cross-domain work.
 - Never exceed 4 agents for one discrete task; split larger efforts.
-
-### Step 6: Apply Memory Boost (Optional, Additive Only)
-If `.planning/memory/OUTCOMES.md` exists:
-1. Recall agent scores via memory-manager (memoryScores).
-2. Recall archetype scores via memory-manager (archetypeScores) for the detected task_type.
-3. Add memory score to shortlisted agents only.
-4. If archetypeScores contains the detected task_type, apply archetype-weighted boost:
-   - Agents listed in archetypeScores[task_type].agents receive a bonus proportional
-     to that archetype's successRate (Plan 06-03 defines the exact formula).
-   - The topAgent for the task_type receives an additional tiebreak advantage.
-5. Re-rank candidates.
-6. Show memory influence in output (for transparency), including archetype source.
-
-Constraints:
-- Memory boost is additive and cannot override mandatory-role constraints.
-- Memory boost cannot promote unrelated agents with zero semantic/heuristic relevance.
-- Agents with fewer than 2 recorded outcomes are excluded from memory boosting.
-- archetypeScores are consumed only when available; if absent, fall back to flat memoryScores.
-- If memory is unavailable, skip silently.
 
 ### Step 7: Enforce Mandatory Roles
 - **Execution teams** (code-writing/deployment) MUST include at least one Testing-division agent.

@@ -54,5 +54,19 @@
     "expectedTop": "engineering-security-engineer",
     "expectedConfidence": "high",
     "mustInclude": []
+  },
+  {
+    "name": "devops-deployment",
+    "prompt": "Deploy a CI-CD pipeline with infrastructure automation and container orchestration",
+    "expectedTop": "engineering-devops-automator",
+    "expectedConfidence": "high",
+    "mustInclude": []
+  },
+  {
+    "name": "mobile-flutter-app",
+    "prompt": "Build a cross-platform mobile app with Flutter for iOS and Android",
+    "expectedTop": "engineering-mobile-app-builder",
+    "expectedConfidence": "high",
+    "mustInclude": []
   }
 ]

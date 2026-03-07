@@ -33,6 +33,44 @@ const SEMANTIC_MAP = {
   retention: 'product',
 };
 
+const TASK_TYPE_MAP = {
+  react: 'web-development',
+  frontend: 'web-development',
+  css: 'web-development',
+  html: 'web-development',
+  api: 'api-development',
+  endpoint: 'api-development',
+  rest: 'api-development',
+  graphql: 'api-development',
+  mobile: 'mobile-development',
+  ios: 'mobile-development',
+  android: 'mobile-development',
+  flutter: 'mobile-development',
+  ml: 'ai-ml',
+  ai: 'ai-ml',
+  model: 'ai-ml',
+  training: 'ai-ml',
+  test: 'quality-testing',
+  qa: 'quality-testing',
+  benchmark: 'quality-testing',
+  campaign: 'content-marketing',
+  social: 'content-marketing',
+  content: 'content-marketing',
+  visionos: 'spatial-computing',
+  xr: 'spatial-computing',
+  webxr: 'spatial-computing',
+  spatial: 'spatial-computing',
+  security: 'security-audit',
+  owasp: 'security-audit',
+  stride: 'security-audit',
+  deploy: 'devops',
+  'ci-cd': 'devops',
+  infrastructure: 'devops',
+  design: 'design-ux',
+  ui: 'design-ux',
+  ux: 'design-ux',
+};
+
 const DIVISION_HINTS = {
   engineering: ['code', 'backend', 'frontend', 'api', 'implementation', 'feature', 'refactor', 'deploy'],
   design: ['ui', 'ux', 'visual', 'accessibility', 'design'],
@@ -220,6 +258,25 @@ function heuristicScore(agent, concepts, promptLower) {
   return score;
 }
 
+function detectTaskType(concepts, promptLower) {
+  for (const concept of concepts) {
+    if (TASK_TYPE_MAP[concept]) return TASK_TYPE_MAP[concept];
+  }
+  return null;
+}
+
+function archetypeBoost(agentId, taskType, archetypeScores) {
+  if (!archetypeScores || !taskType) return 0;
+  const entry = archetypeScores[taskType];
+  if (!entry || !entry.agents || !entry.agents.includes(agentId)) return 0;
+
+  const baseBoost = (entry.successRate || 0) * 3.0;
+  const volumeModifier = Math.min((entry.totalOutcomes || 0) / 5, 1.0);
+  const topAgentBonus = entry.topAgent === agentId ? 1.0 : 0;
+  const boost = baseBoost * volumeModifier + topAgentBonus;
+  return Math.min(Math.max(boost, 0), 5);
+}
+
 function isExecutionTask(promptLower) {
   return /(build|implement|code|feature|endpoint|refactor|fix|deploy|migration|service)/.test(promptLower);
 }
@@ -243,11 +300,12 @@ function classifyConfidence(topCandidate) {
   return 'low';
 }
 
-function recommendAgents({ prompt, topN = 4, memoryScores = {} }) {
+function recommendAgents({ prompt, topN = 4, memoryScores = {}, archetypeScores = {} }) {
   const agents = parseCatalog();
   const agentMetadata = parseAgentMetadata();
   const promptLower = prompt.toLowerCase();
   const concepts = extractConcepts(prompt);
+  const taskType = detectTaskType(concepts, promptLower);
 
   const scored = agents.map((agent) => {
     agent.metadata = agentMetadata[agent.id] || { languages: [], frameworks: [], artifact_types: [], review_strengths: [] };
@@ -256,6 +314,7 @@ function recommendAgents({ prompt, topN = 4, memoryScores = {} }) {
     const baseline = semantic + heuristic;
     const metaBoost = baseline > 0 ? metadataScore(agent, concepts, promptLower) : 0;
     const memoryBoost = baseline > 0 ? Number(memoryScores[agent.id] || 0) : 0;
+    const archBoost = baseline > 0 ? archetypeBoost(agent.id, taskType, archetypeScores) : 0;
 
     return {
       id: agent.id,
@@ -264,7 +323,8 @@ function recommendAgents({ prompt, topN = 4, memoryScores = {} }) {
       heuristic,
       metadataBoost: metaBoost,
       memoryBoost,
-      total: baseline + metaBoost + memoryBoost,
+      archetypeBoost: archBoost,
+      total: baseline + metaBoost + memoryBoost + archBoost,
     };
   });
 
@@ -352,6 +412,7 @@ function recommendAgents({ prompt, topN = 4, memoryScores = {} }) {
       heuristicScore: item.heuristic,
       metadataScore: item.metadataBoost,
       memoryBoost: item.memoryBoost,
+      archetypeBoost: item.archetypeBoost,
       totalScore: item.total,
     })),
   };
@@ -372,6 +433,8 @@ module.exports = {
   parseCatalog,
   parseAgentMetadata,
   metadataScore,
+  archetypeBoost,
+  detectTaskType,
 };
 
 
