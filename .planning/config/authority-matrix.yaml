@@ -638,8 +638,9 @@ agents:
       - "workflow-automation"
       - "agent-coordination"
       - "dev-qa-loops"
+      - "agent-communication"
     deferred_by: ["*"]
-    description: "Cross-division agent coordination and orchestration"
+    description: "Cross-division agent coordination, orchestration, and communication routing"
 
   data-analytics-reporter:
     name: "Data Analytics Reporter"

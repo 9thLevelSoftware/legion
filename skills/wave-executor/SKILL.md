@@ -1011,6 +1011,211 @@ def detect_and_route_escalations(agent_output, agent_id, control_mode, plan_file
 
 ---
 
+## Section 5.6: Handoff Context Injection
+
+When dispatching Wave 2+ agents, the wave executor compiles and injects structured handoff context from prior waves. This enables forward-only information flow between agents without runtime messaging.
+
+Protocol defined in `.planning/config/agent-communication.yaml`.
+
+### Step 1: Agent Discovery Context (All Waves)
+
+Before spawning each agent (regardless of wave), compile discovery context and inject it into the agent's prompt after personality injection (Section 3) and before task instructions:
+
+```
+For each plan being dispatched:
+
+1. Compile discovery context:
+   - current_wave: "Wave {N} of {total_waves}"
+   - wave_agents: list of other agent-ids executing in the same wave (parallel peers)
+     - Format: "{agent-id} (Plan {NN}-{PP})" for each peer
+     - If solo: "solo"
+   - prior_wave_agents: list of agent-ids that executed in earlier waves
+     - Format: "{agent-id} (Plan {NN}-{PP})" for each prior agent
+     - If Wave 1: "None (first wave)"
+   - own_domains: agent's exclusive_domains from authority-matrix.yaml
+
+2. Inject discovery context into agent prompt:
+
+   ## Execution Context
+   - Wave: {N} of {total_waves}
+   - Parallel peers: {wave_agents or "solo"}
+   - Prior wave: {prior_wave_agents or "None (first wave)"}
+   - Your domains: {comma-separated domain list}
+
+3. This block is injected AFTER the agent personality and BEFORE
+   any handoff context or task instructions.
+```
+
+### Step 2: Compile Handoff Context (Wave 2+ Only)
+
+```
+When dispatching a plan in Wave 2 or later:
+
+1. Identify dependency summaries:
+   a. Read the plan's frontmatter depends_on list
+   b. For each dependency, locate its SUMMARY.md:
+      - Path: .planning/phases/{phase-dir}/{NN}-{PP}-SUMMARY.md
+   c. If a dependency SUMMARY.md does not exist:
+      - Log warning: "Dependency {NN}-{PP} SUMMARY.md not found for plan {current-plan}"
+      - Continue without that dependency's handoff context
+      - The agent will operate with incomplete context (graceful degradation)
+
+2. Extract handoff context from each dependency SUMMARY.md:
+   a. Parse the "## Handoff Context" section
+   b. Extract fields: key_outputs, decisions_made, open_questions, conventions_established
+   c. If the Handoff Context section is missing or malformed:
+      - Fall back to extracting "## Files Modified" and "## Completed Tasks" as minimal context
+      - Log warning: "SUMMARY.md for {NN}-{PP} missing Handoff Context section — using minimal handoff"
+
+3. Extract pending escalations from each dependency SUMMARY.md:
+   a. Parse the "## Escalations" section (if present)
+   b. Filter for escalations with status: pending or deferred
+   c. Collect these as escalations_pending for downstream injection
+
+4. Compile the handoff briefing:
+   - Merge handoff context from all dependencies
+   - Group by source plan for clarity
+   - Append any pending escalations as a separate section
+```
+
+### Step 3: Inject Handoff Context into Agent Prompt
+
+```
+After compiling the handoff briefing (Step 2), inject it into the
+agent's spawn prompt between the discovery context and task instructions:
+
+## Handoff Context from Prior Wave
+
+### From Plan {NN}-{PP}: {plan title}
+**Key outputs**: {key_outputs}
+**Decisions made**: {decisions_made}
+**Open questions**: {open_questions}
+**Conventions established**: {conventions_established}
+
+{Repeat for each dependency plan}
+
+{If escalations_pending is non-empty:}
+### Pending Escalations
+The following escalations from prior waves remain unresolved:
+| Severity | Type | Decision | Status |
+|----------|------|----------|--------|
+| {severity} | {type} | {decision} | {status} |
+
+{If no handoff context available (all dependencies missing):}
+## Handoff Context from Prior Wave
+No handoff context available from prior waves. Proceed with task instructions.
+```
+
+### Handoff Injection Algorithm (pseudocode)
+
+```python
+def compile_and_inject_handoff(plan, phase_dir, wave_number):
+    """
+    Compile handoff context from dependency plans and inject into agent prompt.
+    Called during agent dispatch for Wave 2+ plans.
+    """
+    if wave_number <= 1 and not plan.depends_on:
+        return ""  # No handoff needed for Wave 1 without explicit dependencies
+
+    handoff_sections = []
+    pending_escalations = []
+
+    for dep_id in plan.depends_on:
+        summary_path = f"{phase_dir}/{dep_id}-SUMMARY.md"
+        if not file_exists(summary_path):
+            log_warning(f"Dependency {dep_id} SUMMARY.md not found for plan {plan.id}")
+            continue
+
+        summary_content = read_file(summary_path)
+
+        # Extract handoff context section
+        handoff = extract_section(summary_content, "## Handoff Context")
+        if handoff:
+            handoff_sections.append({
+                "plan_id": dep_id,
+                "title": extract_plan_title(summary_content),
+                "context": handoff
+            })
+        else:
+            # Graceful fallback: use Files Modified + Completed Tasks
+            minimal = extract_minimal_handoff(summary_content)
+            handoff_sections.append({
+                "plan_id": dep_id,
+                "title": extract_plan_title(summary_content),
+                "context": minimal,
+                "_fallback": True
+            })
+
+        # Extract pending escalations
+        escalations = extract_section(summary_content, "## Escalations")
+        if escalations:
+            pending = filter_escalations(escalations, statuses=["pending", "deferred"])
+            pending_escalations.extend(pending)
+
+    return format_handoff_briefing(handoff_sections, pending_escalations)
+```
+
+---
+
+## Section 5.7: SUMMARY.md Export Validation
+
+After each plan completes and its SUMMARY.md is written, validate that the file conforms to the export standard defined in `.planning/config/agent-communication.yaml`.
+
+### Validation Protocol
+
+```
+After a plan's SUMMARY.md is written (Section 5, after result collection):
+
+1. Read the SUMMARY.md file that the agent produced
+
+2. Check for required sections (all must be present):
+   - "## Completed Tasks"
+   - "## Files Modified"
+   - "## Handoff Context"
+   - "## Verification Results"
+
+3. For each missing required section:
+   - Log advisory warning:
+     "[SUMMARY VALIDATION] Plan {NN}-{PP}: missing required section '{section_name}'"
+   - This is advisory, NOT blocking — the plan is not failed for missing sections
+   - Missing sections degrade handoff quality but do not halt execution
+
+4. Check for conditional sections when applicable:
+   - If agent output contained <escalation> blocks but SUMMARY.md has no "## Escalations":
+     Log: "[SUMMARY VALIDATION] Plan {NN}-{PP}: escalation blocks detected but no Escalations section"
+
+5. Report validation results in wave completion output:
+   - "SUMMARY.md validation: {plan_id} — {pass_count}/{total} required sections present"
+
+Rationale: This maintains Legion's "degrade gracefully" principle.
+A missing handoff section means downstream agents get less context,
+but execution is never blocked by incomplete documentation.
+```
+
+### Wave Transition Logging
+
+```
+At each wave boundary (after all plans in a wave complete, before starting next wave):
+
+1. Log wave completion summary to build output:
+
+   === Wave {N} Complete ===
+   Plans completed: {count} ({list of plan IDs})
+   Plans failed: {count} ({list of plan IDs, or "none"})
+   Handoff context available: {count} plans with valid Handoff Context sections
+   Pending escalations carried forward: {count} ({or "none"})
+
+2. If proceeding to next wave:
+   - Log: "Advancing to Wave {N+1} with handoff context from {count} prior plans"
+   - List each prior plan and its handoff status (full / minimal / missing)
+
+3. If stopping after wave (due to failures or final wave):
+   - Log: "Wave execution complete. Final wave: {N} of {total_waves}"
+   - Include aggregate handoff summary for post-build review
+```
+
+---
+
 ## Section 6: Error Scenarios
 
 How to handle common failure modes without retrying or hiding problems.

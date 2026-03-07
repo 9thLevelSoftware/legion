@@ -1,0 +1,189 @@
+# Agent-to-Agent Communication Conventions for Legion
+# Defines message types, handoff conventions, SUMMARY.md export requirements,
+# agent discovery patterns, and cross-wave communication rules.
+version: "1.0"
+description: "Structured communication protocol for agent coordination across waves"
+
+# ============================================================================
+# MESSAGE TYPES
+# ============================================================================
+# Three message types govern all agent-to-agent communication.
+# Agents never communicate directly at runtime — all coordination
+# flows through structured artifacts (SUMMARY.md, plan frontmatter).
+
+message_types:
+  handoff_context:
+    purpose: "Pass structured output from one wave to the next"
+    location: "SUMMARY.md -> Handoff Context section"
+    required_fields:
+      - key_outputs           # list of files created/modified with purpose
+      - decisions_made        # architectural or design decisions agents made
+      - open_questions        # unresolved items the next wave should address
+      - conventions_established  # patterns set that subsequent agents must follow
+    optional_fields:
+      - escalations_pending   # unresolved escalations from escalation-protocol
+      - data_for_downstream   # structured data a downstream plan specifically needs
+    format: |
+      ## Handoff Context
+      **Key outputs**: {file1} ({purpose}), {file2} ({purpose})
+      **Decisions made**: {decision1}; {decision2}
+      **Open questions**: {question1}
+      **Conventions established**: {convention1}
+
+  dependency_request:
+    purpose: "Signal that a plan needs specific output from another plan"
+    location: "Plan frontmatter depends_on + context section"
+    format: "Declared at planning time, not runtime."
+    resolution: "Wave executor validates dependency SUMMARY.md exists before dispatching"
+    example: |
+      ---
+      depends_on:
+        - 10-01  # Escalation protocol must exist before communication conventions
+      ---
+
+  status_update:
+    purpose: "Communicate plan completion status within a wave"
+    location: "Wave executor internal -- not agent-facing"
+    statuses:
+      - in_progress    # agent is executing
+      - completed      # agent finished successfully
+      - blocked        # agent cannot proceed (dependency or escalation)
+      - escalated      # agent raised a blocker escalation awaiting human decision
+
+# ============================================================================
+# SUMMARY.MD EXPORT STANDARD
+# ============================================================================
+# Every plan MUST produce a SUMMARY.md. These sections ensure downstream
+# agents and the wave executor can consume outputs reliably.
+
+summary_export_standard:
+  required_sections:
+    - "## Completed Tasks"        # what was done, with brief description per task
+    - "## Files Modified"         # list of files created or modified
+    - "## Handoff Context"        # structured handoff for downstream waves
+    - "## Verification Results"   # output of all verification commands
+  conditional_sections:
+    - section: "## Escalations"
+      condition: "Include when any <escalation> blocks were raised during execution"
+    - section: "## Decisions Made"
+      condition: "Include when agent made non-trivial decisions worth documenting"
+    - section: "## Open Questions"
+      condition: "Include when unresolved items remain for subsequent waves or phases"
+  template: |
+    # Plan {NN}-{PP} Summary
+
+    **Status**: Complete | Complete with Warnings | Failed
+    **Agent**: {agent-id}
+    **Wave**: {wave_number} of {total_waves}
+
+    ## Completed Tasks
+    - Task 1: {description} -- {outcome}
+    - Task 2: {description} -- {outcome}
+
+    ## Files Modified
+    - `{path}` -- {what changed}
+
+    ## Handoff Context
+    **Key outputs**: {files with purpose}
+    **Decisions made**: {decisions}
+    **Open questions**: {questions or "None"}
+    **Conventions established**: {conventions or "None"}
+
+    ## Verification Results
+    > verification: {command}
+    {output}
+
+# ============================================================================
+# AGENT DISCOVERY CONVENTIONS
+# ============================================================================
+# How agents learn about their execution context when spawned.
+# The wave executor compiles this context and injects it into agent prompts.
+
+agent_discovery:
+  at_spawn:
+    current_wave:
+      description: "Which wave the agent is in (e.g., Wave 2 of 2)"
+      source: "Wave executor computes from plan wave assignments"
+    wave_agents:
+      description: "Other agents executing in the same wave (parallel peers)"
+      source: "Wave executor reads all plans in the current wave"
+    prior_wave_agents:
+      description: "Agents that executed in earlier waves"
+      source: "Wave executor reads SUMMARY.md files from prior waves"
+    own_domains:
+      description: "Authority matrix domains assigned to this agent"
+      source: "Loaded from authority-matrix.yaml at spawn time"
+  via_context:
+    prior_summaries:
+      description: "SUMMARY.md handoff context from dependency plans"
+      source: "Wave executor reads depends_on plans' SUMMARY.md files"
+      injection: "Included in agent prompt as 'Handoff Context from Prior Wave'"
+    phase_context:
+      description: "Phase-level context document"
+      source: "Phase CONTEXT.md file"
+      injection: "Referenced in plan header, not re-injected"
+    escalations_pending:
+      description: "Unresolved escalations from prior waves"
+      source: "Extracted from prior SUMMARY.md Escalations sections"
+      injection: "Included in handoff context if any escalations have status: pending or deferred"
+
+# ============================================================================
+# CROSS-WAVE COMMUNICATION RULES
+# ============================================================================
+# These rules govern how information flows between agents across waves.
+
+cross_wave_rules:
+  forward_only:
+    description: "Information flows from earlier waves to later waves via SUMMARY.md"
+    rationale: >
+      Agents in earlier waves cannot know what later waves will produce.
+      All coordination is forward-looking: Wave 1 outputs feed Wave 2 inputs.
+    enforcement: "Wave executor only injects prior wave summaries, never future wave context"
+
+  no_runtime_messaging:
+    description: "Agents communicate through artifacts, not runtime messages"
+    rationale: >
+      Runtime messaging creates tight coupling and race conditions.
+      Artifact-based communication (SUMMARY.md) provides auditability,
+      reproducibility, and works across all CLI adapters.
+    enforcement: "Wave executor does not provide any inter-agent messaging channel"
+
+  orchestrator_mediation:
+    description: "When a Wave 2+ agent finds missing context, it documents gaps as open_questions"
+    rationale: >
+      Rather than blocking on missing information, agents document what they
+      need. The orchestrator or human reviews these gaps between builds.
+    protocol:
+      - "Agent checks handoff context for expected inputs"
+      - "If input is missing or ambiguous, agent documents an open_question"
+      - "Agent proceeds with best-effort approach using available context"
+      - "Open questions are surfaced in SUMMARY.md for resolution"
+
+  escalation_inheritance:
+    description: "Unresolved escalations from prior waves are passed via handoff context"
+    rationale: >
+      A deferred or pending escalation from Wave 1 may affect Wave 2 agents.
+      Making escalation state visible prevents agents from unknowingly
+      depending on decisions that haven't been made.
+    protocol:
+      - "Wave executor extracts escalations with status pending or deferred from prior SUMMARY.md"
+      - "Pending/deferred escalations are injected into Wave 2+ agent prompts"
+      - "Wave 2+ agents may re-escalate if the unresolved escalation blocks their work"
+
+# ============================================================================
+# USAGE NOTES
+# ============================================================================
+
+usage:
+  - "Wave executor: inject handoff context when spawning Wave 2+ agents"
+  - "Wave executor: validate SUMMARY.md export standard after each plan completes"
+  - "Agents: write SUMMARY.md following the export standard template"
+  - "Agents: consume handoff context from prior waves before starting work"
+  - "Orchestrator: review open_questions across waves to identify coordination gaps"
+  - "Planning: declare depends_on in plan frontmatter for cross-plan dependencies"
+
+maintenance:
+  - "Update message_types when new coordination patterns emerge"
+  - "Update summary_export_standard when new required sections are identified"
+  - "Keep aligned with escalation-protocol.yaml escalation format"
+  - "Version bump on breaking changes to message types or export standard"

@@ -160,3 +160,14 @@ After build/review cycles, outcomes are recorded to `.planning/memory/OUTCOMES.m
 - **Human-readable state**: All planning files are markdown — no binary state
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides
 
+## Wave Handoff Conventions
+
+Agent-to-agent communication follows structured conventions defined in `.planning/config/agent-communication.yaml`.
+
+- **Forward-only communication**: Information flows from earlier waves to later waves via SUMMARY.md handoff context sections. Agents in later waves consume prior outputs; no backward communication exists.
+- **No runtime messaging**: Agents communicate exclusively through artifacts (SUMMARY.md, plan frontmatter). There is no inter-agent messaging channel at runtime. This ensures auditability and works across all CLI adapters.
+- **Handoff context injection**: The wave executor extracts Handoff Context sections from dependency SUMMARY.md files and injects them into Wave 2+ agent prompts. Each handoff includes key outputs, decisions made, open questions, and conventions established.
+- **Escalation inheritance**: Unresolved escalations (pending or deferred) from prior waves are passed forward to downstream agents via handoff context, preventing agents from unknowingly depending on unmade decisions.
+- **Agent discovery**: Every agent receives execution context at spawn -- wave position, parallel peers, prior wave agents, and their own authority domains from the authority matrix.
+- **SUMMARY.md export standard**: Every plan must produce a SUMMARY.md with required sections: Completed Tasks, Files Modified, Handoff Context, and Verification Results. Missing sections trigger advisory warnings but never block execution (graceful degradation).
+
