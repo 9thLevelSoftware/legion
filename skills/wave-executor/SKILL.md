@@ -782,10 +782,10 @@ Step 3: Generate the plan summary file
   | 1 | {severity} | {type} | {decision text} | {pending/approved/rejected/deferred} | {resolution details or "Awaiting decision"} |
 
   ## Handoff Context
-  - **key_outputs**: {list of files created/modified with purpose}
-  - **decisions_made**: {architectural or design decisions the agent made}
-  - **open_questions**: {unresolved items the next wave should address, or "None"}
-  - **conventions_established**: {patterns set that subsequent agents must follow, or "None"}
+  - **Key outputs**: {list of files created/modified with purpose}
+  - **Decisions made**: {architectural or design decisions the agent made}
+  - **Open questions**: {unresolved items the next wave should address, or "None"}
+  - **Conventions established**: {patterns set that subsequent agents must follow, or "None"}
 
   ## Requirements Covered
   {List the requirement IDs from the plan's frontmatter}
