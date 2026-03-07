@@ -16,6 +16,7 @@ A multi-CLI plugin for orchestrating 53 AI specialist personalities as a coordin
 | `/legion:portfolio` | Multi-project dashboard with dependency tracking |
 | `/legion:milestone` | Milestone completion, archiving, and metrics |
 | `/legion:agent` | Create a new agent personality through a guided workflow |
+| `/legion:explore` | Pre-flight exploration with Polymath — crystallize, onboard, compare, or debate |
 | `/legion:update` | Check for updates and install latest version from npm |
 
 ## Project Structure
@@ -45,6 +46,8 @@ adapters/             — Per-CLI adapter files (claude-code.md, codex-cli.md, c
 | Spatial Computing | 6 | VisionOS, XR, Metal, terminal integration |
 | Specialized | 4 | Orchestration, data analytics, LSP indexing, exploration |
 
+Agent frontmatter includes enriched metadata: `languages`, `frameworks`, `artifact_types`, and `review_strengths` fields enable metadata-aware agent selection by the recommendation engine.
+
 ## Workflow
 
 ```
@@ -55,9 +58,11 @@ Each phase: plan (decompose + assign agents) → build (execution — parallel o
 
 Advisory: `/legion:advise <topic>` — standalone consultation, no phase context needed
 
+Intent routing: `/legion:status` and other commands use natural language intent parsing with context-aware suggestions, routing ambiguous inputs to the most relevant command based on project state.
+
 GitHub integration is opt-in — when a GitHub remote exists, `/legion:plan` creates issues, `/legion:build` creates PRs, and `/legion:status` shows GitHub status.
 
-Brownfield support is automatic — when `/legion:start` detects an existing codebase, it offers to analyze architecture, frameworks, risks, dependency graphs, test coverage, API surface, config/environment, and code patterns. The analysis produces `.planning/CODEBASE.md`, consumed by 5 commands: `/legion:plan` injects context into phase decomposition, `/legion:build` injects conventions and guidance into agent execution prompts, `/legion:review` injects conventions for conformance checking, `/legion:plan` (critique) cross-references risks during pre-mortem analysis, and `/legion:status` detects staleness. Standalone re-analysis is available via `/legion:quick analyze codebase`.
+Brownfield support is automatic — when `/legion:start` detects an existing codebase, it offers to analyze architecture, frameworks, risks, dependency graphs, test coverage, API surface, config/environment, and code patterns. The analysis produces `.planning/CODEBASE.md`, consumed by 5 commands: `/legion:plan` injects context into phase decomposition, `/legion:build` injects conventions and guidance into agent execution prompts, `/legion:review` injects conventions for conformance checking, `/legion:plan` (critique) cross-references risks during pre-mortem analysis, and `/legion:status` detects staleness. Standalone re-analysis is available via `/legion:quick analyze codebase`. The codebase mapper also produces dependency risk analysis (outdated packages, heavy dependencies, unmaintained packages) and test coverage correlation (critical untested files ranked by fan-in and complexity).
 
 Marketing workflows activate when `/legion:plan` detects a marketing-focused phase (MKT-* requirements or marketing keywords). Campaign planning produces structured documents at `.planning/campaigns/`, with content calendars and cross-channel coordination across the 8 marketing agents.
 
@@ -148,16 +153,19 @@ Mode profiles are defined in `.planning/config/control-modes.yaml`. See `docs/co
 
 ## Memory Layer (Optional)
 
-After build/review cycles, outcomes are recorded to `.planning/memory/OUTCOMES.md`. During planning, past outcomes boost agent recommendations. During status, recent outcomes enrich the session briefing. All memory features degrade gracefully — the system works identically without them.
+After build/review cycles, outcomes are recorded to `.planning/memory/OUTCOMES.md` with `task_type` classification for metadata-aware recommendation scoring and archetype boosts. During planning, past outcomes boost agent recommendations. During status, recent outcomes enrich the session briefing. All memory features degrade gracefully — the system works identically without them.
 
 ## Conventions
 
 - **Personality-first**: Agent .md files are the source of truth for agent behavior
 - **Full injection**: Agents are spawned with their complete personality as instructions
 - **Max 3 tasks per plan**: Keeps work focused and reviewable
+- **Plan schema hardening**: Plans include `files_forbidden` (prevents cross-plan conflicts), `expected_artifacts` (output contracts), and mandatory `verification_commands` (bash commands proving success)
 - **Wave execution**: Plans grouped into dependency waves; parallel within (if CLI supports it), sequential between
+- **Wave safety**: File overlap detection prevents parallel plans from writing the same files. `sequential_files` serializes dispatch for plans sharing files that require single-agent access
 - **Cost profile**: Planning/execution/check tiers mapped to CLI-specific model names via adapter
-- **CLI-agnostic core**: All skills and commands reference generic adapter concepts; per-CLI adapters define the implementation
+- **CLI-agnostic core**: All skills and commands reference generic adapter concepts; per-CLI adapters define the implementation. Adapters include conformance metadata (`lint_commands`, `max_prompt_size`, `known_quirks`) validated by cross-reference checks
+- **Observability**: Decision logging in SUMMARY.md and cycle-over-cycle diff tracking in REVIEW.md provide audit trails for agent decisions
 - **Human-readable state**: All planning files are markdown — no binary state
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides
 

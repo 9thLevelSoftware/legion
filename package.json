@@ -20,6 +20,7 @@
     "adapters/",
     "settings.json",
     "checksums.sha256",
+    "docs/control-modes.md",
     "docs/security/",
     "docs/settings.schema.json"
   ],
