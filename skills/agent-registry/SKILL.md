@@ -163,7 +163,7 @@ Pre-configured team compositions for common project scenarios.
 | Content | marketing-content-creator | marketing |
 | Visual | design-visual-storyteller | design |
 | Analytics | support-analytics-reporter | support |
-| Platform Lead (pick 1-2) | marketing-twitter-engager / marketing-instagram-curator / marketing-tiktok-strategist / marketing-reddit-community-builder | marketing |
+| Platform Lead (pick 1-2) | marketing-twitter-engager / marketing-instagram-curator / marketing-app-store-optimizer / marketing-growth-hacker | marketing |
 
 ### Full Launch
 > End-to-end product launch spanning all divisions. Split into sub-tasks and coordinate.
