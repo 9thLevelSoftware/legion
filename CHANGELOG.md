@@ -5,6 +5,11 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.2] - 2026-03-08
+
+### Fixed
+- **AskUserQuestion enforcement (strengthened)** — Added MANDATORY rule in CLAUDE.md (top-level project instructions) requiring all `/legion:` commands to use the `AskUserQuestion` tool for user-facing questions. Reinforces the workflow-common-core instruction from 6.0.1 which alone was insufficient.
+
 ## [6.0.1] - 2026-03-08
 
 ### Fixed

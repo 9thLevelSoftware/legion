@@ -2,6 +2,10 @@
 
 A multi-CLI plugin for orchestrating 53 AI specialist personalities as a coordinated legion. Works with Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Amazon Q Developer, Windsurf, OpenCode, and Aider.
 
+## MANDATORY: User Interaction Rule
+
+**When any `/legion:` command needs to ask the user a question or present choices, you MUST use the `AskUserQuestion` tool.** Do NOT output questions as raw text. This applies to every confirmation gate, mode selection, workflow preference, agent swap prompt, and any other user-facing question in any Legion command or skill. No exceptions.
+
 ## Available Commands
 
 | Command | Description |
