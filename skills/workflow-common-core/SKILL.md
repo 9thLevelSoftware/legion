@@ -25,6 +25,23 @@ Always-load core conventions for every `/legion:` command. This file is intentio
 4. If still no match, default to Claude Code adapter.
 5. Read the full adapter file and use adapter-defined tool mapping/model settings.
 
+## User Interaction (Core)
+
+**CRITICAL**: When commands or skills reference `adapter.ask_user`, `Use adapter.ask_user`, or instruct you to ask the user a question with structured choices, you MUST use the `AskUserQuestion` tool. Do NOT output questions as raw text and wait for a reply. The `AskUserQuestion` tool provides structured selection UI (arrow keys + Enter) which is the intended interaction model for all Legion commands.
+
+For Claude Code, `adapter.ask_user` maps to:
+```
+AskUserQuestion(questions: [{
+  question: "Your question here",
+  options: [
+    {label: "option-1", description: "Description of option 1"},
+    {label: "option-2", description: "Description of option 2"}
+  ]
+}])
+```
+
+This applies to ALL question prompts in ALL commands — confirmation gates, mode selection, workflow preferences, and any other structured choice.
+
 ## State Paths (Core)
 
 | File | Path | Purpose |
