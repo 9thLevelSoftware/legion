@@ -50,11 +50,16 @@ dispatch:
   capabilities: [web_search, ui_design, ux_research, large_analysis, code_review]
   invoke_command: "gemini"
   invoke_flags: ["--sandbox"]
+  prompt_delivery: file_arg         # stdin_pipe | file_arg | inline_flag
+  prompt_flag: "-p"                 # flag used when prompt_delivery is inline_flag or file_arg
   result_mode: file
   result_path: ".planning/dispatch/{task-id}-RESULT.md"
+  result_instruction: "Write your complete output to {result_path} using the format specified below."
   max_concurrent: 3
   timeout_ms: 300000
   detection_command: "gemini --version"
+  prerequisites:
+    - "Gemini CLI settings.json must have {\"experimental\": {\"enableAgents\": true}}"
 ```
 
 **Example for `adapters/codex-cli.md`:**
@@ -64,14 +69,56 @@ dispatch:
   available: true
   capabilities: [code_implementation, testing, refactoring, bug_fixing, code_review]
   invoke_command: "codex"
-  invoke_flags: ["--approval-mode", "full-auto"]
+  invoke_flags: ["--approval-mode", "full-auto", "--quiet"]
+  prompt_delivery: file_arg
+  prompt_flag: "-p"
   result_mode: file
   result_path: ".planning/dispatch/{task-id}-RESULT.md"
-  result_instruction: "Write your complete output to {result_path}"
+  result_instruction: "Write your complete output to {result_path} using the format specified below."
   max_concurrent: 1
   timeout_ms: 600000
   detection_command: "codex --version"
+  prerequisites: []
 ```
+
+#### Dispatch Frontmatter Field Reference
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `available` | Yes | boolean | Whether this CLI can be dispatched to |
+| `capabilities` | Yes | string[] | Canonical capabilities (see Capability Vocabulary below) |
+| `invoke_command` | Yes | string | CLI binary name |
+| `invoke_flags` | Yes | string[] | Default flags for non-interactive execution |
+| `prompt_delivery` | Yes | enum | How the prompt reaches the CLI: `stdin_pipe` (pipe via stdin), `file_arg` (pass prompt file path as argument), `inline_flag` (pass prompt string via flag) |
+| `prompt_flag` | Conditional | string | Required when `prompt_delivery` is `file_arg` or `inline_flag`. The flag that accepts the prompt (e.g., `-p`, `--prompt`) |
+| `result_mode` | Yes | enum | `file` (CLI writes to result_path) or `stdout` (capture stdout) |
+| `result_path` | Yes | string | Path template for result files. `{task-id}` is replaced at runtime |
+| `result_instruction` | Yes | string | Injected into prompt to tell CLI where/how to write results |
+| `max_concurrent` | Yes | integer | Max parallel dispatches to this CLI |
+| `timeout_ms` | Yes | integer | Per-invocation timeout in milliseconds |
+| `detection_command` | Yes | string | Command to check CLI availability |
+| `prerequisites` | No | string[] | Human-readable setup requirements checked at first dispatch |
+
+#### Capability Vocabulary
+
+Controlled vocabulary for `capabilities` to ensure consistent matching:
+
+| Capability | Description |
+|-----------|-------------|
+| `code_implementation` | Writing new code, implementing features |
+| `code_review` | Reviewing existing code for quality/bugs |
+| `testing` | Writing and running tests |
+| `refactoring` | Restructuring existing code |
+| `bug_fixing` | Diagnosing and fixing bugs |
+| `ui_design` | UI component design and implementation |
+| `ux_research` | UX analysis, usability evaluation |
+| `web_search` | Real-time web research |
+| `large_analysis` | Analyzing large codebases or documents |
+| `security_audit` | Security vulnerability analysis |
+| `performance_analysis` | Performance profiling and optimization |
+| `documentation` | Writing technical documentation |
+
+New capabilities may be added to this list as new dispatch targets are onboarded.
 
 #### 1.2 Capability Matcher
 
@@ -95,17 +142,28 @@ Constructs the external CLI's prompt from:
 
 #### 1.4 Invocation Engine
 
-Uses Claude Code's `Bash` tool to invoke the external CLI.
+Uses Claude Code's `Bash` tool to invoke the external CLI. The prompt is always written to a file first (never passed inline) to avoid shell argument length limits and ensure auditability.
 
 **Invocation flow:**
 
 1. Write prompt to `.planning/dispatch/{task-id}-PROMPT.md` (audit trail)
-2. Invoke CLI:
-   ```bash
-   codex --approval-mode full-auto --quiet -p "$(cat .planning/dispatch/{task-id}-PROMPT.md)"
-   ```
-3. Wait for completion (with timeout)
+2. Build invocation command from adapter's `dispatch` frontmatter:
+   - Read `invoke_command`, `invoke_flags`, `prompt_delivery`, and `prompt_flag`
+   - Construct the command per delivery method (see table below)
+3. Execute via Bash tool with `timeout` set to adapter's `timeout_ms`
 4. Collect result
+
+**Prompt delivery methods:**
+
+| Method | Command Template | Example |
+|--------|-----------------|---------|
+| `file_arg` | `{invoke_command} {invoke_flags} {prompt_flag} "$(cat {prompt_path})"` | `codex --approval-mode full-auto --quiet -p "$(cat .planning/dispatch/abc-PROMPT.md)"` |
+| `stdin_pipe` | `cat {prompt_path} \| {invoke_command} {invoke_flags}` | `cat .planning/dispatch/abc-PROMPT.md \| gemini --sandbox` |
+| `inline_flag` | `{invoke_command} {invoke_flags} {prompt_flag} "$(cat {prompt_path})"` | Same as file_arg but semantically the CLI treats the value as the prompt text, not a file path |
+
+**Note on shell limits:** The prompt file can be arbitrarily large (agent personality + task + context). By always writing to a file first and using `$(cat ...)` or stdin piping, we avoid the 8191-character Windows cmd.exe limit. Bash on Windows (MSYS2/Git Bash) supports arguments up to ~32K, but stdin piping has no practical limit.
+
+**Prerequisite checking:** On first dispatch to a CLI in a session, the engine runs `detection_command` and checks any `prerequisites`. If detection fails, the dispatch falls back to an internal agent with a warning. Prerequisites are displayed to the user as setup instructions if not met.
 
 #### 1.5 Result Collector
 
@@ -116,7 +174,18 @@ After CLI exits:
 3. Validate result structure (has required sections)
 4. Return result to calling skill
 
-#### 1.6 Error Recovery
+#### 1.6 Control Mode Interactions
+
+External CLIs cannot programmatically enforce Legion's control modes — they rely on prompt-injected instructions. The dispatch layer adapts its behavior per mode:
+
+| Control Mode | Dispatch Behavior |
+|-------------|-------------------|
+| `autonomous` | Full dispatch permitted. Prompt includes task scope but no file restrictions. |
+| `guarded` (default) | Dispatch permitted. Prompt includes `files_modified` scope as guidance. External CLI may touch other files; results are reviewed by the calling skill. |
+| `surgical` | Dispatch restricted to **read-only assessments only** (board assessments, code reviews). Implementation tasks must run as internal agents where file restriction can be enforced. If a task requiring file writes is matched to an external CLI, fallback to internal agent with a warning. |
+| `advisory` | Dispatch permitted but external CLIs are instructed to produce recommendations only, not modify files. Result files are treated as advisory artifacts. |
+
+#### 1.7 Error Recovery
 
 | Failure | Recovery |
 |---------|----------|
@@ -150,7 +219,56 @@ A governance escalation tier for high-stakes decisions. Assembles a dynamic pane
 Two modes:
 
 - **`/legion:board meet <topic>`** — Full 5-phase deliberation. For architecture decisions, phase completion gates, go/no-go calls, conflict resolution.
-- **`/legion:board review`** — Quick parallel assessments only (Phase 1), no deliberation. For routine quality checkpoints during build.
+- **`/legion:board review`** — Quick parallel assessments only (Phase 1), no deliberation. For strategic governance checks (not routine code quality).
+
+**Distinction from `/legion:review`:**
+
+| | `/legion:review` | `/legion:board review` | `/legion:board meet` |
+|---|---|---|---|
+| **Purpose** | Routine code quality QA | Strategic governance checkpoint | Full deliberation for high-stakes decisions |
+| **Agent selection basis** | Phase artifacts (files modified, languages) | Topic/proposal (strategic domain signals) | Topic/proposal (strategic domain signals) |
+| **Output** | Findings (BLOCKER/WARNING/INFO) + fix cycles | Parallel assessments with scores + summary | Assessments + discussion + vote + resolution |
+| **Persistence** | REVIEW.md in phase directory | `.planning/board/{date}-{topic}/` | `.planning/board/{date}-{topic}/` |
+| **Fix cycle** | Yes (iterative, max 3) | No | No (conditions are forward-looking) |
+| **Typical trigger** | After every build phase | Before major architecture changes | Go/no-go decisions, conflict resolution |
+
+### Command File Structure: `commands/board.md`
+
+```yaml
+name: legion:board
+description: Convene a board of directors for governance decisions
+argument-hint: |
+  /legion:board meet <topic>   — Full deliberation on a proposal
+  /legion:board review         — Quick parallel assessments of current phase
+allowed-tools:
+  - Agent
+  - Bash
+  - Read
+  - Write
+  - Glob
+  - Grep
+  - AskUserQuestion
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+```
+
+**Execution context** (skills loaded by this command):
+- `workflow-common-core` (always)
+- `agent-registry` (board composition)
+- `board-of-directors` (deliberation protocol)
+- `cli-dispatch` (external CLI routing)
+- `workflow-common-memory` (if memory enabled)
+
+### Model Tiers per Phase
+
+| Phase | Model Tier | Rationale |
+|-------|-----------|-----------|
+| Phase 1 — Assessment | `model_execution` | Domain-specific evaluation, similar to build tasks |
+| Phase 2 — Discussion | `model_planning` | Cross-perspective reasoning requires higher capability |
+| Phase 3 — Vote | `model_check` | Lightweight synthesis of established positions |
+| Phase 4 — Resolution | N/A (formula, not LLM) | Computed from votes |
+| Phase 5 — Persistence | N/A (file writes) | No LLM needed |
 
 ### Dynamic Board Composition
 
@@ -182,6 +300,7 @@ Each board member evaluates the proposal independently. **Dispatch-aware:**
 - If a board member's task type matches an external CLI's capabilities (e.g., UX Architect → Gemini), the assessment is dispatched via cli-dispatch.
 - Otherwise, the assessment runs as an internal Claude Code agent.
 - All assessments are parallel (background agents + dispatch calls).
+- **Timeout:** All assessments (internal and dispatched) are subject to `board.assessment_timeout_ms` (default: 300000ms / 5 minutes). If an assessment is not received within the timeout, the board proceeds with available assessments and notes the gap in MEETING.md. A board meeting requires at least 2 completed assessments to proceed to Phase 2.
 
 **Assessment output format:**
 
@@ -212,11 +331,11 @@ Board members respond to each other's concerns and questions. Runs **internally*
 | `AGREE` | Endorses another member's position |
 | `QUESTION` | Requests clarification |
 | `CLARIFY` | Responds to a question |
-| `SHIFT` | Changed own position based on discussion |
+| `SHIFT` | Changed own position based on discussion (influences Phase 3 vote) |
 
 #### Phase 3 — Final Vote
 
-Each board member casts a vote:
+Each board member casts a final vote, incorporating any position shifts from Phase 2. The vote is cast by the same agent persona using the complete Phase 1 assessment + Phase 2 discussion context:
 
 ```markdown
 ### Vote: {Agent Name}
@@ -227,15 +346,26 @@ Each board member casts a vote:
 
 #### Phase 4 — Resolution
 
-| Vote Distribution | Resolution |
-|-------------------|------------|
-| 4-1 or 5-0 APPROVE | **APPROVED** |
-| 3-2 APPROVE | **APPROVED WITH CONDITIONS** (all conditions mandatory) |
-| 3-2 REJECT | **REJECTED** |
-| 4-1 or 5-0 REJECT | **REJECTED** |
-| Tie (if 4 or 3 members) | **ESCALATE** to user |
+Resolution uses a general formula that works for any board size N (where `min_size` <= N <= `default_size`):
 
-With 3-member boards, thresholds adjust: unanimous = APPROVED, 2-1 = APPROVED WITH CONDITIONS.
+| Condition | Resolution |
+|-----------|------------|
+| Approve votes > 2/3 of N (rounded up) | **APPROVED** |
+| Approve votes > 1/2 of N (simple majority) | **APPROVED WITH CONDITIONS** (all stated conditions mandatory) |
+| Approve votes = exactly 1/2 of N (even boards only) | **ESCALATE** to user |
+| Approve votes < 1/2 of N | **REJECTED** |
+
+**Examples for common board sizes:**
+
+| N=5 | N=4 | N=3 |
+|-----|-----|-----|
+| 4-1, 5-0 → APPROVED | 3-1, 4-0 → APPROVED | 3-0 → APPROVED |
+| 3-2 → APPROVED W/ CONDITIONS | 2-2 → ESCALATE | 2-1 → APPROVED W/ CONDITIONS |
+| 2-3 → REJECTED | 1-3, 0-4 → REJECTED | 1-2, 0-3 → REJECTED |
+| 1-4, 0-5 → REJECTED | | |
+
+**When agent-registry cannot populate `min_size` members:**
+If fewer than `board.min_size` agents match the topic (e.g., a niche framework only 2 agents know), the board command warns the user and offers two options: (a) proceed with a smaller board (minimum 2), or (b) let the user manually select additional agents. A 2-member board uses simple rules: unanimous = APPROVED, split = ESCALATE.
 
 #### Phase 5 — Persistence
 
@@ -282,6 +412,8 @@ Instead of single-pass reviews per agent, evaluators run multiple focused passes
 | **Business Logic** | Product rules, Feature correctness, Edge cases, State transitions, Data flow, User journey | Internal |
 
 Evaluator type selected automatically based on phase type and files modified. Multi-type phases run multiple evaluators. Findings are deduplicated across passes before presentation.
+
+**Multi-pass execution model:** Each evaluator runs as a **single agent invocation** with multiple evaluation criteria in its prompt (not separate invocations per pass). The "passes" are sequential sections within one agent's rubric. This keeps cost comparable to single-pass reviews while improving coverage depth. The agent personality includes the full pass list, and the result is structured with one section per pass. This matches the existing review-panel pattern of per-criterion evaluation within a single rubric.
 
 ### Enhancement 2: Anti-Sycophancy Rules
 
@@ -387,7 +519,8 @@ Coverage thresholds are advisory — they flag when coverage is below the thresh
 | `commands/review.md` | Add `evaluator_depth` option |
 | `commands/status.md` | Show recent board decisions and pending conditions |
 | `settings.json` | Add `board`, `dispatch`, and enhanced `review` settings |
-| `CLAUDE.md` | Add `/legion:board` to command table |
+| `docs/settings.schema.json` | Add `board`, `dispatch` top-level schemas; extend `review` schema with `evaluator_depth` and `coverage_thresholds` |
+| `CLAUDE.md` | Add `/legion:board` to command table; update agent count references to "built-in agents" |
 | `CHANGELOG.md` | Version bump entry |
 
 ### Unchanged
@@ -409,7 +542,7 @@ Coverage thresholds are advisory — they flag when coverage is below the thresh
     "default_size": 5,
     "min_size": 3,
     "discussion_rounds": 2,
-    "quick_review_threshold": 3,
+    "assessment_timeout_ms": 300000,
     "persist_artifacts": true
   },
   "dispatch": {
@@ -431,6 +564,24 @@ Coverage thresholds are advisory — they flag when coverage is below the thresh
 }
 ```
 
+**Note:** The current `docs/settings.schema.json` uses `"additionalProperties": false` at both the top level and within the `review` object. The schema file MUST be updated in lockstep with `settings.json` to add the `board` and `dispatch` top-level keys and the new `review` sub-keys (`evaluator_depth`, `coverage_thresholds`). Failure to update the schema will cause validation failures.
+
+**Settings field reference:**
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `board.default_size` | integer | 5 | Default number of board members |
+| `board.min_size` | integer | 3 | Minimum board members (2 if registry can't fill) |
+| `board.discussion_rounds` | integer | 2 | Number of Phase 2 discussion rounds |
+| `board.assessment_timeout_ms` | integer | 300000 | Per-assessment timeout (Phase 1) |
+| `board.persist_artifacts` | boolean | true | Whether to save board artifacts to `.planning/board/` |
+| `dispatch.enabled` | boolean | true | Whether cross-CLI dispatch is active |
+| `dispatch.fallback_to_internal` | boolean | true | Fall back to internal agent if CLI unavailable |
+| `dispatch.timeout_ms` | integer | 300000 | Default per-dispatch timeout (overridden by adapter) |
+| `dispatch.max_retries` | integer | 1 | Retries per dispatch before escalating |
+| `review.evaluator_depth` | enum | "multi-pass" | `"single"` or `"multi-pass"` evaluation mode |
+| `review.coverage_thresholds` | object | see above | Advisory coverage thresholds (percentage) |
+
 ---
 
 ## 7. Scope Boundaries
@@ -447,8 +598,16 @@ Coverage thresholds are advisory — they flag when coverage is below the thresh
 ### Out of Scope
 
 - Dispatch from non-Claude-Code CLIs (Claude Code is the only orchestrator)
-- New agent personalities (existing 53 agents serve all roles)
+- New agent personalities (existing built-in agents serve all roles)
 - Changes to wave executor (dispatch is infrastructure below it)
 - Real-time inter-agent messaging (file-based handoff only)
 - Automated board triggers (board is manually invoked via `/legion:board`)
 - Install.js changes (dispatch is a runtime feature)
+- Authentication/credential management for external CLIs (assumes CLIs are already authenticated and configured)
+- Dispatch to CLIs on remote machines (all dispatch is local)
+- Persistent dispatch sessions (each dispatch is a one-shot invocation)
+- Board decision enforcement (board decisions are auditable records, not automated enforcement mechanisms)
+
+### Cleanup Policy
+
+`.planning/dispatch/` files (PROMPT.md, RESULT.md) are ephemeral. After successful result collection, PROMPT and RESULT files are moved to `.planning/dispatch/archive/` with a timestamp prefix. The archive directory can be manually cleared or `.gitignore`'d. Board artifacts in `.planning/board/` are permanent audit records and are not auto-cleaned.
