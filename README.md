@@ -108,6 +108,9 @@ These are the canonical Legion command names. Each runtime maps them to its own 
 | `/legion:agent` | Create a new agent personality through guided workflow | When you need a specialist that doesn't exist |
 | `/legion:explore` | Pre-flight exploration with Polymath — crystallize, onboard, compare, or debate | Before `/legion:start` — align on ideas before committing to a project |
 | `/legion:board` | Convene board of directors for governance decisions | For architecture decisions, go/no-go calls, conflict resolution |
+| `/legion:retro` | Run structured retrospective on completed phases or milestones | After phases or milestones — captures what worked, what didn't |
+| `/legion:ship` | Pre-ship checklist, PR creation, deployment verification, canary monitoring | After review — formal shipping stage before the next phase |
+| `/legion:learn` | Record, recall, and manage project-specific patterns and preferences | Anytime — operationalizes project memory |
 | `/legion:update` | Check for updates and install latest version from npm | After installation — keeps Legion current |
 
 ## How It Works
@@ -125,12 +128,17 @@ These are the canonical Legion command names. Each runtime maps them to its own 
        ↓                       ↓ (optional)
        ↓                 Panel mode → 2-4 domain-weighted reviewers with rubrics
        ↓
+/legion:ship             Ship pipeline → Pre-ship gates → PR creation → deployment verification
+       ↓
+/legion:retro            Retrospective → What worked, what didn't, reusable patterns
+       ↓
 /legion:plan 2 → ...     Repeat for each phase until project complete
 
 
 /legion:explore          Pre-flight → Crystallize, onboard, compare, or debate (before start)
 /legion:advise <topic>   Standalone → Read-only expert consultation (any time)
 /legion:quick <task>     Standalone → One-off task with agent selection (any time)
+/legion:learn <lesson>   Standalone → Record patterns, pitfalls, and preferences (any time)
 ```
 
 ## Workflows
@@ -168,7 +176,7 @@ Decomposes a roadmap phase into wave-structured plans with a default max of 3 ta
 5. *(Optional)* Spec pipeline — 5-stage specification process (gather → research → write → critique → assess) producing a structured spec at `.planning/specs/`
 6. Decompose into plans via `phase-decomposer` — default max 3 tasks per plan (configurable), grouped into dependency waves (parallel within, sequential between)
 7. Recommend agents per plan using `agent-registry` scoring (keyword match 3pts, division affinity 2pts, partial match 1pt, memory boost from past outcomes)
-8. *(Optional)* Plan critique — spawns 2 read-only Explore agents (`testing-reality-checker` for pre-mortem, `product-sprint-prioritizer` for assumption hunting) with PASS/CAUTION/REWORK verdicts
+8. *(Optional)* Plan critique — spawns 2 read-only Explore agents (`testing-qa-verification-specialist` for pre-mortem, `product-sprint-prioritizer` for assumption hunting) with PASS/CAUTION/REWORK verdicts
 9. Generate plan files with full task instructions, verification commands, and YAML frontmatter
 10. *(Optional)* GitHub issue creation via `github-sync` — creates a labeled issue with plan checklist
 
@@ -207,7 +215,7 @@ Selects appropriate review agents for the phase, runs a structured dev-QA loop (
 1. Determine target phase and load build summaries — reads CONTEXT.md, all PLAN.md and SUMMARY.md files, builds deduplicated file list for review
 2. Detect manual edits — intersects `git diff` with agent-modified files before review begins, stores corrective preferences via `memory-manager`
 3. Choose review mode: **classic** (`review-loop` — static phase-type-to-agent mapping) or **panel** (`review-panel` — dynamic 2-4 reviewer composition with domain-weighted rubrics)
-   - Classic mapping: code → `testing-reality-checker` + `testing-evidence-collector`; API → `testing-api-tester`; design → three-lens review (`brand-guardian` + `ux-architect` + `ux-researcher`); marketing → `testing-workflow-optimizer`
+   - Classic mapping: code → `testing-qa-verification-specialist`; API → `testing-api-tester`; design → three-lens review (`brand-guardian` + `ux-architect` + `ux-researcher`); marketing → `testing-workflow-optimizer`
    - Panel mode: scores all review-capable agents via `agent-registry`, caps panel size (2 single-domain, 3 standard, 4 cross-domain), enforces max 2 per division + at least 1 Testing agent, assigns non-overlapping rubrics
 4. Create a Claude Code Team via TeamCreate (`phase-{NN}-review`)
 5. Spawn review agents in parallel — each receives full personality .md + phase context + rubric (panel mode); all agents spawn in a single response via Agent tool with `model: "sonnet"`
@@ -512,7 +520,7 @@ Legion didn't invent its patterns from scratch. It cherry-picked the best ideas 
 
 #### The Agent Personality Foundation — [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)
 
-Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 2 new Legion-native specializations (`engineering-laravel-specialist`, `engineering-security-engineer`). These are not generic role labels — they are structured character sheets (current range 89-678 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
+Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 2 Legion-native specializations, consolidated from the original 53 via 4 agent merges in v7.1.0. These are not generic role labels — they are structured character sheets (current range 89-678 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
 
 #### From [GSD (Get Shit Done)](https://github.com/gsd-build/get-shit-done)
 
@@ -530,7 +538,7 @@ We also adopted GSD's orchestrator/subagent split: a coordinator manages the wor
 
 Conductor's build → review → fix cycle is the right way to ensure quality. Our `review-loop.md` skill implements this as a structured dev-QA loop: review agents provide specific, actionable feedback (not vague "looks good"), fixes are applied, and re-review confirms the fix — with a hard cap of 3 cycles before escalating to the user. No infinite retry loops.
 
-Conductor's parallel dispatch pattern — spawning multiple specialized evaluators simultaneously — became our wave execution model. And its concept of typed evaluators (different reviewers for different work) became our phase-type mapping: code gets Reality Checker + Evidence Collector, design gets the three-lens review (brand + accessibility + usability), marketing gets Workflow Optimizer, and so on.
+Conductor's parallel dispatch pattern — spawning multiple specialized evaluators simultaneously — became our wave execution model. And its concept of typed evaluators (different reviewers for different work) became our phase-type mapping: code gets the QA Verification Specialist, design gets the three-lens review (brand + accessibility + usability), marketing gets Workflow Optimizer, and so on.
 
 **Left behind:** Conductor's board-of-directors governance model (5 directors debating is overkill for most projects), file-based message bus IPC, 50+ iteration limits, and `metadata.json` state tracking. Conductor optimizes for correctness through redundancy; we optimize for shipping through focused review.
 
@@ -642,14 +650,14 @@ Legion intentionally optimizes for orchestration ergonomics (few commands, markd
 
 | Design Axis | Typical Alternative | Legion Choice | Tradeoff |
 |-------------|---------------------|---------------|----------|
-| Command surface | 15-33+ command sets | 12 commands | Faster onboarding, but less granular command specialization |
+| Command surface | 15-33+ command sets | 16 commands | Faster onboarding, but less granular command specialization |
 | State storage | JSON/DB/hybrid state | Markdown-only `.planning/` | Human-readable and git-native, but less strict schema enforcement |
 | Setup model | CLI bootstrap + config | `npx` installer | Simpler install path, but runtime capabilities can vary more |
 | Agent model | Generic role prompts | 49 full personalities | Higher domain specificity, but larger context footprint |
 | Runtime coverage | Single-runtime focus | 9 runtime adapters | Broader portability, but feature parity differs by runtime tier |
 | Memory strategy | Hook-based/global memory | Project-local explicit memory | Better project isolation, but requires explicit integration points |
 
-Current repository metrics: 12 commands, 25 skills, 49 agent personalities, 9 runtime adapters, and 4 control mode presets.
+Current repository metrics: 16 commands, 30 skills, 49 agent personalities, 9 runtime adapters, and 4 control mode presets.
 
 ## The 49 Agents
 
@@ -657,13 +665,13 @@ Agents are organized across 9 divisions, each with deep specialist personalities
 
 | Division | Agents | Focus |
 |----------|--------|-------|
-| Engineering | 8 | Full-stack, backend, frontend, AI, DevOps, mobile, prototyping, Laravel specialization |
+| Engineering | 9 | Full-stack, backend, frontend, AI, infrastructure/DevOps, mobile, prototyping, Laravel, security |
 | Design | 6 | UI/UX, branding, visual storytelling, research |
-| Marketing | 8 | Content, social media, growth, platform strategies |
-| Testing | 7 | QA, evidence collection, performance, API testing |
+| Marketing | 4 | Content & social strategy, platform execution, growth, ASO |
+| Testing | 6 | QA verification, performance, API testing, tool evaluation |
 | Product | 4 | Sprint planning, feedback synthesis, trends, technical writing |
 | Project Management | 5 | Coordination, portfolio, operations, experiments |
-| Support | 6 | Analytics, finance, legal, infrastructure |
+| Support | 5 | Analytics, finance, legal, executive summaries, support |
 | Spatial Computing | 6 | VisionOS, XR, Metal, terminal integration |
 | Specialized | 4 | Orchestration, data analytics, LSP indexing, exploration (Polymath) |
 
@@ -677,7 +685,7 @@ legion/                     <- Project root
 ├── bin/
 │   └── install.js         <- Cross-runtime installer (npx entry point)
 ├── CLAUDE.md               <- Project instructions (injected into Claude Code context)
-├── commands/               <- 12 /legion: command entry points
+├── commands/               <- 16 /legion: command entry points
 │   ├── start.md
 │   ├── plan.md
 │   ├── build.md
@@ -689,8 +697,12 @@ legion/                     <- Project root
 │   ├── milestone.md
 │   ├── agent.md
 │   ├── explore.md
+│   ├── board.md
+│   ├── retro.md
+│   ├── ship.md
+│   ├── learn.md
 │   └── update.md
-├── skills/                 <- 25 reusable workflow skills
+├── skills/                 <- 30 reusable workflow skills
 │   ├── workflow-common-core/SKILL.md <- Lean always-load core conventions
 │   ├── workflow-common/SKILL.md      <- Compatibility shim for legacy references
 │   ├── agent-registry/
@@ -703,12 +715,12 @@ legion/                     <- Project root
 │   ├── review-loop/SKILL.md        <- Dev-QA loop with structured feedback
 │   ├── review-panel/SKILL.md       <- Dynamic multi-reviewer composition with rubrics
 │   ├── plan-critique/SKILL.md      <- Pre-mortem analysis + assumption hunting
-│   └── + 12 more (portfolio, milestone, memory, agents, GitHub, brownfield, marketing, design, spec pipeline, and workflow-common extensions)
+│   └── + 14 more (portfolio, milestone, memory, agents, GitHub, brownfield, marketing, design, spec pipeline, ship pipeline, security review, and workflow-common extensions)
 ├── agents/                 <- 49 personality .md files (flat, with division in frontmatter)
 │   ├── engineering-senior-developer.md
 │   ├── design-ui-designer.md
-│   ├── marketing-content-creator.md
-│   ├── testing-reality-checker.md
+│   ├── marketing-content-social-strategist.md
+│   ├── testing-qa-verification-specialist.md
 │   └── ... (48 more)
 ├── adapters/               <- Per-CLI adapter files (claude-code.md, codex-cli.md, etc.)
 ├── docs/
