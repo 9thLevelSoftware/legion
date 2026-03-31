@@ -4,3 +4,17 @@ node_modules/
 Thumbs.db
 *.swp
 .planning/codebase/
+
+# Local plugin/CLI state
+.claude-plugin/
+.legion/
+
+# Build/gen artifacts
+public/
+
+# Prevent PATH-explosion garbage (Windows shell quoting failures)
+%USERPROFILE%/
+(x86)/
+--version/
+.exe/
+~
