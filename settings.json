@@ -41,7 +41,10 @@
   },
   "memory": {
     "enabled": true,
-    "project_scoped_only": true
+    "project_scoped_only": true,
+    "auto_prune": false,
+    "prune_threshold": 200,
+    "prune_age_days": 90
   },
   "integrations": {
     "github": "prompt"

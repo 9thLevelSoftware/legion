@@ -54,7 +54,7 @@ gap_analysis:
             - alerting_systems
           coverage_indicators:
             - support-infrastructure-maintainer
-            - data-analytics-reporter
+            - data-analytics-engineer
       
     security:
       priority: critical
@@ -111,7 +111,7 @@ gap_analysis:
             - experimental_design
             - data_visualization
           coverage_indicators:
-            - data-analytics-reporter
+            - data-analytics-engineer
             
         ml_engineer:
           description: "Machine learning model development and deployment"
@@ -131,7 +131,7 @@ gap_analysis:
             - data_quality
             - data_governance
           coverage_indicators:
-            - data-analytics-reporter
+            - data-analytics-engineer
         
     engineering:
       priority: important
@@ -269,21 +269,14 @@ gap_analysis:
         replacement_difficulty: low
         
     overlapping:
-      - agent_id: support-analytics-reporter
-        overlaps_with: data-analytics-reporter
-        reason: "Post-analysis delivery overlaps with data-analytics-reporter pre-analysis work"
-        consolidation_benefit: "Unified analytics pipeline"
-        
+      # support-analytics-reporter + data-analytics-reporter: CONSOLIDATED into data-analytics-engineer
+
       - agent_id: testing-tool-evaluator
         reason: "Testing-specific, lower priority than core QA agents"
         replacement_difficulty: medium
-        
+
     candidates_for_consolidation:
-      - pair:
-          - support-analytics-reporter
-          - data-analytics-reporter
-        proposed_name: data-analytics-specialist
-        rationale: "Single agent handling full analytics lifecycle"
+      # analytics consolidation COMPLETED: support-analytics-reporter + data-analytics-reporter -> data-analytics-engineer
         
   # Current gap findings (populated by analysis)
   # These are updated by the gap analysis engine
@@ -328,7 +321,7 @@ gap_analysis:
       - role: data_scientist
         current_coverage: partial
         covering_agents:
-          - data-analytics-reporter
+          - data-analytics-engineer
           - engineering-ai-engineer
         gaps:
           - statistical modeling

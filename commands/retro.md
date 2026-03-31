@@ -177,6 +177,9 @@ skills/execution-tracker/SKILL.md
      ---
      ```
    - Display: "Retrospective saved to .planning/memory/RETRO.md"
+   - After recording: output reminder
+     "Retro findings are automatically available to `/legion:plan` during decomposition.
+      Action items from this retro will appear as constraints in future phase planning."
 
    **Path B: View only**
    - Display: "Retrospective not saved. Run `/legion:retro` again to revisit."

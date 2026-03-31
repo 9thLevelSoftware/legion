@@ -15,7 +15,7 @@ const LEGION_COMMANDS = [
   'update',
 ];
 
-const SUPPORT_TIERS = ['certified', 'beta', 'experimental'];
+const SUPPORT_TIERS = ['certified', 'beta', 'experimental', 'community-contributed'];
 
 const RUNTIME_METADATA = {
   claude: {
@@ -413,7 +413,7 @@ const RUNTIME_METADATA = {
     aliases: [],
     label: 'Aider',
     adapterFile: 'aider.md',
-    supportTier: 'experimental',
+    supportTier: 'community-contributed',
     disposition: 'manual-only',
     installSurface: 'manual instructions only',
     scopeSupport: { local: false, global: false },

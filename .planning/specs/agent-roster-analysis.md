@@ -15,10 +15,10 @@
 - **Assessment**: Not horizontal overlap — these serve different vertical scopes: task-level (senior PM), cross-functional coordination (shepherd), portfolio/strategic (producer). Naming doesn't make this obvious.
 - **Potential action**: Rename to clarify scope hierarchy, or consolidate shepherd + senior PM if portfolio-level planning is rare.
 
-### Analytics (Medium Priority — Build vs. Consume)
-- **Agents**: data-analytics-reporter, support-analytics-reporter
-- **Assessment**: data-analytics-reporter focuses on infrastructure (ETL, pipelines, warehouses); support-analytics-reporter focuses on dashboards and KPI reporting. The split is build-vs-consume. A single strong data agent could cover both.
-- **Potential action**: Merge into one "Data Analyst" with both pipeline-building and reporting capabilities.
+### Analytics (RESOLVED)
+- **Agents**: ~~data-analytics-reporter, support-analytics-reporter~~ -> data-analytics-engineer
+- **Assessment**: COMPLETED. Merged infrastructure (ETL, pipelines, warehouses) and delivery (dashboards, KPI reporting) into a single full-stack data-analytics-engineer agent.
+- **Action taken**: Consolidated into data-analytics-engineer with both pipeline-building and executive reporting capabilities.
 
 ### XR / Spatial Computing (Medium Priority — Niche Density)
 - **Agents**: visionos-spatial-engineer, macos-spatial-metal-engineer, xr-interface-architect, xr-immersive-developer, xr-cockpit-interaction-specialist, terminal-integration-specialist (6 agents)
@@ -28,7 +28,7 @@
 ## Gaps & Missing Roles
 
 ### DBA / Data Engineer (Partial Coverage)
-- **Current coverage**: engineering-backend-architect (database-design, data-modeling domains), data-analytics-reporter (pipelines, ETL)
+- **Current coverage**: engineering-backend-architect (database-design, data-modeling domains), data-analytics-engineer (pipelines, ETL, data quality)
 - **Gap**: Dedicated schema migration expertise, database performance tuning, index optimization, replication/sharding strategy
 - **Priority**: Medium — covered partially but not deeply
 

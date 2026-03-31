@@ -479,16 +479,7 @@ agents:
   # SUPPORT DIVISION (6 agents)
   # ============================================================================
 
-  support-analytics-reporter:
-    name: "Analytics Reporter"
-    division: "support"
-    exclusive_domains:
-      - "dashboards"
-      - "kpi-reporting"
-      - "business-intelligence"
-      - "executive-summaries"
-    deferred_by: ["*"]
-    description: "Operational analytics and KPI reporting"
+  # support-analytics-reporter: CONSOLIDATED into data-analytics-engineer (Specialized division)
 
   support-finance-tracker:
     name: "Finance Tracker"
@@ -642,8 +633,8 @@ agents:
     deferred_by: ["*"]
     description: "Cross-division agent coordination, orchestration, and communication routing"
 
-  data-analytics-reporter:
-    name: "Data Analytics Reporter"
+  data-analytics-engineer:
+    name: "Data Analytics Engineer"
     division: "specialized"
     exclusive_domains:
       - "data-pipelines"
@@ -651,8 +642,12 @@ agents:
       - "data-quality"
       - "data-warehouse"
       - "data-engineering"
+      - "dashboards"
+      - "kpi-reporting"
+      - "business-intelligence"
+      - "statistical-analyses"
     deferred_by: ["*"]
-    description: "Data infrastructure, pipelines, and ETL"
+    description: "Full-stack data analytics — infrastructure through executive delivery"
 
   lsp-index-engineer:
     name: "LSP Index Engineer"

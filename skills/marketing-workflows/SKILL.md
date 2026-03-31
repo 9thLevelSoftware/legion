@@ -152,7 +152,7 @@ For marketing campaigns, use the agent-registry Section 4 Marketing Campaign tea
 |-----------|------|-------|----------|
 | Objectives include "acquisition" or "conversion" | Growth/Analytics | marketing-growth-hacker | marketing |
 | Campaign is visually intensive (Instagram, TikTok focus) | Visual Design | design-visual-storyteller | design |
-| Campaign requires detailed performance tracking | Analytics | support-analytics-reporter | support |
+| Campaign requires detailed performance tracking | Analytics | data-analytics-engineer | specialized |
 
 ### 2.4: Campaign Lifecycle
 
@@ -240,7 +240,7 @@ Three standard patterns based on campaign timeline (from Q4 in brief questioning
 3. Strategy Lead (marketing-social-media-strategist) reviews all content for brand consistency -- review role, not creation
 4. Content Creator (marketing-content-creator) handles all long-form content regardless of distribution channel
 5. Channel specialists own platform-native formats (Reels, TikToks, Threads, Reddit posts)
-6. Cross-division agents (design-visual-storyteller, support-analytics-reporter) support but do not own content slots
+6. Cross-division agents (design-visual-storyteller, data-analytics-engineer) support but do not own content slots
 7. When a channel has no specialist assigned, Content Creator is the fallback
 
 ---

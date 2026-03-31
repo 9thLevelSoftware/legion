@@ -16,7 +16,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const ADAPTERS_DIR = path.join(ROOT, 'adapters');
 
-const VALID_SUPPORT_TIERS = ['certified', 'beta', 'experimental'];
+const VALID_SUPPORT_TIERS = ['certified', 'beta', 'experimental', 'community-contributed'];
 
 const CAPABILITY_FLAGS = [
   'parallel_execution',

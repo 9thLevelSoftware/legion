@@ -1,14 +1,14 @@
 ---
 name: legion:agent-registry
-description: Maps all 49 Legion agents by division, capability, and task type for intelligent team assembly
+description: Maps all 48 Legion agents by division, capability, and task type for intelligent team assembly
 triggers: [agent, recommend, team, catalog, assign, match]
 token_cost: low
-summary: "Maps all 49 agents by division, capability, and task type. Recommendation algorithm is semantic-first with heuristic tiebreak scoring. Use when assembling teams or selecting agents for plans."
+summary: "Maps all 48 agents by division, capability, and task type. Recommendation algorithm is semantic-first with heuristic tiebreak scoring. Use when assembling teams or selecting agents for plans."
 ---
 
 # Legion Agent Registry
 
-Complete catalog of all agent personalities. Includes 49 built-in agents across 9 divisions plus any custom agents created via `/legion:agent`. Use this registry to assemble the right team for any project task.
+Complete catalog of all agent personalities. Includes 48 built-in agents across 9 divisions plus any custom agents created via `/legion:agent`. Use this registry to assemble the right team for any project task.
 
 > Agent catalog and task-type index are in `CATALOG.md` in this directory.
 
@@ -213,7 +213,7 @@ Pre-configured team compositions for common project scenarios.
 | Strategy | marketing-content-social-strategist | marketing |
 | Content | marketing-content-social-strategist | marketing |
 | Visual | design-visual-storyteller | design |
-| Analytics | support-analytics-reporter | support |
+| Analytics | data-analytics-engineer | specialized |
 | Platform Lead (pick 1-2) | marketing-social-platform-specialist / marketing-app-store-optimizer / marketing-growth-hacker | marketing |
 
 ### Full Launch
@@ -228,7 +228,7 @@ Pre-configured team compositions for common project scenarios.
 | UI/UX | design-ui-designer | design |
 | QA Lead | testing-qa-verification-specialist | testing |
 | Marketing | marketing-growth-hacker | marketing |
-| Analytics | data-analytics-reporter | specialized |
+| Analytics | data-analytics-engineer | specialized |
 
 ### Quick Fix / Bug Patch
 > Targeted bug fix or hotfix with minimal team.

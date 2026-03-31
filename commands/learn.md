@@ -1,7 +1,7 @@
 ---
 name: legion:learn
 description: Record, recall, and manage project-specific patterns, pitfalls, and preferences
-argument-hint: <lesson> [--recall <topic>] [--list]
+argument-hint: <lesson> [--recall <topic>] [--list] [--prune]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
 
@@ -28,6 +28,7 @@ skills/memory-manager/SKILL.md
 
    - If $ARGUMENTS contains `--recall <topic>`: set MODE=recall, extract topic text
    - If $ARGUMENTS contains `--list`: set MODE=list
+   - If $ARGUMENTS contains `--prune`: set MODE=prune
    - If $ARGUMENTS is non-empty (and no flags): set MODE=record, store full text as lesson
    - If $ARGUMENTS is empty or missing:
      Display:
@@ -42,7 +43,8 @@ skills/memory-manager/SKILL.md
       Modes:
         `<lesson>`         — Record a new learning
         `--recall <topic>` — Search memory for relevant learnings
-        `--list`           — Show all recorded learnings by type"
+        `--list`           — Show all recorded learnings by type
+        `--prune`          — Archive old, low-importance outcome records"
      Exit — do not proceed
 
 2. LOAD PROJECT CONTEXT (optional)
@@ -60,6 +62,7 @@ skills/memory-manager/SKILL.md
    - MODE=record → go to Step 4
    - MODE=recall → go to Step 8
    - MODE=list → go to Step 9
+   - MODE=prune → go to Step 10
 
 4. CLASSIFY LESSON
    Analyze the lesson text to determine its type:
@@ -211,6 +214,28 @@ skills/memory-manager/SKILL.md
     Start with `/legion:learn <lesson>` to record your first pattern, pitfall, or preference."
 
    Exit after displaying results.
+
+10. PRUNE MODE
+    Execute the Prune Operation defined in memory-manager SKILL.md Section 7.5:
+
+    a. Check if .planning/memory/OUTCOMES.md exists
+       - If not: Display "No outcomes to prune. OUTCOMES.md does not exist." → Exit
+
+    b. Count total records in OUTCOMES.md
+       - If count <= memory.prune_threshold (default 200) from settings.json:
+         Present via adapter.ask_user:
+         "OUTCOMES.md has {count} records (threshold: {threshold}). Prune anyway?"
+         Options:
+         - "Yes" — "Prune records older than {prune_age_days} days with importance <= 3"
+         - "No" — "Keep all records"
+         If "No": Exit
+
+    c. Run the Prune Operation from memory-manager Section 7.5
+       - This handles: candidate identification, archive file creation, record movement, verification, and reporting
+
+    d. Display the prune report from Step 8 of the Prune Operation
+
+    Exit after displaying results.
 
 IMPORTANT:
 - Learn works with or without an initialized Legion project — it only needs .planning/memory/

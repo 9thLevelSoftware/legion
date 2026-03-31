@@ -58,7 +58,7 @@ Structured pass/fail evaluation for each OWASP category. The `engineering-securi
 | 6 | **Security Misconfiguration** | MEDIUM | No default credentials in production. Unnecessary features/endpoints disabled. Error messages don't expose stack traces or internal paths. Security headers set (CSP, X-Frame-Options, HSTS). Debug mode disabled in production. |
 | 7 | **Cross-Site Scripting (XSS)** | HIGH | Output encoding applied in templates. Content Security Policy (CSP) headers configured. User input sanitized before rendering. DOM manipulation uses safe APIs (textContent, not innerHTML). |
 | 8 | **Insecure Deserialization** | HIGH | Untrusted data is not deserialized without validation. Type checking enforced on deserialized objects. Integrity checks (signatures/HMACs) on serialized data. |
-| 9 | **Known Vulnerabilities** | MEDIUM | Dependencies scanned for known CVEs. No critically vulnerable packages. Patch currency: dependencies updated within reasonable timeframe. Lock files committed (package-lock.json, yarn.lock). |
+| 9 | **Known Vulnerabilities** | MEDIUM | Dependencies scanned for known CVEs. No critically vulnerable packages. Patch currency: dependencies updated within reasonable timeframe. Lock files committed (package-lock.json, yarn.lock). **See Section 5 (Dependency Vulnerability Scan) for automated scanning procedure and Section 7 (Supply Chain Security Checks) for integrity verification.** |
 | 10 | **Insufficient Logging** | MEDIUM | Authentication events logged (login, logout, failed attempts). Authorization failures logged. Input validation failures logged. Logs don't contain sensitive data (passwords, tokens, PII). Alerting configured for suspicious patterns. |
 
 ### 2.2: Evaluation Process
@@ -83,7 +83,7 @@ Step 3: Produce category verdict
   - Any item WARN → Category: WARN (recommend fixing)
 
 Step 4: Record findings
-  - For each FAIL or WARN: produce a structured finding (Section 5)
+  - For each FAIL or WARN: produce a structured finding (Section 8)
 ```
 
 ---
@@ -176,7 +176,253 @@ Step 4: Produce attack surface map
 
 ---
 
-## Section 5: Finding Format
+## Section 5: Dependency Vulnerability Scan
+
+Automated scanning for known CVEs in project dependencies. Corresponds to OWASP A06:2021 (Vulnerable and Outdated Components).
+
+### 5.1: Detection — Which Package Manager
+
+Detect the project's package ecosystem by checking for lock files:
+
+| Lock File | Ecosystem |
+|-----------|-----------|
+| `package-lock.json` or `yarn.lock` or `pnpm-lock.yaml` | npm / Node.js |
+| `requirements.txt` or `Pipfile.lock` or `poetry.lock` | Python |
+| `composer.lock` | PHP / Composer |
+| `Gemfile.lock` | Ruby |
+| `go.sum` | Go |
+| `Cargo.lock` | Rust |
+
+If multiple ecosystems are detected, scan all of them.
+
+### 5.2: Scan Procedure
+
+For each detected ecosystem, run the appropriate audit command:
+
+```
+Node.js:
+  npm audit --json 2>/dev/null
+
+Python:
+  pip audit --format=json 2>/dev/null || safety check --json 2>/dev/null
+
+PHP:
+  composer audit --format=json 2>/dev/null
+
+Go:
+  govulncheck ./... 2>/dev/null
+
+Ruby:
+  bundle audit check --format=json 2>/dev/null
+
+Rust:
+  cargo audit --json 2>/dev/null
+```
+
+Parse output for each ecosystem. Extract: severity (critical/high/moderate/low), package name, vulnerable version range, patched version, and advisory URL.
+
+If the audit command is not installed or not available, record a finding: "Dependency audit tool not installed for {ecosystem} — cannot verify dependency security." Severity: MEDIUM.
+
+### 5.3: Output Format
+
+```markdown
+### Dependency Vulnerability Findings
+
+| Severity | Package | Current Version | Patched Version | Advisory |
+|----------|---------|-----------------|-----------------|----------|
+| CRITICAL | lodash | 4.17.20 | 4.17.21 | [CVE-2021-23337](url) |
+| HIGH | express | 4.17.1 | 4.17.3 | [CVE-2022-24999](url) |
+
+**Summary**: {critical_count} critical, {high_count} high, {moderate_count} moderate, {low_count} low
+**Recommendation**: {action — e.g., "Update lodash and express immediately. Run `npm audit fix` for automated patching."}
+```
+
+### 5.4: Severity Mapping to Review Verdicts
+
+| Condition | Review Verdict |
+|-----------|---------------|
+| Any CRITICAL vulnerability | FAIL (blocker) |
+| 3+ HIGH vulnerabilities | FAIL (blocker) |
+| 1-2 HIGH vulnerabilities | CAUTION |
+| Only MODERATE or LOW | PASS with advisory note |
+| Audit tool not available | CAUTION (cannot verify) |
+
+---
+
+## Section 6: Secret Detection Scan
+
+Scan committed code for accidentally committed secrets, API keys, tokens, and credentials.
+
+### 6.1: Patterns
+
+Scan all files in the diff (or full codebase if `--full-scan`) for these patterns:
+
+**API Keys and Tokens:**
+
+| Pattern Name | Regex |
+|-------------|-------|
+| AWS Access Key | `AKIA[0-9A-Z]{16}` |
+| AWS Secret Key | `(?i)aws_secret_access_key\s*[=:]\s*[A-Za-z0-9/+=]{40}` |
+| GitHub Token | `gh[pousr]_[A-Za-z0-9_]{36,255}` |
+| GitHub Classic Token | `ghp_[A-Za-z0-9]{36}` |
+| Slack Token | `xox[baprs]-[A-Za-z0-9-]+` |
+| Stripe Key | `[sr]k_(live\|test)_[A-Za-z0-9]{20,}` |
+| Google API Key | `AIza[0-9A-Za-z\-_]{35}` |
+| Generic Bearer Token | `(?i)bearer\s+[A-Za-z0-9\-._~+/]+=*` |
+
+**Credentials:**
+
+| Pattern Name | Regex |
+|-------------|-------|
+| Database URL with password | `(?i)(postgres\|mysql\|mongodb)://[^:]+:[^@]+@` |
+| Generic password assignment | `(?i)(password\|passwd\|pwd\|secret)\s*[=:]\s*['"][^'"]{8,}['"]` |
+| Private key header | `-----BEGIN (RSA \|EC \|DSA \|OPENSSH )?PRIVATE KEY-----` |
+| JWT Secret | `(?i)(jwt_secret\|jwt_key\|signing_key)\s*[=:]\s*['"][^'"]+['"]` |
+
+**Environment and Configuration:**
+
+| Pattern Name | Check |
+|-------------|-------|
+| .env file committed | `.env` (not `.env.example`) present in the diff or tracked by git |
+| Hardcoded IP with port | `\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{2,5}` (flag for review, not auto-fail) |
+
+### 6.2: Scan Procedure
+
+```
+Step 1: Determine scan scope
+  - Default: files modified in the current phase (from PLAN.md files_modified)
+  - With --full-scan: all tracked files in the repository
+
+Step 2: For each file in scope
+  - Skip binary files
+  - Skip files matching: *.min.js, *.map, node_modules/*, vendor/*, .git/*
+  - Skip files named: .env.example, .env.template, .env.sample
+  - Apply each pattern regex
+  - For each match: record file path, line number, pattern name,
+    matched text (REDACTED — show only first 8 and last 4 characters)
+
+Step 3: Cross-reference with .gitignore
+  - If .env is NOT in .gitignore: flag as HIGH finding even if .env is not in the diff
+  - If secrets directories are not gitignored: flag as advisory
+
+Step 4: False positive filtering
+  - Pattern match in test fixtures with obviously fake values
+    (e.g., "test-key-123", "password": "changeme") → FALSE POSITIVE, skip
+  - Pattern match inside comments referencing documentation → FALSE POSITIVE, skip
+  - Log all skipped matches for manual review if --verbose
+```
+
+### 6.3: Output Format
+
+```markdown
+### Secret Detection Findings
+
+| Severity | File | Line | Type | Preview |
+|----------|------|------|------|---------|
+| CRITICAL | src/config.js | 42 | AWS Access Key | `AKIA****WXYZ` |
+| HIGH | .env | — | Environment file committed | `.env` is tracked in git |
+| MEDIUM | docker-compose.yml | 15 | Database URL with password | `postgres://us****@db` |
+
+**Summary**: {critical_count} secrets detected
+**Recommendation**: {action — e.g., "Rotate the AWS key immediately. Add .env to .gitignore. Use environment variables or a secrets manager."}
+```
+
+### 6.4: Severity Mapping
+
+| Condition | Severity |
+|-----------|----------|
+| Any secret pattern match in committed code | CRITICAL (immediate rotation required) |
+| .env file committed or not in .gitignore | HIGH |
+| Hardcoded IPs/ports | LOW (review for internal-only services) |
+| Pattern match in test fixtures with obviously fake values | FALSE POSITIVE, skip |
+| Any CRITICAL secret finding | Review verdict override to FAIL |
+
+---
+
+## Section 7: Supply Chain Security Checks
+
+Verify the integrity and health of the project's dependency supply chain.
+
+### 7.1: Checks
+
+**Lock File Presence:**
+
+| Condition | Severity |
+|-----------|----------|
+| No lock file exists for detected package manager | HIGH — builds are non-reproducible |
+| Lock file exists but is outdated (modified date older than package manifest) | MEDIUM |
+| Lock file present and current | PASS |
+
+**Lock File Integrity:**
+
+```
+For npm:
+  Run `npm ls --json 2>/dev/null`
+  Check output for "missing" or "invalid" entries
+  Any missing/invalid entries → MEDIUM finding
+
+For pip:
+  Scan requirements.txt for unpinned dependencies (lines with >= or no version specifier)
+  Any unpinned dependency → MEDIUM finding
+
+For other ecosystems:
+  Verify lock file parses without errors
+  Check that all manifest entries have corresponding lock file entries
+```
+
+**Dependency Freshness:**
+
+```
+Run ecosystem-appropriate outdated check:
+  npm:   npm outdated --json 2>/dev/null
+  pip:   pip list --outdated --format=json 2>/dev/null
+  cargo: cargo outdated --format=json 2>/dev/null
+
+Flag dependencies more than 2 major versions behind → MEDIUM
+Flag dependencies with no updates in 2+ years → INFO (potentially unmaintained)
+```
+
+**Known Malicious Package Detection (best-effort):**
+
+```
+Step 1: Extract all dependency names from the manifest file
+Step 2: Check for common typosquat patterns:
+  - Single character substitutions (e.g., "lod-ash" instead of "lodash")
+  - Missing or extra hyphens (e.g., "cross-env" is legitimate, "crossenv" was malicious)
+  - Scope confusion (e.g., "@user/package" vs "package" in npm)
+Step 3: Flag suspicious names for human review — severity: MEDIUM
+  This check is best-effort and advisory only. Always recommend using
+  tools like Socket.dev or Snyk for comprehensive supply chain analysis.
+```
+
+### 7.2: Output Format
+
+```markdown
+### Supply Chain Findings
+
+| Check | Status | Details |
+|-------|--------|---------|
+| Lock file present | PASS | package-lock.json found |
+| Lock file integrity | WARN | 3 packages in package.json not reflected in lock file |
+| Dependency freshness | WARN | 5 packages 2+ major versions behind |
+| Unmaintained packages | INFO | `left-pad` last published 3 years ago |
+| Typosquat check | PASS | No suspicious package names detected |
+
+**Summary**: {pass_count} passed, {warn_count} warnings, {fail_count} failures
+```
+
+### 7.3: Severity Mapping to Review Verdicts
+
+| Condition | Review Verdict |
+|-----------|---------------|
+| No lock file for any detected ecosystem | CAUTION |
+| Lock file integrity failures | CAUTION |
+| Suspected malicious/typosquatted package | FAIL (blocker, pending human review) |
+| Only freshness or unmaintained advisories | PASS with advisory note |
+
+---
+
+## Section 8: Finding Format
 
 All security findings follow this structured format:
 
@@ -198,21 +444,21 @@ All security findings follow this structured format:
 
 ---
 
-## Section 6: Integration with Review Evaluators
+## Section 9: Integration with Review Evaluators
 
 Security review plugs into the review-evaluators skill as the 5th evaluator type.
 
-### 6.1: Evaluator Registration
+### 9.1: Evaluator Registration
 
 ```
 Evaluator: Security Evaluator
 Phase Types: security, api, full-stack
 Dispatch Target: Internal (engineering-security-engineer agent)
-Pass Count: 10 (OWASP categories)
+Pass Count: 13 (10 OWASP categories + dependency scan + secret detection + supply chain checks)
 Activation: Section 1 triggers (explicit or automatic)
 ```
 
-### 6.2: Review Evaluator Integration
+### 9.2: Review Evaluator Integration
 
 When selected by review-evaluators Section 1.2:
 
@@ -220,23 +466,47 @@ When selected by review-evaluators Section 1.2:
 1. Run OWASP Top 10 Checklist (Section 2)
 2. Run STRIDE Threat Model (Section 3) on identified boundaries
 3. Run Attack Surface Mapping (Section 4) if CODEBASE.md available
-4. Produce structured findings (Section 5)
-5. Merge findings with other evaluator results in REVIEW.md
-6. CRITICAL findings are added to fix cycle (same as review-loop)
-7. HIGH findings block /legion:ship pre-ship gate
-8. MEDIUM and LOW findings are reported but don't block
+4. Run Dependency Vulnerability Scan (Section 5)
+5. Run Secret Detection Scan (Section 6)
+6. Run Supply Chain Security Checks (Section 7)
+7. Produce structured findings (Section 8)
+8. Apply verdict overrides (Section 9.4)
+9. Merge findings with other evaluator results in REVIEW.md
+10. CRITICAL findings are added to fix cycle (same as review-loop)
+11. HIGH findings block /legion:ship pre-ship gate
+12. MEDIUM and LOW findings are reported but don't block
 ```
 
-### 6.3: Standalone Mode
+### 9.3: Standalone Mode
 
 When invoked via `--just-security` on `/legion:review`:
 - Only the Security Evaluator runs (no other evaluators)
-- Full OWASP + STRIDE + attack surface mapping
+- Full OWASP + STRIDE + attack surface mapping + dependency scan + secret detection + supply chain checks
+- Verdict overrides (Section 9.4) apply in standalone mode
 - Results written to REVIEW.md with security-specific section
+
+### 9.4: Verdict Overrides
+
+The following conditions override the overall review verdict to FAIL regardless of other category results:
+
+| Source | Condition | Override |
+|--------|-----------|----------|
+| Dependency Vulnerability Scan (Section 5) | Any CRITICAL CVE in dependencies | FAIL (blocker) |
+| Dependency Vulnerability Scan (Section 5) | 3+ HIGH CVEs in dependencies | FAIL (blocker) |
+| Secret Detection Scan (Section 6) | Any CRITICAL secret finding (committed key, token, or credential) | FAIL (blocker) |
+| Supply Chain Checks (Section 7) | Suspected malicious or typosquatted package | FAIL (blocker) |
+
+These overrides are non-negotiable. Even if all OWASP categories pass, a committed secret or a critical dependency vulnerability makes the build unshippable. The rationale:
+
+- **Committed secrets** are already exposed in git history and require immediate rotation, not just removal.
+- **Critical CVEs** in dependencies are publicly known and actively exploited; shipping with them is accepting known compromise.
+- **Malicious packages** indicate supply chain compromise; the build artifact cannot be trusted.
+
+Overrides are logged in REVIEW.md with the prefix `[VERDICT-OVERRIDE]` for audit trail visibility.
 
 ---
 
-## Section 7: Graceful Degradation
+## Section 10: Graceful Degradation
 
 Follows the standard Legion degradation pattern:
 
@@ -245,6 +515,9 @@ Follows the standard Legion degradation pattern:
 3. If engineering-security-engineer agent personality file is missing: fall back to engineering-senior-developer
 4. Never error, never block non-security workflows
 5. Security findings are always advisory unless severity is CRITICAL (which blocks ship)
+6. If dependency audit tool is not installed: log advisory and continue (do not block)
+7. If no lock file exists: log supply chain finding and continue (dependency scan runs best-effort)
+8. If secret detection patterns match only false positives: report clean scan, do not inflate findings
 
 ---
 
@@ -254,9 +527,10 @@ This skill is consumed by:
 
 | Consumer | Operation | Section |
 |----------|-----------|---------|
-| `review.md` | Security review during /legion:review | Sections 2-5 |
-| `review-evaluators.md` | 5th evaluator type | Section 6 |
+| `review.md` | Security review during /legion:review | Sections 2-8 |
+| `review-evaluators.md` | 5th evaluator type | Section 9 |
 | `plan.md` | Security surface scan during --auto pipeline | Section 4 |
-| `ship-pipeline.md` | Pre-ship gate checks for unresolved security findings | Section 5 |
+| `ship-pipeline.md` | Pre-ship gate checks for unresolved security findings | Section 8 |
+| `ship-pipeline.md` | Verdict overrides for dependency/secret/supply chain findings | Section 9.4 |
 
 Security review is an optional integration — all workflows function identically without it.

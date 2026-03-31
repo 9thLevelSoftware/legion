@@ -1,6 +1,6 @@
 # Legion
 
-A multi-CLI plugin for orchestrating 49 AI specialist personalities as a coordinated legion. Works with Codex, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, and Aider.
+A multi-CLI plugin for orchestrating 48 AI specialist personalities as a coordinated legion. Works with Codex, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, and Aider.
 
 ## MANDATORY: User Interaction Rule
 
@@ -16,7 +16,7 @@ A multi-CLI plugin for orchestrating 49 AI specialist personalities as a coordin
 | `/legion:review` | Run quality review cycle with testing/QA agents |
 | `/legion:status` | Show progress dashboard and route to next action |
 | `/legion:quick <task>` | Run ad-hoc task with intelligent agent selection |
-| `/legion:advise` | Get read-only expert consultation from any of the 49 agent personalities |
+| `/legion:advise` | Get read-only expert consultation from any of the 48 agent personalities |
 | `/legion:portfolio` | Multi-project dashboard with dependency tracking |
 | `/legion:milestone` | Milestone completion, archiving, and metrics |
 | `/legion:agent` | Create a new agent personality through a guided workflow |
@@ -29,14 +29,14 @@ A multi-CLI plugin for orchestrating 49 AI specialist personalities as a coordin
 bin/                  — npm installer (install.js)
 commands/             — 12 /legion: command entry points
 skills/               — 25 reusable workflow skills (SKILL.md per directory)
-agents/               — 49 agent personality .md files (flat, with division in frontmatter)
+agents/               — 48 agent personality .md files (flat, with division in frontmatter)
 adapters/             — Per-CLI adapter files (Codex.md, codex-cli.md, cursor.md, etc.)
 .planning/            — Project state (PROJECT.md, ROADMAP.md, STATE.md)
   milestones/         — Archived requirements and roadmaps
   phases/             — Phase plan and summary files
 ```
 
-## Agent Divisions (49 total)
+## Agent Divisions (48 total)
 
 | Division | Count | Focus |
 |----------|-------|-------|

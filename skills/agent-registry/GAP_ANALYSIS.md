@@ -175,12 +175,12 @@ checkAgentLimit(currentCount, limit, candidates) → LimitStatus
 5. Build limit status report:
    ```yaml
    limit_status:
-     current: 49
-     limit: 52
-     status: EXCEEDED
-     overage: 1
+     current: 48
+     limit: 48
+     status: AT_LIMIT
+     overage: 0
      suggestions:
-       - consolidate: [support-analytics-reporter, data-analytics-reporter]
+       - consolidate: [support-analytics-reporter, data-analytics-reporter]  # COMPLETED: -> data-analytics-engineer
        - remove: [marketing-tiktok-strategist]
    ```
 
@@ -230,7 +230,7 @@ The gap analysis engine successfully identifies coverage gaps through:
 | chaos_engineer | testing-performance-benchmarker | MINIMAL (0.2) | Failure injection, game days |
 | platform_engineer | engineering-infrastructure-devops | PARTIAL (0.5) | Developer platforms, self-service |
 | observability_engineer | engineering-infrastructure-devops | PARTIAL (0.5) | Distributed tracing, advanced metrics |
-| observability_engineer | data-analytics-reporter | MINIMAL (0.2) | Data-focused, not observability-focused |
+| observability_engineer | data-analytics-engineer | MINIMAL (0.2) | Data-focused, not observability-focused |
 
 **Composite Coverage:**
 - sre_reliability_engineer: **50%** (PARTIAL)
@@ -309,10 +309,10 @@ But this agent **does not exist** in the agents/ directory.
 
 | Role | Covering Agents | Coverage Strength | Gaps |
 |------|-----------------|-------------------|------|
-| data_scientist | data-analytics-reporter | PARTIAL (0.5) | Pipelines/ETL covered, not modeling |
+| data_scientist | data-analytics-engineer | PARTIAL (0.6) | Statistical analysis and modeling covered, formal experimental design partial |
 | data_scientist | engineering-ai-engineer | MINIMAL (0.2) | ML focus, not data science |
 | ml_engineer | engineering-ai-engineer | FULL (1.0) | ML model development covered |
-| data_engineer | data-analytics-reporter | FULL (1.0) | Data pipelines covered |
+| data_engineer | data-analytics-engineer | FULL (1.0) | Data pipelines and ETL covered |
 
 **Composite Coverage:**
 - data_scientist: **35%** (PARTIAL)
@@ -335,10 +335,9 @@ missing_capabilities:
 ```
 
 **Recommendation:**
-- Medium-term: Consider splitting data-analytics-reporter into:
-  - data-engineer (pipelines, ETL) - already covered
-  - data-scientist (modeling, statistics) - needs creation
-- Or: Enhance data-analytics-reporter with data science capabilities
+- data-analytics-engineer now covers both infrastructure and statistical analysis after consolidation
+- Remaining gap: formal experimental design and advanced predictive modeling
+- Consider creating a dedicated data-scientist agent if demand increases
 
 ### ROSTER-05: Agent Creation Workflow
 
@@ -356,26 +355,27 @@ The `/legion:agent` workflow is functional and documented in:
 
 ```yaml
 limit_analysis:
-  current_count: 49
-  agent_limit: 52
-  status: EXCEEDED
-  overage: 1
+  current_count: 48
+  agent_limit: 48
+  status: AT_LIMIT
+  overage: 0
   
   root_cause: |
     Polymath agent (agents/polymath.md) was added in Phase 36
     without removing another agent to maintain limit.
     
   compliance_options:
-    - option: accept_49
-      description: "Update roadmap to accept 49-agent roster"
+    - option: accept_48
+      description: "Update roadmap to accept 48-agent roster"
       effort: low
       impact: "Violates original constraint, requires documentation update"
       
     - option: consolidate_analytics
-      description: "Merge support-analytics-reporter + data-analytics-reporter"
+      description: "Merge support-analytics-reporter + data-analytics-reporter"  # COMPLETED: -> data-analytics-engineer
       effort: medium
       impact: "Maintains analytics coverage, reduces count by 1"
       recommendation: preferred
+      status: COMPLETED
       
     - option: remove_niche
       description: "Remove 1 niche agent (marketing-tiktok-strategist)"
@@ -389,7 +389,7 @@ limit_analysis:
 ```
 
 **Recommended Action:**
-Consolidate support-analytics-reporter and data-analytics-reporter into a single data-analytics-specialist agent.
+COMPLETED: Consolidated support-analytics-reporter and data-analytics-reporter into data-analytics-engineer.
 
 ---
 
@@ -471,42 +471,35 @@ The `security-only` intent is designed for security-focused reviews. Without the
 | Product | 4 | feedback-synthesizer, sprint-prioritizer, technical-writer, trend-researcher |
 | Project Management | 5 | experiment-tracker, project-shepherd, studio-operations, studio-producer, senior-project-manager |
 | Spatial Computing | 6 | metal-engineer, terminal-specialist, visionos-spatial-engineer, cockpit-specialist, immersive-developer, interface-architect |
-| Specialized | 4 | orchestrator, analytics-reporter, lsp-engineer, polymath |
-| Support | 5 | support-responder, legal-compliance, finance-tracker, executive-summary, analytics-reporter |
+| Specialized | 4 | orchestrator, data-analytics-engineer, lsp-engineer, polymath |
+| Support | 4 | support-responder, legal-compliance, finance-tracker, executive-summary |
 | Testing | 6 | api-tester, qa-verification-specialist, performance-benchmarker, results-analyzer, tool-evaluator, workflow-optimizer |
-| **TOTAL** | **49** | — |
+| **TOTAL** | **48** | — |
 
 ### Limit Violation Details
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│              52-AGENT LIMIT STATUS                       │
+│              48-AGENT LIMIT STATUS                       │
 ├─────────────────────────────────────────────────────────┤
-│  Current: 49 agents                                      │
-│  Limit:   52 agents                                      │
-│  Status:  ❌ EXCEEDED by 1                               │
+│  Current: 48 agents                                      │
+│  Limit:   48 agents                                      │
+│  Status:  ✅ AT LIMIT (analytics consolidation complete) │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ### Compliance Options Analysis
 
-**Option 1: Accept 49-Agent Roster**
+**Option 1: Accept Current Roster**
 - **Effort**: Low
 - **Pros**: Simplest solution, no agent changes
 - **Cons**: Violates original constraint, sets precedent for future increases
 - **Recommendation**: Not preferred
 
-**Option 2: Consolidate Overlapping Agents** ⭐ RECOMMENDED
-- **Action**: Merge support-analytics-reporter + data-analytics-reporter
-- **Effort**: Medium
-- **Pros**: 
-  - Maintains full analytics capability
-  - Eliminates redundancy
-  - Single agent owns full analytics lifecycle
-- **Cons**: 
-  - Requires agent personality merge
-  - May lose some specialization
-- **New Agent**: data-analytics-specialist
+**Option 2: Consolidate Overlapping Agents** ⭐ COMPLETED
+- **Action**: Merged support-analytics-reporter + data-analytics-reporter -> data-analytics-engineer
+- **Status**: DONE
+- **Result**: Full analytics capability preserved, single agent owns infrastructure through executive delivery
 
 **Option 3: Remove Niche Agent**
 - **Candidate**: marketing-tiktok-strategist
@@ -524,7 +517,7 @@ The `security-only` intent is designed for security-focused reviews. Without the
 
 ### Recommended Path Forward
 
-1. **Immediate**: Consolidate analytics agents (support-analytics-reporter + data-analytics-reporter → data-analytics-specialist)
+1. **Immediate**: ~~Consolidate analytics agents~~ COMPLETED: data-analytics-engineer created
 2. **Phase 40-02**: Create missing agents (engineering-security-engineer, product-technical-writer)
 3. **v5.1**: Re-analyze roster and consider removing niche agents if count approaches limit again
 
@@ -802,7 +795,7 @@ function generateGapReport(
 **`/legion:agent` - Creation Validation**
 - Integration: Agent creation checks limit before proceeding
 - Purpose: Prevent creating agents when over limit
-- Validation: Block creation if 49+ agents exist
+- Validation: Block creation if 48+ agents exist
 - Output: Error message with consolidation suggestions
 
 ### Updates
@@ -840,17 +833,17 @@ Output is informational only:
 ---
 phase: 40-roster-gap-analysis
 date: 2026-03-05
-agent_count: 49
-agent_limit: 52
-limit_status: EXCEEDED
+agent_count: 48
+agent_limit: 48
+limit_status: AT_LIMIT
 ---
 
 # Roster Gap Analysis Report
 
 ## Executive Summary
 
-**Current Roster:** 49 agents across 9 divisions
-**Agent Limit:** 52 (EXCEEDED by 1)
+**Current Roster:** 48 agents across 9 divisions
+**Agent Limit:** 48 (at limit after analytics consolidation)
 **Critical Gaps:** 2
 **High Priority Gaps:** 2
 **Medium Priority Gaps:** 3

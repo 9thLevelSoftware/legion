@@ -14,7 +14,7 @@ intent_mappings:
 
 # Agent Catalog
 
-Complete catalog of all 49 built-in agents across 9 divisions, plus any custom agents created via `/legion:agent`. Also contains the Task Type Index (reverse mapping from project need to recommended agents).
+Complete catalog of all 48 built-in agents across 9 divisions, plus any custom agents created via `/legion:agent`. Also contains the Task Type Index (reverse mapping from project need to recommended agents).
 
 The recommendation algorithm and team assembly patterns are in `SKILL.md` in this directory.
 
@@ -26,7 +26,7 @@ The recommendation algorithm and team assembly patterns are in `SKILL.md` in thi
 
 ---
 
-> **Metadata Enrichment (Phase 5):** All 49 agents now include `languages`, `frameworks`, `artifact_types`, and `review_strengths` fields in their YAML frontmatter. These fields enable structured filtering and scoring for agent recommendation. Phase 6 (Recommendation Engine v2) will score against these fields.
+> **Metadata Enrichment (Phase 5):** All 48 agents now include `languages`, `frameworks`, `artifact_types`, and `review_strengths` fields in their YAML frontmatter. These fields enable structured filtering and scoring for agent recommendation. Phase 6 (Recommendation Engine v2) will score against these fields.
 
 ## Section 1: Agent Catalog
 
@@ -99,15 +99,14 @@ The recommendation algorithm and team assembly patterns are in `SKILL.md` in thi
 | ID | File | Specialty | Task Types |
 |----|------|-----------|------------|
 | agents-orchestrator | `agents/agents-orchestrator.md` | Spawnable coordinator agent for cross-division task execution within a build task — coordinates specialist agents through dev-QA loops when multi-agent coordination is needed | orchestration, pipeline-management, workflow-automation, agent-coordination, dev-qa-loops |
-| data-analytics-reporter | `agents/data-analytics-reporter.md` | Technical data analyst building and maintaining data infrastructure — pipelines, ETL, warehouses, data quality. Pre-analysis work. | data-pipelines, etl, data-quality, data-warehouse, data-engineering |
+| data-analytics-engineer | `agents/data-analytics-engineer.md` | Full-stack data analytics specialist — builds trustworthy data infrastructure (pipelines, ETL, quality) and delivers actionable business insights (dashboards, KPIs, executive reporting) | data-pipelines, etl, data-quality, data-warehouse, data-engineering, dashboards, kpi-reporting, business-intelligence, statistical-analyses |
 | lsp-index-engineer | `agents/lsp-index-engineer.md` | Language Server Protocol specialist building unified code intelligence systems through LSP client orchestration and semantic indexing | lsp, code-intelligence, semantic-indexing, language-servers, developer-tooling |
 | polymath | `agents/polymath.md` | Pre-flight alignment specialist who crystallizes raw ideas through structured exploration and research-first questioning | exploration, clarification, research-first, structured-questions, gap-detection |
 
-### Support Division (5 agents)
+### Support Division (4 agents)
 
 | ID | File | Specialty | Task Types |
 |----|------|-----------|------------|
-| support-analytics-reporter | `agents/support-analytics-reporter.md` | Operational analytics specialist consuming clean data to produce executive dashboards, KPI tracking, and stakeholder-ready reports. Post-analysis delivery. | dashboards, kpi-reporting, business-intelligence, executive-summaries |
 | support-executive-summary-generator | `agents/support-executive-summary-generator.md` | Consultant-grade AI specialist transforming complex business inputs into concise, actionable executive summaries using McKinsey SCQA, BCG Pyramid, and Bain frameworks | executive-summaries, strategy-consulting, c-suite-reporting, business-communication, frameworks |
 | support-finance-tracker | `agents/support-finance-tracker.md` | Expert financial analyst and controller specializing in financial planning, budget management, and business performance analysis | financial-planning, budget-management, cash-flow, investment-analysis, financial-risk |
 | support-legal-compliance-checker | `agents/support-legal-compliance-checker.md` | Expert legal and compliance specialist ensuring business operations, data handling, and content comply with laws, regulations, and industry standards | legal-compliance, risk-assessment, policy-development, regulatory, gdpr-privacy |
@@ -223,7 +222,7 @@ Reverse mapping from common project needs to recommended agents.
 
 ### Research & Analysis
 - **Product**: product-trend-researcher, product-feedback-synthesizer, product-sprint-prioritizer
-- **Data**: data-analytics-reporter, support-analytics-reporter
+- **Data**: data-analytics-engineer
 - **Business**: support-executive-summary-generator, support-finance-tracker, support-legal-compliance-checker
 
 ### Exploration & Clarification

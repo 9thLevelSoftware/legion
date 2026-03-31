@@ -85,3 +85,65 @@ Read `.planning/phases/{NN}/{NN}-{PP}-RESULT.md` for each plan. Parse Status fie
 
 No cleanup needed — subagents complete naturally. Update WAVE-CHECKLIST.md to mark phase as Finalized.
 
+## Model Routing
+
+OpenCode supports user-configured models across providers. Recommended tier assignments for Legion workflows:
+
+| Tier | Purpose | Recommended Models | Notes |
+|------|---------|-------------------|-------|
+| `model_planning` | Phase decomposition, architecture proposals, plan critique | `claude-opus-4-6`, `o3`, `gemini-2.5-pro` | Use the strongest reasoning model available. Planning quality directly impacts execution success. |
+| `model_execution` | Plan implementation, code generation, file edits | `claude-sonnet-4-6`, `gpt-5.3-codex`, `gemini-2.5-flash` | Balance speed and capability. Execution agents run frequently — cost scales linearly with plan count. |
+| `model_check` | Verification, review summaries, lightweight analysis | `claude-haiku-4-5`, `o3-mini`, `gemini-2.0-flash-lite` | Cheapest viable model. Used for verification commands, status checks, and result parsing. |
+
+Model configuration is set in OpenCode's configuration file. Legion reads whatever model the user has configured — the above are recommendations, not requirements.
+
+### Model Selection Guidelines
+
+- **Budget-conscious**: Use the same mid-tier model (e.g., `claude-sonnet-4-6`) for all three tiers. Acceptable quality loss on planning, significant cost savings.
+- **Quality-first**: Use `claude-opus-4-6` or `o3` for planning, `claude-sonnet-4-6` for execution, `claude-haiku-4-5` for checks. Best results, highest cost.
+- **Local models**: OpenCode supports local models via Ollama or similar. Local models work for `model_check` tier but are not recommended for `model_planning` or `model_execution` due to quality requirements.
+
+## Troubleshooting
+
+### API Key Issues
+
+- **Symptom**: OpenCode returns authentication errors when spawning subagents.
+- **Fix**: Verify your API key is set in OpenCode's config or environment variables. Run `opencode` interactively to confirm the model responds before using Legion commands.
+- **Multiple providers**: If using models from different providers (e.g., Anthropic for planning, OpenAI for execution), ensure all relevant API keys are configured.
+
+### Model Availability
+
+- **Symptom**: Task tool returns "model not found" or similar errors.
+- **Fix**: Check that the configured model name matches the provider's current model catalog. Model names change across versions — e.g., `claude-3-opus` vs `claude-opus-4-6`.
+- **Fallback**: If a model becomes unavailable mid-session, OpenCode may fall back to its default model. Check output for model mismatch warnings.
+
+### Timeout Handling
+
+- **Symptom**: Long-running plans (complex code generation, large file edits) time out.
+- **Fix**: OpenCode's Task tool has default timeout behavior. For complex plans:
+  - Break plans into smaller tasks (use `settings.planning.max_tasks_per_plan: 2`)
+  - Ensure verification commands are lightweight — heavy test suites can trigger timeouts
+  - If timeouts persist, check OpenCode's configuration for timeout settings
+
+### Sequential Execution Bottlenecks
+
+- **Symptom**: Wave execution is slow because plans run one-at-a-time.
+- **Context**: OpenCode's Task tool is blocking — this is a platform limitation, not a bug.
+- **Mitigation**: Minimize wave depth by structuring plans with fewer dependency layers. Prefer wide waves (many independent plans) over deep chains (many sequential waves).
+
+### Subagent Context Limits
+
+- **Symptom**: Subagent outputs are truncated or incomplete.
+- **Fix**: OpenCode has a `max_prompt_size` of 128k tokens. For plans with large context (brownfield codebases, long personality files), reduce injected context:
+  - Use condensed personality summaries instead of full personality files for execution agents
+  - Limit CODEBASE.md injection to relevant sections only
+
+## Known Quirks (Expanded)
+
+| Quirk | Impact | Workaround |
+|-------|--------|------------|
+| `terminal-ui-only` | No web UI or IDE integration — all interaction is in the terminal. Copy/paste of large outputs may be unreliable. | Use file-based output (RESULT.md, SUMMARY.md) for large content rather than relying on terminal display. |
+| `sequential-task-tool` | Task tool calls execute one-at-a-time, even if multiple are issued in one response. Wave parallelism is not possible. | Structure plans to maximize within-wave independence so manual parallel sessions (multiple terminals) can be used if needed. |
+| No native `ask_user` | OpenCode does not have a structured prompt/response mechanism. Numbered choices are printed as plain text. | Ensure choices are clearly numbered and descriptions are concise. Users may respond with the number or the option text. |
+| Explore agent scope | The `@explore` agent enforces read-only at the platform level but has the same context window as the main agent. | Suitable for `/legion:advise` and plan critique. Not suitable for large-scale codebase analysis — use targeted file reads instead. |
+

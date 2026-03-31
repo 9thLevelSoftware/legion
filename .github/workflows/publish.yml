@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Publish to npm and GitHub Packages
 
 on:
   workflow_dispatch:
@@ -14,12 +14,13 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node
+      - name: Setup Node (npm registry)
         uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -50,3 +51,15 @@ jobs:
 
       - name: Publish to npm
         run: npm publish --access public --provenance --tag ${{ github.event.inputs.tag }}
+
+      - name: Setup Node (GitHub Packages registry)
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@9thlevelsoftware'
+
+      - name: Publish to GitHub Packages
+        run: npm publish --tag ${{ github.event.inputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

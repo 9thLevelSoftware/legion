@@ -161,14 +161,14 @@ function getAgentId(filename) {
 function parseAgentFrontmatter(filepath) {
   try {
     const content = fs.readFileSync(filepath, 'utf8');
-    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
     if (!frontmatterMatch) return null;
     
     const lines = frontmatterMatch[1].split('\n');
     const frontmatter = {};
     
     for (const line of lines) {
-      const match = line.match(/^([\w-]+):\s*(.+)$/);
+      const match = line.replace(/\r$/, '').match(/^([\w-]+):\s*(.+)$/);
       if (match) {
         frontmatter[match[1]] = match[2].trim().replace(/"/g, '');
       }
@@ -520,7 +520,7 @@ describe('52-Agent Limit Enforcement', () => {
     assert.strictEqual(typeof count, 'number', 'Count should be numeric');
   });
 
-  test('ROSTER-04: should detect limit exceeded (49 agents)', () => {
+  test('ROSTER-04: should detect limit exceeded (48 agents)', () => {
     const count = countAgents();
     const isOverLimit = count > EXPECTED_AGENT_LIMIT;
     
@@ -641,9 +641,9 @@ describe('Coverage Analysis', () => {
   test('ROSTER-04: should validate data-scientist coverage', () => {
     const matrixContent = fs.readFileSync(MATRIX_FIXTURE_PATH, 'utf8');
     
-    // data-analytics-reporter provides partial coverage
-    assert.ok(matrixContent.includes('data-analytics-reporter'),
-      'Should reference data analytics reporter');
+    // data-analytics-engineer provides strong coverage (consolidated from data-analytics-reporter + support-analytics-reporter)
+    assert.ok(matrixContent.includes('data-analytics-engineer'),
+      'Should reference data analytics engineer');
     assert.ok(matrixContent.includes('data-scientist'),
       'Should reference data scientist role');
   });

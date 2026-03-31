@@ -1,6 +1,6 @@
 # Legion
 
-A multi-CLI plugin for orchestrating 49 AI specialist personalities as a coordinated legion. Works with Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, and Aider.
+A multi-CLI plugin for orchestrating 48 AI specialist personalities as a coordinated legion. Works with Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, and Aider.
 
 ## MANDATORY: User Interaction Rule
 
@@ -16,7 +16,7 @@ A multi-CLI plugin for orchestrating 49 AI specialist personalities as a coordin
 | `/legion:review` | Run quality review cycle with testing/QA agents |
 | `/legion:status` | Show progress dashboard and route to next action |
 | `/legion:quick <task>` | Run ad-hoc task with intelligent agent selection |
-| `/legion:advise` | Get read-only expert consultation from any of the 49 agent personalities |
+| `/legion:advise` | Get read-only expert consultation from any of the 48 agent personalities |
 | `/legion:portfolio` | Multi-project dashboard with dependency tracking |
 | `/legion:milestone` | Milestone completion, archiving, and metrics |
 | `/legion:agent` | Create a new agent personality through a guided workflow |
@@ -26,21 +26,22 @@ A multi-CLI plugin for orchestrating 49 AI specialist personalities as a coordin
 | `/legion:ship` | Pre-ship checklist, PR creation, deployment verification, canary monitoring |
 | `/legion:learn` | Record, recall, and manage project-specific patterns, pitfalls, and preferences |
 | `/legion:update` | Check for updates and install latest version from npm |
+| `/legion:validate` | Validate .planning/ state file integrity, schema conformance, and cross-references |
 
 ## Project Structure
 
 ```
 bin/                  — npm installer (install.js)
-commands/             — 16 /legion: command entry points
+commands/             — 17 /legion: command entry points
 skills/               — 30 reusable workflow skills (SKILL.md per directory)
-agents/               — 49 agent personality .md files (flat, with division in frontmatter)
+agents/               — 48 agent personality .md files (flat, with division in frontmatter)
 adapters/             — Per-CLI adapter files (claude-code.md, codex-cli.md, cursor.md, etc.)
 .planning/            — Project state (PROJECT.md, ROADMAP.md, STATE.md)
   milestones/         — Archived requirements and roadmaps
   phases/             — Phase plan and summary files
 ```
 
-## Agent Divisions (49 total)
+## Agent Divisions (48 total)
 
 | Division | Count | Focus |
 |----------|-------|-------|
@@ -50,9 +51,9 @@ adapters/             — Per-CLI adapter files (claude-code.md, codex-cli.md, c
 | Testing | 6 | QA verification, performance, API testing, workflow optimization |
 | Product | 4 | Sprint planning, feedback synthesis, trends, technical writing |
 | Project Management | 5 | Coordination, portfolio, operations, experiments |
-| Support | 5 | Analytics, finance, legal, executive summaries, support |
+| Support | 4 | Finance, legal, executive summaries, support |
 | Spatial Computing | 6 | VisionOS, XR, Metal, terminal integration |
-| Specialized | 4 | Orchestration, data analytics, LSP indexing, exploration |
+| Specialized | 4 | Orchestration, data analytics engineering, LSP indexing, exploration |
 
 Agent frontmatter includes enriched metadata: `languages`, `frameworks`, `artifact_types`, and `review_strengths` fields enable metadata-aware agent selection by the recommendation engine.
 

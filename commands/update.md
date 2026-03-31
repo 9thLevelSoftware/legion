@@ -1,6 +1,7 @@
 ---
 name: legion:update
 description: Check for Legion updates and install the latest version from npm
+argument-hint: "[--check]"
 allowed-tools: [Read, Bash]
 ---
 
@@ -61,6 +62,17 @@ skills/workflow-common-core/SKILL.md
      Stop.
    - Display: "Update available: v{INSTALLED_VERSION} -> v{LATEST_VERSION}"
 
+4.5. CHECK-ONLY MODE
+   - If $ARGUMENTS contains `--check`:
+     Display version comparison result and exit without prompting to install
+     Useful for CI/scripts: exit code 0 if up-to-date, exit code 1 if update available
+
+4.7. DISPLAY CHANGELOG (if update available)
+   - Run: Bash  npm show @9thlevelsoftware/legion --json 2>/dev/null
+   - Extract the "description" field for a quick summary
+   - If the package has a "homepage" field: display link "Full changelog: {homepage}"
+   - Display: "What's new in v{LATEST_VERSION}: {description or 'See changelog for details'}"
+
 5. CONFIRM AND INSTALL
    - Use adapter.ask_user to confirm:
      "Update Legion from v{INSTALLED_VERSION} to v{LATEST_VERSION}?"
@@ -70,6 +82,14 @@ skills/workflow-common-core/SKILL.md
      Run: Bash  npx @9thlevelsoftware/legion@latest {runtime_flag} --{INSTALL_SCOPE}
      Display the installer output
    - Remind user to restart their CLI to pick up updated commands
+
+6. POST-INSTALL VERIFICATION
+   - After install completes, verify the update was successful:
+     - Re-read manifest.json and confirm version matches LATEST_VERSION
+     - If version mismatch: warn "Update may not have completed successfully. Installed: {actual}, Expected: {LATEST_VERSION}"
+   - Run checksum verification if available:
+     - If checksums.sha256 exists in the install directory: verify file integrity
+     - If verification fails: warn "Checksum verification failed. Consider reinstalling."
 </process>
 
 <error_handling>

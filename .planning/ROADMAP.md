@@ -86,7 +86,7 @@
 ### Phase 6: Recommendation Engine v2
 **Goal**: Update recommendation engine to score against enriched metadata, add `task_type` to outcome records, and implement archetype-weighted recommendation boosts.
 **Requirements**: AGT-02, AGT-03, AGT-04
-**Recommended Agents**: engineering-backend-architect, testing-evidence-collector, data-analytics-reporter
+**Recommended Agents**: engineering-backend-architect, testing-evidence-collector, data-analytics-engineer
 **Success Criteria**:
 - [x] `recommendation-engine.js` scores against `languages`, `frameworks`, `artifact_types` fields
 - [x] OUTCOMES.md schema includes `task_type` field per outcome record

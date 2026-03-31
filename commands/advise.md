@@ -1,6 +1,6 @@
 ---
 name: legion:advise
-description: Get read-only expert consultation from Legion's 52 agent personalities
+description: Get read-only expert consultation from Legion's agent personalities
 argument-hint: <topic> (e.g., architecture, UX, marketing, testing)
 allowed-tools: [Read, Grep, Glob, Agent, AskUserQuestion]
 ---
@@ -171,8 +171,33 @@ skills/agent-registry/CATALOG.md
       - This allows a completely fresh advisory cycle
 
    c. If "End session":
-      Display: "Advisory session ended. Run `/legion:advise <topic>` anytime for another consultation."
+      - If .planning/memory/ directory exists:
+        Use adapter.ask_user:
+        "Was this advisory session useful?"
+        Options:
+        - "Yes -- record to memory" -- "Save key takeaways as a pattern for future reference"
+          Description: "Advisor insights will inform future /legion:plan recommendations"
+        - "No -- just end" -- "Close without recording"
+          Description: "Session ends, nothing saved"
+
+        If "Yes":
+        - Use adapter.ask_user with free-text prompt:
+          "Summarize the key takeaway in one sentence (or press enter to auto-generate):"
+          Options:
+          - "Type your summary" -- "Your words will be recorded as a pattern"
+          - "Auto-generate" -- "The advisor's main recommendation will be extracted"
+        - Record to .planning/memory/PATTERNS.md using the memory-manager format:
+          - ID: PAT-{next_sequential}
+          - Type: pattern
+          - Tags: advisory, {agent_id}, {topic keywords}
+          - Summary: user's takeaway or auto-generated from advisor's first recommendation
+          - Full text: "Advisory from {agent_id} on {topic}: {condensed key recommendation}"
+        - Display: "Takeaway recorded as {ID}. Run `/legion:learn --recall {topic}` to retrieve later."
+
+      - If .planning/memory/ directory does not exist:
+        Display: "Advisory session ended. Run `/legion:advise <topic>` anytime for another consultation."
 
    Note: Advisory sessions do NOT update STATE.md, ROADMAP.md, or any project state.
    They operate entirely outside the phase workflow — pure consultation.
+   Memory recording (when available) is limited to advisory patterns — no state mutations.
 </process>

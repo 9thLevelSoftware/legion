@@ -216,7 +216,7 @@ The following agents are available for orchestration based on task requirements:
 
 ### 🛠️ Support & Operations Agents
 - **Support Responder**: Customer service, issue resolution, user experience optimization
-- **Analytics Reporter**: Data analysis, dashboards, KPI tracking, decision support
+- **Data Analytics Engineer**: Data infrastructure, dashboards, KPI tracking, decision support
 - **Finance Tracker**: Financial planning, budget management, business performance analysis
 - **Infrastructure Maintainer**: System reliability, performance optimization, operations
 - **Legal Compliance Checker**: Legal compliance, data handling, regulatory standards
@@ -232,7 +232,7 @@ The following agents are available for orchestration based on task requirements:
 
 ### 🎯 Specialized Agents
 - **XR Cockpit Interaction Specialist**: Immersive cockpit-based control systems
-- **data-analytics-reporter**: Raw data transformation into business insights
+- **data-analytics-engineer**: Data infrastructure, pipelines, dashboards, and business insights
 
 ---
 

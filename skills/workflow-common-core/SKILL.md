@@ -113,6 +113,7 @@ Use resolved path for all personality reads:
 | `/legion:ship` | workflow-common-core, ship-pipeline, execution-tracker | github-sync, workflow-common-github |
 | `/legion:learn` | workflow-common-core, memory-manager | workflow-common-memory |
 | `/legion:update` | workflow-common-core | workflow-common-github |
+| `/legion:validate` | workflow-common-core, agent-registry | (none) |
 
 ## Context Budget Ceiling (Core)
 
@@ -124,4 +125,32 @@ Execution-context budgets (always-load skills only):
 
 Release checks enforce hard ceilings and print telemetry for every command. Agent line-count remains telemetry, not a gate.
 
+## State File Quick Validation
 
+Lightweight validation that runs at the start of every command that loads project context. Fast enough to not add noticeable latency (pattern matching only, no full parse).
+
+### Trigger
+Runs automatically after loading PROJECT.md, ROADMAP.md, and STATE.md in the standard context loading step. Only runs for commands that load these files (i.e., commands with `@.planning/PROJECT.md`, `@.planning/ROADMAP.md`, or `@.planning/STATE.md` in their `<context>` block). Commands that do not load project state (e.g., `/legion:update`) skip this entirely.
+
+### Checks
+
+1. **PROJECT.md format check**
+   - Verify file starts with `# ` (has a title)
+   - Verify file contains `## Requirements` or `## Goals` section header
+   - If missing: warn "PROJECT.md may be malformed — missing title or requirements section"
+
+2. **ROADMAP.md format check**
+   - Verify file contains a markdown table with at least one `|` row
+   - Verify table has "Phase" and "Status" columns (case-insensitive header match)
+   - If missing: warn "ROADMAP.md may be malformed — missing phase table"
+
+3. **STATE.md format check**
+   - Verify file contains "Current" (case-insensitive) somewhere in first 10 lines
+   - If missing: warn "STATE.md may be malformed — missing current position section"
+
+### Behavior on Failure
+- Warnings are displayed once per session
+- Warnings do NOT block command execution (graceful degradation)
+- For full validation: direct user to `/legion:validate`
+- Message format: "State file warning: {message}. Run `/legion:validate` for full diagnostics."
+- If a state file does not exist at all, skip its check silently (file-not-found is handled by the command's own project existence check, not by quick validation)

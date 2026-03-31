@@ -80,11 +80,11 @@ This document provides a quick-reference mapping of agents to their exclusive do
 | project-management-studio-operations | studio-ops, process-optimization, resource-coordination, productivity, operational-excellence | Studio operations |
 | project-management-experiment-tracker | experiment-design, A/B-testing, hypothesis-validation, data-driven-decisions | Experiment design |
 
-### Support Division (6 agents)
+### Support Division (5 agents)
 
 | Agent | Exclusive Domains | When Active |
 |-------|-------------------|-------------|
-| support-analytics-reporter | dashboards, KPI-reporting, business-intelligence, executive-summaries | Operational analytics |
+| *(support-analytics-reporter consolidated into data-analytics-engineer in Specialized division)* | | |
 | support-finance-tracker | financial-planning, budget-management, cash-flow, investment-analysis, financial-risk | Financial planning |
 | support-infrastructure-maintainer | infrastructure, system-reliability, monitoring, cloud-management, cost-optimization | Infrastructure operations |
 | support-legal-compliance-checker | legal-compliance, risk-assessment, policy-development, regulatory, GDPR-privacy | Legal compliance |
@@ -107,7 +107,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 | Agent | Exclusive Domains | When Active |
 |-------|-------------------|-------------|
 | agents-orchestrator | orchestration, pipeline-management, workflow-automation, agent-coordination, dev-qa-loops | Agent coordination |
-| data-analytics-reporter | data-pipelines, ETL, data-quality, data-warehouse, data-engineering | Data infrastructure |
+| data-analytics-engineer | data-pipelines, ETL, data-quality, data-warehouse, data-engineering, dashboards, kpi-reporting, business-intelligence | Full-stack data analytics |
 | lsp-index-engineer | LSP, code-intelligence, semantic-indexing, language-servers, developer-tooling | LSP and code intelligence |
 | polymath | exploration, clarification, research-first, structured-questions, gap-detection | Pre-flight alignment |
 
@@ -188,10 +188,10 @@ This document provides a quick-reference mapping of agents to their exclusive do
 - **Note**: Testing agents defer to each other based on specificity
 
 ### Analytics Domain
-- **Owner**: support-analytics-reporter (operational), data-analytics-reporter (data engineering)
-- **Scope**: Dashboards, KPI reporting, data pipelines, ETL
+- **Owner**: data-analytics-engineer
+- **Scope**: Dashboards, KPI reporting, data pipelines, ETL, data quality, statistical analysis, executive reporting
 - **Deferred by**: Product and marketing agents
-- **Note**: Analytics Reporter for BI; Data Analytics Reporter for data infrastructure
+- **Note**: Full-stack analytics — infrastructure through delivery
 
 ### Legal/Compliance Domain
 - **Owner**: support-legal-compliance-checker

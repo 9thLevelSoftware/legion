@@ -1,12 +1,12 @@
 # Agent Coverage Matrix
-# Maps all 49 Legion agents to production-grade roles with coverage analysis
+# Maps all 48 Legion agents to production-grade roles with coverage analysis
 # Version: 1.0.0
 # Requirements: ROSTER-01, ROSTER-02, ROSTER-03, ROSTER-04, ROSTER-05, ROSTER-06
 
 metadata:
   version: "1.0.0"
   last_updated: "2026-03-05"
-  total_agents: 49
+  total_agents: 48
   agent_limit: 48
   over_limit: 1
   requirements_validated:
@@ -343,15 +343,15 @@ agents:
       - "Workflow orchestration, not production roles"
     notes: "Cross-division agent coordination"
 
-  data-analytics-reporter:
+  data-analytics-engineer:
     division: "Specialized"
     covers_roles:
       - "data-engineer"
-    coverage_strength: "partial"
+      - "business-analyst"
+    coverage_strength: "strong"
     gaps:
-      - "Pre-analysis focus, not full data engineering"
       - "No stream processing expertise"
-    notes: "Data pipelines and ETL infrastructure"
+    notes: "Full-stack data analytics — pipelines, ETL, dashboards, KPI reporting"
 
   lsp-index-engineer:
     division: "Specialized"
@@ -369,14 +369,7 @@ agents:
       - "Exploration and clarification, not production"
     notes: "Pre-flight alignment specialist"
 
-  # Support Division (6 agents)
-  support-analytics-reporter:
-    division: "Support"
-    covers_roles: []
-    coverage_strength: "none"
-    gaps:
-      - "Post-analysis dashboards, not production roles"
-    notes: "KPI reporting and BI"
+  # Support Division (5 agents — support-analytics-reporter consolidated into data-analytics-engineer)
 
   support-executive-summary-generator:
     division: "Support"
@@ -510,7 +503,7 @@ missing_agents:
 
 # Coverage Analysis Summary
 coverage_summary:
-  total_agents: 49
+  total_agents: 48
   agent_limit: 52
   over_limit_by: 1
   
@@ -534,7 +527,7 @@ coverage_summary:
       - "engineering-laravel-specialist"
       - "project-management-studio-operations"
       - "project-manager-senior"
-      - "data-analytics-reporter"
+      - "data-analytics-engineer"
       - "support-infrastructure-maintainer"
       - "support-finance-tracker"
       - "testing-api-tester"
@@ -565,7 +558,7 @@ critical_gaps:
     severity: important
     reason: "No formal statistical modeling agent"
     partial_coverage_from: "engineering-ai-engineer (limited)"
-    recommendation: "Enhance data-analytics-reporter or create new agent"
+    recommendation: "Enhance data-analytics-engineer or create new agent"
     
   - role: "chaos-engineer"
     severity: important

@@ -901,10 +901,10 @@ Activates when:
 - Files modified include auth/security/permission/token/session/middleware patterns
 - `--just-security` intent flag is set
 
-### Passes (10 — one per OWASP category)
+### Passes (13 — OWASP categories + automated scans)
 
-| Pass | OWASP Category | Focus |
-|------|---------------|-------|
+| Pass | Category | Focus |
+|------|----------|-------|
 | 1 | Injection | SQL/NoSQL/OS/LDAP injection via user input |
 | 2 | Broken Authentication | Session management, credential storage, MFA |
 | 3 | Sensitive Data Exposure | Encryption at rest/transit, key management, PII |
@@ -915,10 +915,16 @@ Activates when:
 | 8 | Insecure Deserialization | Type checking, integrity verification |
 | 9 | Known Vulnerabilities | Dependency scanning, patch currency |
 | 10 | Insufficient Logging | Audit trails, alerting, log hygiene |
+| 11 | Dependency Vulnerability Scan | Automated CVE scanning via package manager audit tools (OWASP A06) |
+| 12 | Secret Detection | Committed secrets, API keys, tokens, credentials in source |
+| 13 | Supply Chain Checks | Lock file integrity, dependency freshness, typosquat detection |
 
 ### Additional Analysis
 - **STRIDE threat model** on system boundaries (API endpoints, data stores, external integrations)
 - **Attack surface mapping** from `.planning/CODEBASE.md` if available
+- **Dependency vulnerability scan** via ecosystem audit tools (see `security-review/SKILL.md` Section 5)
+- **Secret detection** via regex pattern matching on committed code (see `security-review/SKILL.md` Section 6)
+- **Supply chain checks** for lock file integrity and malicious packages (see `security-review/SKILL.md` Section 7)
 
 ### Result Format
 Same structured finding format as other evaluators:
@@ -934,6 +940,14 @@ Remediation: {specific fix}
 - Any CRITICAL finding → FAIL (blocks ship)
 - Any HIGH finding → NEEDS WORK
 - Only MEDIUM/LOW/INFO → PASS
+
+### Verdict Overrides (from automated scans)
+The following conditions force FAIL regardless of other pass results:
+- Dependency scan: any CRITICAL CVE, or 3+ HIGH CVEs → FAIL
+- Secret detection: any committed secret (API key, token, credential) → FAIL
+- Supply chain: suspected malicious or typosquatted package → FAIL
+
+See `security-review/SKILL.md` Section 9.4 for full override specification.
 
 ---
 

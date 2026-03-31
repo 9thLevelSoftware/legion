@@ -1,7 +1,7 @@
 ---
 name: legion:plan
 description: Plan a specific phase with agent recommendations and wave-structured tasks
-argument-hint: <phase-number> [--dry-run] [--auto] [--auto --skip-board] [--auto --skip-security]
+argument-hint: <phase-number> [--dry-run] [--auto] [--auto-refine] [--auto --skip-board] [--auto --skip-security]
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
 
@@ -39,14 +39,15 @@ DRY-RUN MODE (deterministic, no side effects)
    Load optional skills only if their activation condition is true:
    
    - `skills/workflow-common-memory/SKILL.md` only if `.planning/memory/OUTCOMES.md` exists.
-   
+   - `.planning/memory/RETRO.md` consumed during phase decomposition (Step 3) if file exists. Retro action items from prior phases inform plan constraints and agent selection.
+
    - `skills/workflow-common-github/SKILL.md` only if `gh auth status` succeeds and a git remote exists.
    - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists.
    - `skills/marketing-workflows/SKILL.md` only for MKT-* requirements or marketing keyword detection.
    - `skills/design-workflows/SKILL.md` only for DSN-* requirements or design keyword detection.
 
    - `skills/workflow-common-domains/SKILL.md` only for MKT-* or DSN-* requirements (or matching domain keywords).
-   - `skills/plan-critique/SKILL.md` only when user opts into plan critique.
+   - `skills/plan-critique/SKILL.md` only when user opts into plan critique OR --auto-refine flag is set.
    - `skills/spec-pipeline/SKILL.md` only when user opts into spec creation or an existing spec is present.
    - `skills/security-review/SKILL.md` only when --auto flag includes security scan, or --security flag present, or security-sensitive files detected.
    If a condition is not met, skip that skill silently and continue.
@@ -61,6 +62,16 @@ DRY-RUN MODE (deterministic, no side effects)
      - `--auto --skip-board`: skip board quick-assessment
      - `--auto --skip-security`: skip security surface scan
    - After pipeline completes, display consolidated summary of all stages and proceed to state update
+
+   AUTO-REFINE MODE
+   If `$ARGUMENTS` contains `--auto-refine`:
+   - Set AUTO_REFINE=true
+   - Implies plan critique will always run (skip the "Stress-test before execution?" prompt)
+   - After critique findings, automatically re-plan affected plans instead of asking user
+   - Limited to MAX_REFINE_CYCLES=2 (plan → critique → re-plan → critique → stop)
+   - If still REWORK after 2 cycles: halt and present to user for manual decision
+   - Can be combined with --auto for fully automated pipeline
+
 1. PARSE PHASE NUMBER
    - Read $ARGUMENTS for a phase number (e.g., "3" from `/legion:plan 3`)
    - If no phase number given: auto-detect the next unplanned phase
@@ -88,6 +99,11 @@ DRY-RUN MODE (deterministic, no side effects)
    - Read PROJECT.md for broader context
    - Read STATE.md for current progress and completed phase outputs
    - If this phase builds on prior phases, read prior phase summaries
+   - If .planning/memory/RETRO.md exists:
+     - Read RETRO.md and extract action items from the most recent retrospective
+     - Include HIGH-priority action items as additional constraints in the decomposition prompt
+     - Include agent recommendation adjustments (e.g., "prefer {agent} for {task_type}")
+     - This creates the learn/retro/plan feedback loop
 
    BROWNFIELD CONTEXT (optional — follows codebase-mapper Section 6.2):
    - Check if .planning/CODEBASE.md exists
@@ -293,9 +309,31 @@ DRY-RUN MODE (deterministic, no side effects)
       - Present consolidated report to user
 
    d. Route based on verdict (plan-critique Section 3, Step 4):
-      - PASS: proceed to Step 9
-      - CAUTION: user chooses to apply mitigations or proceed
-      - REWORK: user chooses to revise plans or proceed anyway
+      - PASS: proceed to Step 8.6 (or 8.7/9 depending on pipeline)
+      - CAUTION:
+        - If AUTO_REFINE=true: treat CAUTION same as REWORK (auto-refine critical findings)
+        - If AUTO_REFINE=false: user chooses to apply mitigations or proceed (existing behavior)
+      - REWORK:
+        - If AUTO_REFINE=true AND refine_cycle < MAX_REFINE_CYCLES:
+          i. Extract CRITICAL-severity findings from critique report
+          ii. For each plan that has CRITICAL findings:
+              - Re-run phase-decomposer Section 3 for ONLY the affected plan
+              - Pass critique findings as additional constraints:
+                "The following risks were identified. The revised plan MUST address them:
+                 {list of CRITICAL findings with file references}"
+              - Generate revised {NN}-{PP}-PLAN.md (overwrite the original)
+          iii. Increment refine_cycle
+          iv. Re-run plan critique (Step 8.5b-c) on the revised plans
+          v. Return to Step 8.5d (check verdict again)
+        - If AUTO_REFINE=true AND refine_cycle >= MAX_REFINE_CYCLES:
+          Display: "Auto-refine limit reached ({MAX_REFINE_CYCLES} cycles). Remaining findings:"
+          {display outstanding CRITICAL/CAUTION findings}
+          Use adapter.ask_user:
+          "Plans refined {refine_cycle} times but critique still reports issues. How to proceed?"
+          Options:
+          - "Accept current plans" — "Proceed with remaining risks acknowledged"
+          - "Manual revision" — "Stop here, I'll revise the plans manually"
+        - If AUTO_REFINE=false: user chooses to revise plans or proceed anyway (existing behavior)
 
    If user selects "Skip critique": proceed directly to Step 8.7
 
@@ -336,7 +374,7 @@ DRY-RUN MODE (deterministic, no side effects)
    |-------|--------|-------------|
    | Board Assessment | {RAN/SKIPPED} | {summary or "N/A"} |
    | Decomposition | COMPLETE | {plan_count} plans, {wave_count} waves |
-   | Plan Critique | {PASS/CAUTION/REWORK} | {finding count} findings |
+   | Plan Critique | {PASS/CAUTION/REWORK} | {finding count} findings{if auto-refine: ", refined {refine_cycle}x"} |
    | Design Review | {RAN/SKIPPED} | {avg_score}/10 |
    | Security Scan | {RAN/SKIPPED} | {finding count} findings |
    ```
