@@ -5,6 +5,19 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.3.1] - 2026-04-10
+
+### Fixed
+- **`/legion:explore` Polymath not spawning** — Added `Agent` to `allowed-tools` frontmatter. Previously the command narrated Polymath in third person instead of actually spawning a sub-agent.
+- **`/legion:plan` Invalid Tool Call** — Added `Agent` to `allowed-tools` frontmatter. Architecture proposal and plan critique steps tried to spawn Explore agents but the tool was not permitted.
+- **Plan critique default agent** — Changed from deleted `testing-reality-checker` to `testing-qa-verification-specialist` (the agent that absorbed it in v7.1.0).
+- **10 phantom agent references in config files** — Completed the config sweep missed during v7.1.0 consolidation (53→48). Updated `authority-matrix.yaml`, `intent-teams.yaml`, `roster-gap-config.yaml`, and `STATE.md` to reference correct consolidated agent IDs.
+- **STATE.md agent count** — Corrected from "53 agents" to "48 agents" (2 occurrences).
+
+### Added
+- **`/legion:validate` Steps 7b and 8** — Config agent reference validation checks all agent IDs in `authority-matrix.yaml`, `intent-teams.yaml`, and `roster-gap-config.yaml` against actual agent files. Agent roster consistency check verifies STATE.md counts match reality.
+- **`config-agent-references.test.js`** — 74-assertion regression test for config↔agent alignment. Validates authority-matrix, intent-teams, roster-gap-config, and STATE.md agent counts against the `agents/` directory.
+
 ## [7.3.0] - 2026-04-05
 
 ### Added
