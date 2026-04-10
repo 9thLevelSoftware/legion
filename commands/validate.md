@@ -120,7 +120,83 @@ skills/agent-registry/SKILL.md
      - All cross-references resolve → PASS
    - Record result: {check: "Cross-references", status, details}.
 
-8. VALIDATE CONFIGURATION
+7b. VALIDATE CONFIG AGENT REFERENCES
+   Config YAML files reference agents by ID. After agent consolidations or deletions,
+   these references can become dangling. This check catches phantom agent references
+   that step 6 misses (step 6 only validates plan frontmatter, not config files).
+
+   Build the ground-truth agent set:
+   - List all `.md` files in the `agents/` directory.
+   - Extract agent IDs by stripping the `.md` extension (e.g., `testing-qa-verification-specialist.md` → `testing-qa-verification-specialist`).
+   - Store as VALID_AGENT_IDS set.
+
+   Check authority-matrix.yaml:
+   - If `.planning/config/authority-matrix.yaml` exists:
+     - Parse the YAML. Extract all top-level keys under the `agents:` mapping.
+     - For each key: check if it exists in VALID_AGENT_IDS.
+     - Any missing → record as FAIL with: "authority-matrix.yaml references agent '{id}' which does not exist in agents/"
+   - If file does not exist: skip silently.
+
+   Check intent-teams.yaml:
+   - If `.planning/config/intent-teams.yaml` exists:
+     - Parse the YAML. For each intent under the `intents:` mapping:
+       - Extract agent IDs from `agents.primary` list (if present).
+       - Extract agent IDs from `agents.secondary` list (if present).
+       - Extract agent IDs from `filter.exclude_agents` list (if present).
+     - For each extracted ID: check if it exists in VALID_AGENT_IDS.
+     - Any missing → record as FAIL with: "intent-teams.yaml intent '{intent_name}' references agent '{id}' which does not exist in agents/"
+   - If file does not exist: skip silently.
+
+   Check roster-gap-config.yaml:
+   - If `.planning/config/roster-gap-config.yaml` exists:
+     - Parse the YAML. Search all `coverage_indicators`, `covering_agents`, and `required_agents` lists recursively.
+     - For each agent ID found: check if it exists in VALID_AGENT_IDS.
+     - Any missing → record as WARN with: "roster-gap-config.yaml references agent '{id}' which does not exist in agents/"
+       (WARN not FAIL because roster-gap-config is analytical — it documents gaps, including agents that may have been removed intentionally.)
+   - If file does not exist: skip silently.
+
+   If FIX_MODE:
+     - Do NOT auto-fix dangling agent references. Agent consolidation requires human judgment
+       about which replacement agent should inherit the old agent's domains and team positions.
+     - Instead: append fix guidance to the report:
+       "To fix: check git log for the agent file deletion commit to identify which agent absorbed the removed agent's responsibilities. Update the config file to reference the consolidated agent ID."
+
+   Scoring:
+     - Any FAIL-level dangling reference → FAIL
+     - Only WARN-level references (roster-gap-config) → WARN
+     - All references resolve → PASS
+   - Record result: {check: "Config agent references", status, details}.
+
+8. VALIDATE AGENT ROSTER CONSISTENCY
+   Verify that agent counts and division breakdowns cited in documentation match reality.
+
+   Count actual agents:
+   - Count `.md` files in `agents/` directory → ACTUAL_COUNT.
+
+   Check STATE.md agent count:
+   - Search STATE.md for patterns like "{N} agents across" (regex: `(\d+)\s+agents?\s+across`).
+   - If found: extract the number as STATED_COUNT.
+     - If STATED_COUNT != ACTUAL_COUNT → FAIL with: "STATE.md claims {STATED_COUNT} agents but agents/ contains {ACTUAL_COUNT}"
+   - If no agent count pattern found: skip (not all projects track agent counts in STATE.md).
+
+   Check division alignment:
+   - For each `.md` file in `agents/`: read the YAML frontmatter and extract the `division` field.
+   - Group agents by division and count per division.
+   - If `.planning/config/authority-matrix.yaml` exists:
+     - Check that each division comment header count (e.g., "# TESTING DIVISION (6 agents)") matches the actual agent count for that division.
+     - Any mismatch → WARN with: "authority-matrix.yaml says {division} has {stated} agents but agents/ contains {actual}"
+
+   If FIX_MODE and STATE.md count is wrong:
+     - Update the agent count number in STATE.md (all occurrences of the pattern).
+     - Note: only updates the numeric count, not surrounding prose.
+
+   Scoring:
+     - STATED_COUNT mismatch → FAIL
+     - Division count mismatch → WARN
+     - All counts match → PASS
+   - Record result: {check: "Agent roster consistency", status, details}.
+
+9. VALIDATE CONFIGURATION
    - If `settings.json` exists in repo root:
      - Check: File is valid JSON (parseable without errors).
      - Check: If `control_mode` field exists, its value is one of: autonomous, guarded, advisory, surgical.
@@ -136,7 +212,7 @@ skills/agent-registry/SKILL.md
      - All checks pass → PASS
    - Record result: {check: "Configuration", status, details}.
 
-9. REPORT
+10. REPORT
    Count results:
    - pass_count = number of results with status PASS
    - warn_count = number of results with status WARN
@@ -161,6 +237,8 @@ skills/agent-registry/SKILL.md
      | STATE.md | {status_icon} {STATUS} | {details} |
      | Phase files | {status_icon} {STATUS} | {details} |
      | Cross-references | {status_icon} {STATUS} | {details} |
+     | Config agent refs | {status_icon} {STATUS} | {details} |
+     | Agent roster | {status_icon} {STATUS} | {details} |
      | Configuration | {status_icon} {STATUS} | {details} |
 
      **Summary**: {pass_count} passed, {warn_count} warnings, {fail_count} failures
@@ -179,7 +257,7 @@ skills/agent-registry/SKILL.md
      ```
      Then re-run validation on fixed files and show updated results.
 
-10. DONE
+11. DONE
     Exit. Validate never modifies phase state (STATE.md, ROADMAP.md progress fields) unless --fix is used for formatting corrections only. Validate never changes phase status, plan assignments, or roadmap progression.
 </process>
 

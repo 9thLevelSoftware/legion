@@ -322,28 +322,6 @@ agents:
     deferred_by: ["*"]
     description: "Platform-specific social media execution, community building, visual content"
 
-  marketing-tiktok-strategist:
-    name: "TikTok Strategist"
-    division: "marketing"
-    exclusive_domains:
-      - "tiktok"
-      - "short-form-video"
-      - "viral-content"
-      - "algorithm-optimization"
-    deferred_by: ["*"]
-    description: "TikTok strategy, short-form video content"
-
-  marketing-reddit-community-builder:
-    name: "Reddit Community Builder"
-    division: "marketing"
-    exclusive_domains:
-      - "reddit"
-      - "community-engagement"
-      - "authentic-marketing"
-      - "subreddit-strategy"
-    deferred_by: ["*"]
-    description: "Reddit community engagement, authentic marketing"
-
   marketing-app-store-optimizer:
     name: "App Store Optimizer"
     division: "marketing"
