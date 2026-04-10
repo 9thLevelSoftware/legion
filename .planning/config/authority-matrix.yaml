@@ -22,8 +22,8 @@ agents:
     deferred_by: ["*"]
     description: "All security findings, vulnerability assessments, and threat modeling"
 
-  engineering-devops-automator:
-    name: "DevOps Automator"
+  engineering-infrastructure-devops:
+    name: "Infrastructure & DevOps Engineer"
     division: "engineering"
     exclusive_domains:
       - "ci-cd"
@@ -33,8 +33,13 @@ agents:
       - "orchestration"
       - "docker"
       - "kubernetes"
+      - "infrastructure"
+      - "system-reliability"
+      - "monitoring"
+      - "cloud-management"
+      - "cost-optimization"
     deferred_by: ["*"]
-    description: "Infrastructure decisions, CI/CD pipelines, container orchestration"
+    description: "Infrastructure decisions, CI/CD pipelines, container orchestration, system reliability, and cloud operations"
 
   engineering-backend-architect:
     name: "Backend Architect"
@@ -127,30 +132,23 @@ agents:
     description: "Stack-agnostic implementation lead for production-grade delivery"
 
   # ============================================================================
-  # TESTING DIVISION (7 agents)
+  # TESTING DIVISION (6 agents)
   # ============================================================================
 
-  testing-reality-checker:
-    name: "Reality Checker"
+  testing-qa-verification-specialist:
+    name: "QA Verification Specialist"
     division: "testing"
     exclusive_domains:
       - "production-readiness"
       - "edge-cases"
       - "failure-modes"
       - "risk-assessment"
-    deferred_by: ["*"]
-    description: "Reality-checks all outputs, edge case identification"
-
-  testing-evidence-collector:
-    name: "Evidence Collector"
-    division: "testing"
-    exclusive_domains:
       - "verification"
       - "test-coverage"
       - "proof-artifacts"
       - "evidence-gathering"
     deferred_by: ["*"]
-    description: "Validates test coverage, collects proof artifacts"
+    description: "Evidence-based verification, reality-checks outputs, edge case identification, collects proof artifacts"
 
   testing-api-tester:
     name: "API Tester"
@@ -278,30 +276,23 @@ agents:
     description: "Delight and personality design, microinteractions"
 
   # ============================================================================
-  # MARKETING DIVISION (8 agents)
+  # MARKETING DIVISION (4 agents)
   # ============================================================================
 
-  marketing-social-media-strategist:
-    name: "Social Media Strategist"
+  marketing-content-social-strategist:
+    name: "Content & Social Strategist"
     division: "marketing"
     exclusive_domains:
       - "cross-platform-strategy"
       - "platform-selection"
       - "content-mix"
       - "channel-allocation"
-    deferred_by: ["*"]
-    description: "Cross-platform strategy, content mix decisions"
-
-  marketing-content-creator:
-    name: "Content Creator"
-    division: "marketing"
-    exclusive_domains:
       - "content-strategy"
       - "copywriting"
       - "editorial-calendar"
       - "brand-storytelling"
     deferred_by: ["*"]
-    description: "Content strategy, editorial calendar, copywriting"
+    description: "Cross-platform strategy, content mix decisions, editorial calendar, copywriting"
 
   marketing-growth-hacker:
     name: "Growth Hacker"
@@ -315,28 +306,21 @@ agents:
     deferred_by: ["*"]
     description: "Growth strategies, user acquisition, conversion optimization"
 
-  marketing-twitter-engager:
-    name: "Twitter Engager"
+  marketing-social-platform-specialist:
+    name: "Social Platform Specialist"
     division: "marketing"
     exclusive_domains:
       - "twitter"
       - "real-time-engagement"
       - "thought-leadership"
       - "social-listening"
-    deferred_by: ["*"]
-    description: "Twitter-specific strategy, real-time engagement"
-
-  marketing-instagram-curator:
-    name: "Instagram Curator"
-    division: "marketing"
-    exclusive_domains:
       - "instagram"
       - "visual-content"
       - "community-building"
       - "reels"
       - "aesthetic-curation"
     deferred_by: ["*"]
-    description: "Instagram visual content, community building"
+    description: "Platform-specific social media execution, community building, visual content"
 
   marketing-tiktok-strategist:
     name: "TikTok Strategist"
@@ -492,18 +476,6 @@ agents:
       - "financial-risk"
     deferred_by: ["*"]
     description: "Financial planning and budget management"
-
-  support-infrastructure-maintainer:
-    name: "Infrastructure Maintainer"
-    division: "support"
-    exclusive_domains:
-      - "infrastructure"
-      - "system-reliability"
-      - "monitoring"
-      - "cloud-management"
-      - "cost-optimization"
-    deferred_by: ["*"]
-    description: "System reliability and infrastructure operations"
 
   support-legal-compliance-checker:
     name: "Legal Compliance Checker"

@@ -1,7 +1,7 @@
 ---
 name: legion:explore
 description: Enter pre-flight alignment mode with Polymath — crystallize ideas, onboard to codebases, compare approaches, or debate decisions
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 
 <objective>

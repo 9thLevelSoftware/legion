@@ -2,7 +2,7 @@
 name: legion:plan
 description: Plan a specific phase with agent recommendations and wave-structured tasks
 argument-hint: <phase-number> [--dry-run] [--auto] [--auto-refine] [--auto --skip-board] [--auto --skip-security]
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 
 <objective>
@@ -294,7 +294,7 @@ DRY-RUN MODE (deterministic, no side effects)
    a. Select critique agents using plan-critique Section 4 (Agent Selection):
       - Compose a task description from phase goal + requirements
       - Run agent-registry recommendation with skeptical bias terms
-      - Default: testing-reality-checker (pre-mortem) + product-sprint-prioritizer (assumptions)
+      - Default: testing-qa-verification-specialist (pre-mortem) + product-sprint-prioritizer (assumptions)
       - Present selection to user for confirmation (same pattern as review panel)
 
    b. Spawn critique agents (read-only):

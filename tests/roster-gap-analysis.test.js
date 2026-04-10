@@ -375,7 +375,7 @@ describe('Intent Teams Validation', () => {
     const intentTeams = loadIntentTeams();
     const hardenSection = intentTeams.content.split('harden:')[1]?.split('\n\n')[0] || '';
     
-    assert.ok(hardenSection.includes('testing-reality-checker'), 'Harden should include reality-checker');
+    assert.ok(hardenSection.includes('testing-qa-verification-specialist'), 'Harden should include QA verification specialist (consolidated from reality-checker + evidence-collector)');
     assert.ok(hardenSection.includes('engineering-security-engineer') || hardenSection.includes('security'),
       'Harden should reference security engineer');
   });

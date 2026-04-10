@@ -23,8 +23,8 @@ gap_analysis:
             - incident_response
             - reliability_engineering
           coverage_indicators:
-            - support-infrastructure-maintainer
-            - engineering-devops-automator
+            - engineering-infrastructure-devops
+            - engineering-infrastructure-devops
             
         chaos_engineer:
           description: "Chaos engineering and failure injection testing"
@@ -43,7 +43,7 @@ gap_analysis:
             - internal_tooling
             - self_service_infrastructure
           coverage_indicators:
-            - engineering-devops-automator
+            - engineering-infrastructure-devops
             
         observability_engineer:
           description: "Monitoring, logging, tracing, and observability"
@@ -53,7 +53,7 @@ gap_analysis:
             - log_aggregation
             - alerting_systems
           coverage_indicators:
-            - support-infrastructure-maintainer
+            - engineering-infrastructure-devops
             - data-analytics-engineer
       
     security:
@@ -179,7 +179,7 @@ gap_analysis:
             - war_room_coordination
             - post_mortems
           coverage_indicators:
-            - support-infrastructure-maintainer
+            - engineering-infrastructure-devops
             
         runbook_maintainer:
           description: "Operational runbook and procedure documentation"
@@ -239,10 +239,9 @@ gap_analysis:
     harden:
       description: "Security audit with Testing + Security divisions"
       required_agents:
-        - testing-reality-checker
+        - testing-qa-verification-specialist
         - engineering-security-engineer
         - testing-api-tester
-        - testing-evidence-collector
         
     document:
       description: "Documentation generation"
@@ -299,8 +298,7 @@ gap_analysis:
       - role: sre_reliability_engineer
         current_coverage: partial
         covering_agents:
-          - support-infrastructure-maintainer
-          - engineering-devops-automator
+          - engineering-infrastructure-devops
         gaps:
           - formal SLO management
           - chaos engineering
