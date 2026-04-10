@@ -30,7 +30,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 
 | Agent | Exclusive Domains | When Active |
 |-------|-------------------|-------------|
-| testing-reality-checker | production-readiness, edge-cases, failure-modes, risk-assessment | Reality-checks all outputs |
+| testing-qa-verification-specialist | production-readiness, edge-cases, failure-modes, risk-assessment | Reality-checks all outputs |
 | testing-evidence-collector | verification, test-coverage, proof-artifacts, evidence-gathering | Validates test coverage |
 | testing-api-tester | API-testing, contract-testing, endpoint-validation | API contract validation |
 | testing-performance-benchmarker | performance, load-testing, benchmarking, optimization | Performance decisions |
@@ -182,7 +182,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 - **Note**: DevOps owns implementation; Infrastructure Maintainer owns operations
 
 ### Testing Domain
-- **Owner**: testing-reality-checker (general), testing-api-tester (API-specific), testing-performance-benchmarker (perf-specific)
+- **Owner**: testing-qa-verification-specialist (general), testing-api-tester (API-specific), testing-performance-benchmarker (perf-specific)
 - **Scope**: Verification, coverage, quality assurance
 - **Deferred by**: All non-testing agents
 - **Note**: Testing agents defer to each other based on specificity
@@ -276,7 +276,7 @@ When reviewing findings, check against this registry to ensure domain owners wer
 ```markdown
 <review>
   <finding>
-    <reviewer>testing-reality-checker</reviewer>
+    <reviewer>testing-qa-verification-specialist</reviewer>
     <criterion>Security vulnerability in auth flow</criterion>
     <action>DEFERRED — routed to security-engineer per domain ownership</action>
   </finding>

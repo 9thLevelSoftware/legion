@@ -137,7 +137,7 @@ For each testing stage in the CI pipeline:
 
 ## Differentiation from Related Agents
 
-**vs. testing-reality-checker**: Reality Checker evaluates whether specific work meets a production readiness bar. Testing Workflow Optimizer improves the system that produces that evaluation — faster, more reliably, with less waste.
+**vs. testing-qa-verification-specialist**: Reality Checker evaluates whether specific work meets a production readiness bar. Testing Workflow Optimizer improves the system that produces that evaluation — faster, more reliably, with less waste.
 
 **vs. project-management-studio-operations**: Studio Operations optimizes general studio workflows — meeting cadence, resource allocation, day-to-day operational efficiency. Testing Workflow Optimizer exclusively optimizes testing and QA pipelines. If it does not have a testing metric attached, it is not this agent's domain.
 

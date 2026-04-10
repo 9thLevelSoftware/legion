@@ -123,7 +123,7 @@ All 52 built-in agent personalities live under `agents/` in the plugin root (not
 {AGENTS_DIR}/{agent-id}.md
 ```
 
-Agent IDs include their division as a prefix (e.g., `engineering-senior-developer`, `testing-reality-checker`). Exceptions: Spatial Computing agents use descriptive prefixes (xr-, visionos-, macos-, terminal-) and Specialized agents use domain prefixes (agents-, data-, lsp-) for shorter, more readable filenames.
+Agent IDs include their division as a prefix (e.g., `engineering-senior-developer`, `testing-qa-verification-specialist`). Exceptions: Spatial Computing agents use descriptive prefixes (xr-, visionos-, macos-, terminal-) and Specialized agents use domain prefixes (agents-, data-, lsp-) for shorter, more readable filenames.
 
 **Divisions**: Engineering, Design, Marketing, Product, Project Management, Testing, Support, Spatial Computing, Specialized, Custom
 

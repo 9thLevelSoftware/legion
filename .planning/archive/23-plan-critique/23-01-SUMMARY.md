@@ -17,7 +17,7 @@ New skill with four sections:
 - **Section 1: Pre-Mortem Analysis (CRIT-01)** — Assumes the phase has failed, generates 3-5 specific failure headlines, traces each to root causes in plan tasks, ranks by risk score (Likelihood x Impact), separates into Critical Risks (score >= 6) and Watch Items
 - **Section 2: Assumption Hunting (CRIT-02)** — Extracts 5-10 implicit assumptions from plan tasks across 4 categories (technical, dependency, scope, knowledge), rates each by Impact x Evidence strength, flags Critical (High Impact + Weak Evidence) and Warning assumptions, generates specific challenge actions
 - **Section 3: Critique Report and Routing** — Merges findings from both passes, deduplicates, computes verdict (PASS/CAUTION/REWORK), presents consolidated report, routes to user action via AskUserQuestion
-- **Section 4: Agent Selection** — Selects skeptical/analytical agents via agent-registry with bias terms, preferred agents: testing-reality-checker (pre-mortem) + product-sprint-prioritizer (assumptions), spawns read-only via Explore subagent type
+- **Section 4: Agent Selection** — Selects skeptical/analytical agents via agent-registry with bias terms, preferred agents: testing-qa-verification-specialist (pre-mortem) + product-sprint-prioritizer (assumptions), spawns read-only via Explore subagent type
 
 ### Task 2: Updated commands/plan.md
 Three surgical changes:

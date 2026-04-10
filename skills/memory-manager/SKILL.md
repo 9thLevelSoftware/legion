@@ -53,7 +53,7 @@ Managed by memory-manager skill. Do not edit manually unless pruning old records
 
 | ID | Date | Branch | Phase | Plan | Agent | Task Type | Outcome | Importance | Tags | Summary |
 |----|------|--------|-------|------|-------|-----------|---------|------------|------|---------|
-| O-001 | 2026-03-01 | main | 5 | 05-01 | testing-reality-checker | quality-review | success | 3 | review, testing, workflow | Review-loop skill approved in 2 cycles |
+| O-001 | 2026-03-01 | main | 5 | 05-01 | testing-qa-verification-specialist | quality-review | success | 3 | review, testing, workflow | Review-loop skill approved in 2 cycles |
 | O-002 | 2026-03-01 | main | 5 | 05-02 | autonomous | workflow | success | 2 | review, command, status | /legion:review command implemented |
 ```
 
@@ -982,7 +982,7 @@ Managed by memory-manager skill. Do not edit manually unless curating entries.
 
 | ID | Date | Branch | Decision Point | Context | Proposed | User Choice | Signal | Agent | Tags |
 |----|------|--------|---------------|---------|----------|-------------|--------|-------|------|
-| D-001 | 2026-03-02 | main | review-verdict | Phase 5 review cycle 1 — testing-reality-checker found 2 blockers | 2 blockers requiring fixes in auth module | Accepted — ran fix cycle, review passed on cycle 2 | positive | testing-reality-checker | review, testing, auth |
+| D-001 | 2026-03-02 | main | review-verdict | Phase 5 review cycle 1 — testing-qa-verification-specialist found 2 blockers | 2 blockers requiring fixes in auth module | Accepted — ran fix cycle, review passed on cycle 2 | positive | testing-qa-verification-specialist | review, testing, auth |
 ```
 
 **Field definitions:**

@@ -74,7 +74,7 @@ Two agents are referenced in `intent-teams.yaml` but do not exist in the roster:
 - Result: Security audits lack the depth and breadth required for production readiness
 
 **Current Workaround:**
-- harden intent currently runs with: testing-reality-checker, testing-api-tester, testing-evidence-collector
+- harden intent currently runs with: testing-qa-verification-specialist, testing-api-tester, testing-evidence-collector
 - Missing: engineering-security-engineer's OWASP/STRIDE expertise
 
 **Recommendation:**
@@ -567,7 +567,7 @@ See "Critical Findings → Agent Limit Exceeded" section for options.
 - testing-api-tester
 - testing-evidence-collector
 - testing-performance-benchmarker
-- testing-reality-checker
+- testing-qa-verification-specialist
 - testing-test-results-analyzer
 - testing-tool-evaluator
 - testing-workflow-optimizer

@@ -26,7 +26,7 @@ Before executing a plan, users can stress-test it with pre-mortem analysis ("ass
 
 1. **New skill `plan-critique`** — Pre-mortem analysis and assumption hunting live in a dedicated skill (`skills/plan-critique/SKILL.md`), not inlined into the plan command. Keeps command orchestration clean and critique logic reusable (e.g., could be invoked standalone or from other commands).
 
-2. **Agent selection uses skeptical agents** — The critique skill selects agents with skeptical/analytical personalities (testing-reality-checker, testing-evidence-collector, product-sprint-prioritizer) via the agent-registry recommendation algorithm, biasing toward agents whose task-types include risk assessment, validation, and evidence evaluation.
+2. **Agent selection uses skeptical agents** — The critique skill selects agents with skeptical/analytical personalities (testing-qa-verification-specialist, testing-evidence-collector, product-sprint-prioritizer) via the agent-registry recommendation algorithm, biasing toward agents whose task-types include risk assessment, validation, and evidence evaluation.
 
 3. **Two-pass analysis structure** — Pre-mortem (CRIT-01) and assumption hunting (CRIT-02) are separate passes that produce distinct outputs. Pre-mortem works backward from assumed failure; assumption hunting works forward through the plan's implicit beliefs. Both map findings to specific plan sections.
 

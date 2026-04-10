@@ -35,7 +35,7 @@ Added 4 metadata fields (`languages`, `frameworks`, `artifact_types`, `review_st
 | testing-api-tester | javascript, typescript, python, yaml | playwright, postman, k6, rest-assured, openapi | test-suites, api-test-reports, performance-benchmarks, security-assessments, contract-tests | api-coverage, security-testing, performance-validation, contract-compliance, error-handling |
 | testing-evidence-collector | bash, javascript, markdown | playwright, puppeteer, lighthouse, axe-core | screenshot-evidence, qa-reports, visual-diffs, accessibility-audits, test-results | visual-verification, specification-compliance, responsive-testing, interactive-testing, evidence-quality |
 | testing-performance-benchmarker | javascript, python, sql, yaml | k6, lighthouse, web-vitals, grafana, prometheus | load-test-reports, performance-baselines, bottleneck-analyses, capacity-plans, optimization-reports | core-web-vitals, load-testing, scalability, database-performance, cost-performance |
-| testing-reality-checker | bash, markdown, javascript | playwright, lighthouse, axe-core | integration-reports, deployment-assessments, specification-audits, evidence-analyses, certification-reports | production-readiness, specification-compliance, cross-device-testing, evidence-validation, fantasy-detection |
+| testing-qa-verification-specialist | bash, markdown, javascript | playwright, lighthouse, axe-core | integration-reports, deployment-assessments, specification-audits, evidence-analyses, certification-reports | production-readiness, specification-compliance, cross-device-testing, evidence-validation, fantasy-detection |
 | testing-test-results-analyzer | python, sql, r, javascript | pandas, scipy, scikit-learn, matplotlib, seaborn | quality-reports, defect-analyses, coverage-assessments, release-readiness-reports, trend-analyses | statistical-analysis, defect-prediction, coverage-gaps, release-readiness, quality-trends |
 | testing-tool-evaluator | markdown, python, yaml | evaluation-matrices, tco-models, adoption-frameworks | tool-evaluations, comparison-reports, roi-analyses, implementation-roadmaps, vendor-assessments | cost-analysis, feature-comparison, integration-assessment, vendor-stability, adoption-risk |
 | testing-workflow-optimizer | yaml, bash, javascript, typescript | github-actions, gitlab-ci, jest, vitest, playwright | pipeline-audits, flaky-test-registers, ci-optimization-plans, test-strategy-docs, automation-reports | test-execution-time, flake-rate, ci-pipeline-efficiency, coverage-quality, fast-fail-strategy |
@@ -71,7 +71,7 @@ Added 4 metadata fields (`languages`, `frameworks`, `artifact_types`, `review_st
 - `agents/testing-api-tester.md`
 - `agents/testing-evidence-collector.md`
 - `agents/testing-performance-benchmarker.md`
-- `agents/testing-reality-checker.md`
+- `agents/testing-qa-verification-specialist.md`
 - `agents/testing-test-results-analyzer.md`
 - `agents/testing-tool-evaluator.md`
 - `agents/testing-workflow-optimizer.md`

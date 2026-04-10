@@ -74,7 +74,7 @@ completed: 2026-03-02
 - All agent files validated with valid `name`, `description`, and `division` frontmatter fields
 - All 7 commands (plan, build, quick, review, portfolio, agent, start) confirmed to declare `skills/agent-registry/SKILL.md` in execution_context
 - wave-executor and review-loop confirmed to use `agents/{agent-id}.md` spawning pattern
-- 3 spot-checked agents (engineering-senior-developer, testing-reality-checker, design-ui-designer) passed full chain: registry, file, content, frontmatter
+- 3 spot-checked agents (engineering-senior-developer, testing-qa-verification-specialist, design-ui-designer) passed full chain: registry, file, content, frontmatter
 - State files updated: Phase 19 marked Complete in ROADMAP.md, AGENT-04 checked in REQUIREMENTS.md, STATE.md advanced to Phase 20
 
 ## Task Commits

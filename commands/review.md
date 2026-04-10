@@ -191,7 +191,7 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
    - "Dynamic review panel (Recommended)" — 2-4 agents selected by agent-registry scoring with domain-weighted rubrics
      Description: "Panel composer analyzes what was built and assembles the best reviewers with non-overlapping evaluation criteria"
    - "Classic reviewer selection" — static mapping based on phase type
-     Description: "Uses the predefined phase-type-to-agent table (testing-reality-checker + domain secondary)"
+     Description: "Uses the predefined phase-type-to-agent table (testing-qa-verification-specialist + domain secondary)"
 
    If user selects "Dynamic review panel": go to Step 4-PANEL below
    If user selects "Classic reviewer selection": continue with existing Step 4.a-4.e unchanged
@@ -210,19 +210,22 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
 
    b. Map phase type to primary + secondary review agents using the selection table from
       review-loop Section 2:
-      - code:           testing-reality-checker (primary) + testing-evidence-collector (secondary)
-      - api:            testing-api-tester (primary) + testing-reality-checker (secondary)
-      - design:         design-brand-guardian (primary) + testing-reality-checker (secondary)
-      - marketing:      testing-workflow-optimizer (primary) + testing-reality-checker (secondary)
-      - infrastructure: testing-reality-checker (primary) + testing-performance-benchmarker (secondary)
-      - workflow:       testing-workflow-optimizer (primary) + testing-reality-checker (secondary)
+      - code:           testing-qa-verification-specialist (primary) + testing-evidence-collector (secondary)
+      - api:            testing-api-tester (primary) + testing-qa-verification-specialist (secondary)
+      - design:         design-brand-guardian (primary) + testing-qa-verification-specialist (secondary)
+      - marketing:      testing-workflow-optimizer (primary) + testing-qa-verification-specialist (secondary)
+      - infrastructure: testing-qa-verification-specialist (primary) + testing-performance-benchmarker (secondary)
+      - workflow:       testing-workflow-optimizer (primary) + testing-qa-verification-specialist (secondary)
       For phases spanning multiple types, use up to 3 reviewers (one per type, max)
-      Always include testing-reality-checker as primary or secondary
+      Always include testing-qa-verification-specialist as primary or secondary
 
-   c. Validate each selected agent's personality file exists:
-      - Confirm file at: {AGENTS_DIR}/{agent-id}.md   (AGENTS_DIR resolved in Step 2)
-      - If missing: fall back to testing-reality-checker for that slot
-      - Log any fallback: "Warning: {agent-id}.md not found. Using testing-reality-checker."
+   c. Validate each selected agent's personality file exists (MANDATORY Read check):
+      - Use the Read tool on {AGENTS_DIR}/{agent-id}.md to confirm the file exists.
+        Do NOT skip this Read. Do NOT assume files are missing without trying.
+        Standard path: ~/.claude/agents/{agent-id}.md (installed with Legion).
+      - If Read succeeds: file confirmed, proceed
+      - If Read returns file-not-found: fall back to testing-qa-verification-specialist
+      - Log any fallback: "Warning: {agent-id}.md not found after Read. Using testing-qa-verification-specialist."
 
    d. Present selected reviewers to user via adapter.ask_user:
       Show the reviewer confirmation display from review-loop Section 2:
@@ -351,7 +354,7 @@ If `"single"`:
       3. Spawn per adapter.spawn_agent_personality:
          - model: adapter.model_execution
          - name: "{agent-id}-review-{NN}-c{cycle_count}"
-           (e.g., "testing-reality-checker-review-05-c1")
+           (e.g., "testing-qa-verification-specialist-review-05-c1")
          - prompt: {constructed prompt from step 2}
          - Additional parameters per adapter
       If adapter.parallel_execution: issue ALL reviewer spawn calls simultaneously
@@ -553,7 +556,7 @@ If REVIEW_MODE === "security-only":
    c2. RECORD REVIEW OUTCOME (optional — follows memory-manager Section 6):
        If .planning/memory/OUTCOMES.md exists or .planning/memory/ directory can be created:
          Follow memory-manager Section 3 (Store Outcome):
-         - Agent: comma-separated list of reviewer agent IDs (e.g., "testing-reality-checker, testing-evidence-collector")
+         - Agent: comma-separated list of reviewer agent IDs (e.g., "testing-qa-verification-specialist, testing-evidence-collector")
          - Task Type: "quality-review"
          - Outcome: "success"
          - Importance: 2 if passed in cycle 1, 3 if passed in cycle 2+

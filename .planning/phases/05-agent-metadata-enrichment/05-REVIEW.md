@@ -3,7 +3,7 @@
 ## Result: PASSED
 
 - **Cycles Used**: 1
-- **Reviewers**: testing-reality-checker, testing-evidence-collector, engineering-senior-developer
+- **Reviewers**: testing-qa-verification-specialist, testing-evidence-collector, engineering-senior-developer
 - **Review Mode**: Dynamic review panel
 - **Completion Date**: 2026-03-06
 
@@ -32,7 +32,7 @@
 
 | Reviewer | Rubric Focus | Verdict | Key Observations |
 |----------|-------------|---------|------------------|
-| testing-reality-checker | Production Readiness | PASS | All 53 agents verified, metadata accurate across 10 spot-checks, parseFrontmatter handles CRLF and real files correctly |
+| testing-qa-verification-specialist | Production Readiness | PASS | All 53 agents verified, metadata accurate across 10 spot-checks, parseFrontmatter handles CRLF and real files correctly |
 | testing-evidence-collector | Verification Completeness | PASS | Test suite reproducible, git diffs confirm frontmatter-only changes (212 insertions, 0 deletions), accuracy verified on 6 agents across 6 divisions |
 | engineering-senior-developer | Code Architecture | PASS | No copy-paste metadata detected, all 53 agents have distinct combinations, test code well-structured with extracted constants |
 

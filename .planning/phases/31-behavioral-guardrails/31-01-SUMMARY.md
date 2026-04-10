@@ -10,7 +10,7 @@ requirements_satisfied: [DSC-01, DSC-02]
 
 ## What Was Done
 
-### Task 1: Anti-rationalization table for testing-reality-checker
+### Task 1: Anti-rationalization table for testing-qa-verification-specialist
 Added "Common Rationalizations I Reject" section (line 203) with 8 entries covering testing/QA excuses:
 - "Tests are too slow to run right now"
 - "It works on my machine"
@@ -45,13 +45,13 @@ Added "Authority Matrix" section (line 64) with three subsections:
 
 | File | Change |
 |------|--------|
-| `agents/testing-reality-checker.md` | Added 🚧 Common Rationalizations I Reject section (8 entries) |
+| `agents/testing-qa-verification-specialist.md` | Added 🚧 Common Rationalizations I Reject section (8 entries) |
 | `agents/engineering-senior-developer.md` | Added 🚧 Common Rationalizations I Reject section (7 entries) |
 | `CLAUDE.md` | Added Authority Matrix section with autonomous/approval/escalation subsections |
 
 ## Verification
 
-- [x] testing-reality-checker.md: "Common Rationalizations I Reject" table with 8 entries (≥5 required)
+- [x] testing-qa-verification-specialist.md: "Common Rationalizations I Reject" table with 8 entries (≥5 required)
 - [x] engineering-senior-developer.md: "Common Rationalizations I Reject" table with 7 entries (≥5 required)
 - [x] CLAUDE.md: Authority Matrix with Autonomous, Human Approval Required, and Escalation Protocol subsections
 - [x] All tables use consistent Rationalization | My Response / Decision | Scope/Why format

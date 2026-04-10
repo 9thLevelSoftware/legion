@@ -15,7 +15,7 @@
 - New skills must follow this frontmatter pattern
 
 ### Phase 31 (Behavioral Guardrails) — Complete
-- `testing-reality-checker` and `engineering-senior-developer` have anti-rationalization tables
+- `testing-qa-verification-specialist` and `engineering-senior-developer` have anti-rationalization tables
 - `CLAUDE.md` has an authority matrix (autonomous vs. human-approval decisions)
 
 ### Relevant Existing Files

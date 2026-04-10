@@ -22,7 +22,7 @@ The memory layer captures structured patterns, supports branch-aware context, an
 - `review-loop` aborts after 3 iterations with no delta
 
 ### Phase 31 (Behavioral Guardrails) — Complete
-- `testing-reality-checker` and `engineering-senior-developer` have anti-rationalization tables
+- `testing-qa-verification-specialist` and `engineering-senior-developer` have anti-rationalization tables
 - `CLAUDE.md` authority matrix defines autonomous decisions (file edits, tests, deps, commits) vs. human-approval decisions (architecture, unplanned deps, schema, API, deletion)
 - Authority matrix is directly relevant: memory operations (store patterns/errors) should be autonomous within scope; memory schema changes require human approval
 

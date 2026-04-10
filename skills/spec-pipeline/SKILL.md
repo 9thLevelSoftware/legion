@@ -425,7 +425,7 @@ Step 5: Agent-assisted critique (conditional)
   For complex phases (3+ requirements, architectural choices):
   - Optionally spawn a skeptical agent using the read-only Explore
     subagent type (same pattern as plan-critique Section 4)
-  - Preferred agents: testing-reality-checker, product-sprint-prioritizer
+  - Preferred agents: testing-qa-verification-specialist, product-sprint-prioritizer
   - Agent receives the spec document and returns structured critique
 
   For simple phases:

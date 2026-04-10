@@ -349,7 +349,7 @@ task description biased toward these terms:
 
 Preferred agents (in priority order):
 
-1. testing-reality-checker
+1. testing-qa-verification-specialist
    Why: Skeptical personality, evidence-obsessed, defaults to "NEEDS WORK",
    experienced at catching fantasy approvals and premature certifications.
    Best for: Pre-mortem analysis (Section 1)

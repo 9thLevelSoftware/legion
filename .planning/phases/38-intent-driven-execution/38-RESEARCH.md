@@ -71,7 +71,7 @@ intents:
     description: "Security audit with Testing + Security divisions"
     agents:
       primary:
-        - testing-reality-checker
+        - testing-qa-verification-specialist
         - engineering-security-engineer
       secondary:
         - testing-api-tester

@@ -3,7 +3,7 @@
 ## Status: Complete
 
 ## Agent
-testing-reality-checker
+testing-qa-verification-specialist
 
 ## Files Created
 - `tests/cross-reference-validation.test.js` — 119 tests validating command-to-skill references, CATALOG-to-agent file references, and agent file back-references

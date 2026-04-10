@@ -26,7 +26,7 @@ Add adapter schema conformance tests, cross-reference validation, lint-commands,
 - **Architecture proposals**: Skipped (straightforward test creation + spec updates)
 - **Wave structure**: Wave 1 splits spec updates (07-01) and test creation (07-02) for parallel execution. Wave 2 (07-03) depends on 07-01 because adapter conformance tests must validate the new fields added in 07-01.
 - **Test patterns**: Follow existing project conventions -- `node:test`, `node:assert/strict`, regex-based frontmatter parsing, no external dependencies
-- **Agent selection**: engineering-senior-developer for spec work (needs architectural judgment for field design), testing-reality-checker + testing-api-tester for test creation (domain expertise)
+- **Agent selection**: engineering-senior-developer for spec work (needs architectural judgment for field design), testing-qa-verification-specialist + testing-api-tester for test creation (domain expertise)
 - **Adapter field values**: `max_prompt_size` and `known_quirks` require research per CLI -- agent must use accurate values, not placeholders
 
 ## Plan Structure

@@ -10,7 +10,7 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - **`/legion:explore` Polymath not spawning** — Added `Agent` to `allowed-tools` frontmatter. Previously the command narrated Polymath in third person instead of actually spawning a sub-agent.
 - **`/legion:plan` Invalid Tool Call** — Added `Agent` to `allowed-tools` frontmatter. Architecture proposal and plan critique steps tried to spawn Explore agents but the tool was not permitted.
-- **Plan critique default agent** — Changed from deleted `testing-reality-checker` to `testing-qa-verification-specialist` (the agent that absorbed it in v7.1.0).
+- **Plan critique default agent** — Changed from deleted `testing-qa-verification-specialist` to `testing-qa-verification-specialist` (the agent that absorbed it in v7.1.0).
 - **10 phantom agent references in config files** — Completed the config sweep missed during v7.1.0 consolidation (53→48). Updated `authority-matrix.yaml`, `intent-teams.yaml`, `roster-gap-config.yaml`, and `STATE.md` to reference correct consolidated agent IDs.
 - **STATE.md agent count** — Corrected from "53 agents" to "48 agents" (2 occurrences).
 
@@ -182,7 +182,7 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - **Critical**: Fixed `plugin_discovery_glob` in all 9 adapters — agent auto-discovery was broken on every runtime.
 - **Critical**: Removed circular self-dependency in `package.json`.
-- **Critical**: Removed dead file path references in 3 agent personalities (`design-ux-architect`, `testing-evidence-collector`, `testing-reality-checker`).
+- **Critical**: Removed dead file path references in 3 agent personalities (`design-ux-architect`, `testing-evidence-collector`, `testing-qa-verification-specialist`).
 - **Critical**: Removed orphan `</output>` XML tags from all 11 command files.
 - **Critical**: Fixed `settings.schema.json` to allow `$schema` property.
 - Fixed corrupted markdown headings in `engineering-mobile-app-builder`, `engineering-rapid-prototyper`, and `marketing-app-store-optimizer` (4 headings with encoding artifacts).

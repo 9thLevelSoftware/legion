@@ -243,7 +243,7 @@ All agent references in `.planning/config/intent-teams.yaml` now resolve to exis
 
 | Intent | Before | After | Status |
 |--------|--------|-------|--------|
-| **harden** | testing-reality-checker, testing-api-tester, testing-evidence-collector | +engineering-security-engineer | ✅ VALID |
+| **harden** | testing-qa-verification-specialist, testing-api-tester, testing-evidence-collector | +engineering-security-engineer | ✅ VALID |
 | **document** | engineering-frontend-developer | +product-technical-writer | ✅ VALID |
 | **security-only** | testing-api-tester | +engineering-security-engineer | ✅ VALID |
 

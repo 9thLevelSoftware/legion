@@ -551,7 +551,7 @@ if (!validation.valid) {
 const activeAgents = [
     'engineering-security-engineer',
     'engineering-backend-architect',
-    'testing-reality-checker'
+    'testing-qa-verification-specialist'
 ];
 
 // 3. Inject constraints into prompts (with mode profile)

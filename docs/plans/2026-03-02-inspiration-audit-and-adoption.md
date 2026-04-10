@@ -365,10 +365,10 @@ git commit -m "feat: add stale loop detection to review cycle (max 3 iterations)
 #### Task 5: Add anti-rationalization guidance to agent personalities
 
 **Files:**
-- Modify: `agents/testing-reality-checker.md`
+- Modify: `agents/testing-qa-verification-specialist.md`
 - Modify: `agents/engineering-senior-developer.md`
 
-**Step 1: Add anti-rationalization table to testing-reality-checker**
+**Step 1: Add anti-rationalization table to testing-qa-verification-specialist**
 
 Adopt code-foundations' pattern. Add a "Common Rationalizations I Reject" section:
 
@@ -384,7 +384,7 @@ Adopt code-foundations' pattern. Add a "Common Rationalizations I Reject" sectio
 
 **Step 3: Commit**
 ```bash
-git add agents/testing-reality-checker.md agents/engineering-senior-developer.md
+git add agents/testing-qa-verification-specialist.md agents/engineering-senior-developer.md
 git commit -m "feat: add anti-rationalization tables to key agent personalities"
 ```
 

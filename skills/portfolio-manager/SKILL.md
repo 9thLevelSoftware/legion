@@ -273,7 +273,7 @@ Derive agent usage patterns across projects at read-time. Since agents are perso
    a. Read all directories under {path}/.planning/phases/
    b. Primary source: Read CONTEXT.md files in each phase directory
       - These contain explicit agent recommendations per phase
-      - Look for agent ID references (e.g., "engineering-senior-developer", "testing-reality-checker")
+      - Look for agent ID references (e.g., "engineering-senior-developer", "testing-qa-verification-specialist")
    c. Secondary source: Scan plan body text and SUMMARY.md files
       - Search for agent ID patterns matching {division}-{role} format
    d. Note: YAML frontmatter in plan files does NOT contain agent IDs

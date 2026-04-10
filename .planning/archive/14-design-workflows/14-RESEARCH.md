@@ -24,7 +24,7 @@
 
 2. **review-loop.md Section 2** — "design" phase type already mapped:
    - Primary Reviewer: design-brand-guardian
-   - Secondary Reviewer: testing-reality-checker
+   - Secondary Reviewer: testing-qa-verification-specialist
 
 3. **phase-decomposer.md** — No design domain detection (only marketing)
 
@@ -152,7 +152,7 @@ Unplanned → Research → Designing → Review → Complete
 
 ### Design Review Enhancement (DSN-03)
 
-Current review-loop.md for "design" type: design-brand-guardian (primary) + testing-reality-checker (secondary).
+Current review-loop.md for "design" type: design-brand-guardian (primary) + testing-qa-verification-specialist (secondary).
 
 Enhanced design review uses **three specialized lenses**:
 

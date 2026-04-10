@@ -22,7 +22,7 @@ skills/agent-creator/SKILL.md
 
 <context>
 @agents/engineering-senior-developer.md
-@agents/testing-reality-checker.md
+@agents/testing-qa-verification-specialist.md
 @agents/design-ui-designer.md
 </context>
 

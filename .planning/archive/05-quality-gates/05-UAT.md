@@ -57,7 +57,7 @@
 
 | Criteria | Verified |
 |----------|----------|
-| `/agency:review` selects appropriate review agents (Reality Checker, Evidence Collector, etc.) | Yes — Section 2 maps 6 phase types to primary + secondary reviewers, always includes testing-reality-checker |
+| `/agency:review` selects appropriate review agents (Reality Checker, Evidence Collector, etc.) | Yes — Section 2 maps 6 phase types to primary + secondary reviewers, always includes testing-qa-verification-specialist |
 | Reviewers provide specific, actionable feedback (not vague assessments) | Yes — structured Finding format: file, line/section, severity, issue, details, suggested fix |
 | Fix loop: review → fix → re-review, max 3 cycles | Yes — Sections 5-6 implement bounded loop with cycle_count tracking |
 | Phase not marked complete until review passes | Yes — Section 7 gates completion on PASS verdict with no BLOCKERs or WARNINGs |

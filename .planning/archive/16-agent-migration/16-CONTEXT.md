@@ -63,7 +63,7 @@ color: <display color>
 | project-manager-senior.md | `project-manager-senior` | Senior Project Manager |
 | specialized/agents-orchestrator.md | `agents-orchestrator` | Agents Orchestrator |
 | specialized/data-analytics-reporter.md | `data-analytics-reporter` | Data Analytics Reporter |
-| testing-reality-checker.md | `testing-reality-checker` | Reality Checker |
+| testing-qa-verification-specialist.md | `testing-qa-verification-specialist` | Reality Checker |
 | design-visual-storyteller.md | `design-visual-storyteller` | Visual Storyteller |
 
 2 agents use non-standard compressed names:
@@ -77,7 +77,7 @@ color: <display color>
 4 agents have escaped newlines (`\n`) in descriptions that need cleanup:
 - `engineering-senior-developer.md`
 - `project-manager-senior.md`
-- `testing-reality-checker.md`
+- `testing-qa-verification-specialist.md`
 - `testing-evidence-collector.md`
 
 ### Target Frontmatter Schema

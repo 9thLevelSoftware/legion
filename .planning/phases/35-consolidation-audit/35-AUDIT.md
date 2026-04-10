@@ -127,7 +127,7 @@
 
 | Agent File | Name | Description | Task Types |
 |-----------|------|-------------|------------|
-| testing-reality-checker | Reality Checker | Evidence-based certification, defaults to NEEDS WORK, stops fantasy approvals | evidence-collection, code-review, acceptance-testing, quality-gate |
+| testing-qa-verification-specialist | Reality Checker | Evidence-based certification, defaults to NEEDS WORK, stops fantasy approvals | evidence-collection, code-review, acceptance-testing, quality-gate |
 | testing-evidence-collector | Evidence Collector | Screenshot-obsessed QA requiring visual proof for everything | visual-testing, screenshot-proof, ux-testing, user-flows |
 | testing-api-tester | API Tester | Comprehensive API validation, performance testing, integration testing | api-testing, integration-testing, contract-testing |
 | testing-performance-benchmarker | Performance Benchmarker | Measuring, analyzing, and improving system performance | performance-testing, benchmarking, load-testing |
@@ -135,7 +135,7 @@
 | testing-tool-evaluator | Tool Evaluator | Evaluating and recommending tools, software, platforms | tool-assessment, technology-evaluation, vendor-selection |
 | testing-workflow-optimizer | Workflow Optimizer | Testing/QA workflow optimization: pipeline efficiency, CI optimization, flaky test detection | workflow-optimization, ci-optimization, test-pipeline, flaky-tests |
 
-**Overlap analysis**: No unintentional overlap. testing-reality-checker and testing-evidence-collector both do QA but reality-checker is the gatekeeper/certifier while evidence-collector focuses on visual proof collection. testing-tool-evaluator's overlap with testing domain is legitimate — it evaluates testing tools specifically. testing-workflow-optimizer's Testing division placement is appropriate (post-Phase 35 fix): it optimizes *testing* workflows, not general business processes.
+**Overlap analysis**: No unintentional overlap. testing-qa-verification-specialist and testing-evidence-collector both do QA but reality-checker is the gatekeeper/certifier while evidence-collector focuses on visual proof collection. testing-tool-evaluator's overlap with testing domain is legitimate — it evaluates testing tools specifically. testing-workflow-optimizer's Testing division placement is appropriate (post-Phase 35 fix): it optimizes *testing* workflows, not general business processes.
 
 ### Support Division (6 agents)
 

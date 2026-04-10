@@ -132,7 +132,7 @@ The "remove-2" option maintains the current agent count while replacing niche ag
 
 | Intent | Previously | Now | Status |
 |--------|-----------|-----|--------|
-| harden | testing-reality-checker, testing-api-tester, testing-evidence-collector | +engineering-security-engineer | ✅ VALID |
+| harden | testing-qa-verification-specialist, testing-api-tester, testing-evidence-collector | +engineering-security-engineer | ✅ VALID |
 | document | engineering-frontend-developer | +product-technical-writer | ✅ VALID |
 | security-only | testing-api-tester | +engineering-security-engineer | ✅ VALID |
 

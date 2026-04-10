@@ -3,7 +3,7 @@
 ## Result: PASSED
 
 - **Cycles Used**: 2
-- **Reviewers**: testing-reality-checker, testing-workflow-optimizer, engineering-senior-developer
+- **Reviewers**: testing-qa-verification-specialist, testing-workflow-optimizer, engineering-senior-developer
 - **Review Mode**: Dynamic panel (3 reviewers with non-overlapping rubrics)
 - **Completion Date**: 2026-03-06
 
@@ -29,7 +29,7 @@
 
 | Reviewer | Rubric Focus | Final Verdict | Key Observations |
 |----------|-------------|---------------|------------------|
-| testing-reality-checker | Schema correctness, data integrity | PASS | All 7 criteria clean — config, schema, settings, fixture, flags, cross-references, and fallbacks all consistent |
+| testing-qa-verification-specialist | Schema correctness, data integrity | PASS | All 7 criteria clean — config, schema, settings, fixture, flags, cross-references, and fallbacks all consistent |
 | testing-workflow-optimizer | Workflow integration, protocol consistency | PASS | Single resolution point confirmed, flag-not-name pattern followed, backward compatibility maintained. 1 false positive (docs/control-modes.md exists) |
 | engineering-senior-developer | Code quality, test coverage, documentation | NEEDS WORK → PASS | 2 warnings fixed in cycle 1: fixture dash characters and missing edge-case tests. Documentation thorough and accurate |
 

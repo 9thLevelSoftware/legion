@@ -202,7 +202,18 @@ Step 5: Validate the plan structure
      do not abort, but flag for review.
   e) If directory mappings exist, verify files_modified paths are valid or have overrides.
      If invalid and strictness=strict: error before execution begins.
-  If validation fails on (a), (b), (c), or (e): stop and report the error. Do not execute.
+  f) MANDATORY — Verify all agent personality files exist BEFORE execution begins.
+     For every plan where autonomous: false, extract the agent-id from frontmatter
+     and use the Read tool to open {AGENTS_DIR}/{agent-id}.md. This is NOT optional.
+     Do NOT skip this step. Do NOT assume files are missing without actually attempting
+     to Read them. If Read succeeds: the file exists, record this fact. If Read returns
+     a file-not-found error: apply the fuzzy match logic from Step 1.5 (Section 3).
+     If fuzzy match also fails: STOP and error — do not fall back to autonomous mode.
+     Report: "Agent file not found for {agent-id}. Checked: {AGENTS_DIR}/{agent-id}.md
+     and fuzzy matches. Run /legion:update to reinstall agent files."
+     This step prevents the most common execution failure: hallucinating that agent
+     files are missing and silently degrading to personality-less autonomous execution.
+  If validation fails on (a), (b), (c), (e), or (f): stop and report the error. Do not execute.
 
 Step 6: Report discovery results
   Before executing, show a discovery summary:
@@ -223,13 +234,17 @@ For each plan where autonomous: false:
 
 Step 1: Identify the assigned agent
   - Read the agent-id from the plan's frontmatter `agents:` field
-  - Path format: {AGENTS_DIR}/{agent-id}.md  (AGENTS_DIR resolved via workflow-common Agent Path Resolution Protocol)
-  - Example: {AGENTS_DIR}/engineering-senior-developer.md
+  - Path format: {AGENTS_DIR}/{agent-id}.md  (AGENTS_DIR resolved via workflow-common-core Agent Path Resolution Protocol)
+  - The standard installed path is ~/.claude/agents/{agent-id}.md — this is where
+    npm-installed Legion places all 48 agent files. Use this path preferentially.
+  - Example: ~/.claude/agents/engineering-senior-developer.md
 
-Step 1.5: Validate the agent-id against actual files
-  - Attempt to Read {AGENTS_DIR}/{agent-id}.md
-  - If the file EXISTS: proceed to Step 2 with this agent-id
-  - If the file does NOT exist: the plan may have a hallucinated or abbreviated agent-id.
+Step 1.5: Validate the agent-id against actual files (MANDATORY — DO NOT SKIP)
+  - Use the Read tool to open {AGENTS_DIR}/{agent-id}.md
+  - You MUST actually invoke the Read tool here. Do NOT skip this and claim the file
+    is missing based on assumption. The files exist for all installed Legion instances.
+  - If Read succeeds (returns file content): proceed to Step 2 with this agent-id
+  - If Read returns a file-not-found error: the plan may have a hallucinated or abbreviated agent-id.
     Run a fuzzy match:
     a) Extract the suffix after the last hyphen-delimited division prefix
        (e.g., "dev-senior-developer" → "senior-developer",
@@ -635,7 +650,7 @@ For autonomous plans (autonomous: true):
 
 ### Personality Loading Notes
 
-- If the personality file does not exist at the expected path, fall back to autonomous execution (no personality). Log: "Warning: personality file not found for {agent-id} at {path}. Executing plan {NN}-{PP} without personality injection."
+- If the personality file does not exist at the expected path after actually attempting to Read it (not assumed — you must have a real file-not-found error from the Read tool): STOP execution for this plan. Do NOT fall back to autonomous mode. Personality injection is non-negotiable for non-autonomous plans. Error: "Agent file {agent-id}.md not found at {path}. Run /legion:update to reinstall." Note: Step 5f pre-validation should catch this before you reach this point. If you're here, the pre-check was skipped — go back and run it.
 - The personality content may be 200-500 lines. This is expected and intentional — full injection is the core mechanism that gives agents their specialist behavior.
 - Cross-reference agent-registry.md (Section 1: Agent Catalog) for the canonical file path when in doubt.
 
@@ -1402,12 +1417,24 @@ How to handle common failure modes without retrying or hiding problems.
 
 5. MISSING PERSONALITY FILE
    Symptom: The agent .md file does not exist at {AGENTS_DIR}/{agent-id}.md
+   IMPORTANT: This is almost always a MODEL ERROR, not a real missing file.
+   The 48 agent files ship with Legion and exist at both ~/.claude/agents/ and
+   agents/ (local dev). If you believe a file is missing, you MUST have actually
+   attempted to Read it and received a file-not-found error. Do NOT claim files
+   are missing based on assumption or pre-trained knowledge.
    Action:
-   - Fall back to autonomous execution — run the plan without personality injection
-   - Log: "Warning: personality file not found for {agent-id} at {expected-path}.
-     Executing plan {NN}-{PP} as autonomous (no personality injection)."
-   - In the plan SUMMARY.md, note the fallback under Issues Encountered
-   - Do NOT fail the plan because of a missing personality file
+   - FIRST: Confirm you actually attempted to Read the file (Step 5f pre-check
+     should have caught this). If you skipped the pre-check, go back and do it now.
+   - If Read genuinely returns file-not-found after trying both AGENTS_DIR paths:
+     STOP execution for this plan. Do NOT fall back to autonomous mode.
+   - Error: "Agent file not found for {agent-id}. Checked paths:
+     {global-path} and {local-path}. This plan cannot execute without its
+     personality file. Run /legion:update to reinstall agent files."
+   - In the plan SUMMARY.md, mark status as "blocked" with the missing file details
+   - Rationale: Autonomous fallback silently degrades execution quality. Personality
+     injection is the core mechanism — running without it produces generic output
+     that defeats the purpose of specialist agents. Failing loudly is better than
+     succeeding silently with degraded quality.
 
 6. NO PLANS FOUND
    Symptom: The phase directory exists but contains no {NN}-{PP}-PLAN.md files

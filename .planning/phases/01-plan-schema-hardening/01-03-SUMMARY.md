@@ -3,7 +3,7 @@
 ## Status: Complete
 
 ## Agent
-testing-reality-checker
+testing-qa-verification-specialist
 
 ## What Changed
 Created a comprehensive test suite for v6.0 plan schema conformance with test fixtures and reusable validation functions.

@@ -31,7 +31,7 @@ Users can type `/agency:review` and trigger a review cycle where testing/QA agen
 ### Testing Division Agents (7 agents available for review)
 | Agent | Specialty | Best For |
 |-------|-----------|----------|
-| testing-reality-checker | Evidence-based certification, defaults to "NEEDS WORK" | Final go/no-go, production readiness |
+| testing-qa-verification-specialist | Evidence-based certification, defaults to "NEEDS WORK" | Final go/no-go, production readiness |
 | testing-evidence-collector | Screenshot-obsessed QA, defaults to finding 3-5 issues | Visual proof, bug verification |
 | testing-api-tester | Comprehensive API validation and quality assurance | API phases, integration testing |
 | testing-test-results-analyzer | Test result evaluation and quality metrics | Analyzing test output, quality metrics |

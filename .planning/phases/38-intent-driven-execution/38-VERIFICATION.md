@@ -71,7 +71,7 @@ score: 14/14 must-haves verified
 
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
-| **INTENT-01:** `/legion:build --just-harden` summons Testing + Security divisions | ✓ SATISFIED | build.md Step 4-ADHOC spawns harden team (testing-reality-checker + engineering-security-engineer) |
+| **INTENT-01:** `/legion:build --just-harden` summons Testing + Security divisions | ✓ SATISFIED | build.md Step 4-ADHOC spawns harden team (testing-qa-verification-specialist + engineering-security-engineer) |
 | **INTENT-02:** `/legion:build --just-document` generates docs without implementation | ✓ SATISFIED | build.md Step 0.5 + wave-executor Section 6 filter_plans with documentation task types |
 | **INTENT-03:** `/legion:build --skip-frontend` drops UI tasks from wave plans | ✓ SATISFIED | wave-executor Section 6 excludes frontend agents/files/task types |
 | **INTENT-04:** `/legion:review --just-security` runs security-only audit | ✓ SATISFIED | review.md Step 0.5 + Step 6-INTENT generates security report with OWASP/STRIDE |

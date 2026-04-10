@@ -3,7 +3,7 @@
 ## Result: PASSED
 
 - **Cycles used**: 1
-- **Reviewers**: testing-workflow-optimizer, testing-reality-checker, agents-orchestrator
+- **Reviewers**: testing-workflow-optimizer, testing-qa-verification-specialist, agents-orchestrator
 - **Review mode**: Dynamic review panel
 - **Completion date**: 2026-03-07
 
@@ -46,7 +46,7 @@ All plan verification thresholds passed:
 | Reviewer | Verdict | Key Observations |
 |----------|---------|-----------------|
 | testing-workflow-optimizer | PASS | Workflow patterns are complete and consistent across all 4 modes. Exchange patterns well-defined. Example flow only shows crystallize (suggestion). |
-| testing-reality-checker | PASS | All verification thresholds met. DPO scoring mechanism well-documented with clear signal mappings. Blind spots exchange correctly marked optional. |
+| testing-qa-verification-specialist | PASS | All verification thresholds met. DPO scoring mechanism well-documented with clear signal mappings. Blind spots exchange correctly marked optional. |
 | agents-orchestrator | PASS | Mode selection infrastructure cleanly extends existing Polymath. Agent coordination patterns preserved. Frontmatter metadata could be enriched (suggestion). |
 
 ## Suggestions (not required)
@@ -57,4 +57,4 @@ All plan verification thresholds passed:
 | 2 | `commands/explore.md` | `example_flow` section only shows crystallize example — could add mode examples | testing-workflow-optimizer |
 | 3 | `agents/polymath.md` | `review_strengths` frontmatter doesn't reflect new mode capabilities | agents-orchestrator |
 | 4 | `commands/explore.md` | Version still "1.0.0" and "Phase 36" reference — cosmetic | testing-workflow-optimizer |
-| 5 | `skills/polymath-engine/SKILL.md` | Debate scoring template blind spots row should note conditional | testing-reality-checker |
+| 5 | `skills/polymath-engine/SKILL.md` | Debate scoring template blind spots row should note conditional | testing-qa-verification-specialist |

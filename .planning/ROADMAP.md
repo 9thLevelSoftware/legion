@@ -31,7 +31,7 @@
 ### Phase 1: Plan Schema Hardening
 **Goal**: Add `files_forbidden`, `expected_artifacts`, and mandatory `verification_commands` to the plan frontmatter schema, with plan-critique enforcement.
 **Requirements**: DSC-01, DSC-02, DSC-03
-**Recommended Agents**: engineering-senior-developer, testing-reality-checker, project-management-project-shepherd
+**Recommended Agents**: engineering-senior-developer, testing-qa-verification-specialist, project-management-project-shepherd
 **Success Criteria**:
 - [ ] Plan template includes `files_forbidden` and `expected_artifacts` fields
 - [ ] Plan-critique skill flags plans missing `verification_commands` as BLOCKER
@@ -53,7 +53,7 @@
 ### Phase 3: Control Modes
 **Goal**: Add `control_mode` setting with `autonomous`/`guarded`/`advisory`/`surgical` presets that adjust which authority matrix rules are active.
 **Requirements**: CTL-01, CTL-02, CTL-03
-**Recommended Agents**: engineering-senior-developer, testing-reality-checker, design-ux-architect
+**Recommended Agents**: engineering-senior-developer, testing-qa-verification-specialist, design-ux-architect
 **Success Criteria**:
 - [x] `settings.json` schema includes `control_mode` with 4 preset values
 - [x] Each preset maps to specific authority matrix rule adjustments (documented)
@@ -75,7 +75,7 @@
 ### Phase 5: Agent Metadata Enrichment
 **Goal**: Add structured metadata fields (`languages`, `frameworks`, `artifact_types`, `review_strengths`) to all 53 agent frontmatter files.
 **Requirements**: AGT-01
-**Recommended Agents**: agents-orchestrator, engineering-senior-developer, testing-reality-checker
+**Recommended Agents**: agents-orchestrator, engineering-senior-developer, testing-qa-verification-specialist
 **Success Criteria**:
 - [x] All 53 agent .md files include `languages`, `frameworks`, `artifact_types`, `review_strengths` in frontmatter
 - [x] Metadata is accurate to each agent's described capabilities (not generic)
@@ -97,7 +97,7 @@
 ### Phase 7: Validation & Conformance
 **Goal**: Add adapter schema conformance tests, cross-reference validation, lint-commands, and new adapter spec fields.
 **Requirements**: VAL-01, VAL-02, VAL-03, VAL-04
-**Recommended Agents**: testing-reality-checker, engineering-senior-developer, testing-api-tester
+**Recommended Agents**: testing-qa-verification-specialist, engineering-senior-developer, testing-api-tester
 **Success Criteria**:
 - [ ] Test suite validates all 9 adapters have required ADAPTER.md fields
 - [ ] Cross-reference test verifies all command .md files reference existing skills and agents
@@ -120,7 +120,7 @@
 ### Phase 9: Polymath Advanced Modes
 **Goal**: Add onboard, compare, and debate modes to the Polymath agent and `/legion:explore` workflow.
 **Requirements**: POLY-07, POLY-08, POLY-09
-**Recommended Agents**: agents-orchestrator, engineering-senior-developer, design-ux-architect, testing-reality-checker
+**Recommended Agents**: agents-orchestrator, engineering-senior-developer, design-ux-architect, testing-qa-verification-specialist
 **Success Criteria**:
 - [ ] `/legion:explore` offers mode selection: crystallize (existing), onboard, compare, debate
 - [ ] Onboard mode guides structured codebase familiarization with progressive depth
@@ -132,7 +132,7 @@
 ### Phase 10: Authority & Conflict Resolution
 **Goal**: Add escalation automation protocol and agent-to-agent communication conventions for parallel execution handoffs.
 **Requirements**: AUTH-06, AUTH-07
-**Recommended Agents**: project-management-project-shepherd, engineering-backend-architect, testing-reality-checker
+**Recommended Agents**: project-management-project-shepherd, engineering-backend-architect, testing-qa-verification-specialist
 **Success Criteria**:
 - [ ] Escalation protocol documented: when/how agents escalate out-of-scope decisions
 - [ ] Agent-to-agent communication conventions defined for wave handoffs
@@ -143,7 +143,7 @@
 ### Phase 11: Intent Routing v2
 **Goal**: Add natural language intent parsing and context-aware intent suggestions based on project state.
 **Requirements**: INTENT-07, INTENT-08
-**Recommended Agents**: engineering-ai-ml-engineer, engineering-senior-developer, testing-reality-checker
+**Recommended Agents**: engineering-ai-ml-engineer, engineering-senior-developer, testing-qa-verification-specialist
 **Success Criteria**:
 - [x] Intent router parses natural language queries to command+flags (e.g., "fix the tests" → `/legion:review`)
 - [x] Context-aware suggestions consider current STATE.md position when recommending actions
@@ -154,7 +154,7 @@
 ### Phase 12: Integration & Release
 **Goal**: Cross-phase regression testing, documentation updates, repo hygiene, and version bump to 6.0.0.
 **Requirements**: REL-01, REL-02, REL-03, REL-04
-**Recommended Agents**: project-management-studio-producer, testing-reality-checker, engineering-senior-developer
+**Recommended Agents**: project-management-studio-producer, testing-qa-verification-specialist, engineering-senior-developer
 **Success Criteria**:
 - [ ] All existing tests pass with v6.0 changes (no regressions)
 - [ ] New features documented in CLAUDE.md agent/skill/command counts

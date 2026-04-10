@@ -11,7 +11,7 @@ Agents and workflows have explicit boundaries that prevent rationalization and o
 
 ## Success Criteria
 
-1. `testing-reality-checker` has a "Common Rationalizations I Reject" table with ≥5 entries
+1. `testing-qa-verification-specialist` has a "Common Rationalizations I Reject" table with ≥5 entries
 2. `engineering-senior-developer` has a similar table focused on code quality rationalizations
 3. `CLAUDE.md` authority matrix clearly separates autonomous decisions from human-approval decisions
 
@@ -29,7 +29,7 @@ None — Phase 31 runs in parallel with Phases 29 (complete) and 30.
 
 ## Files to Modify
 
-1. `agents/testing-reality-checker.md` — Add "Common Rationalizations I Reject" section
+1. `agents/testing-qa-verification-specialist.md` — Add "Common Rationalizations I Reject" section
 2. `agents/engineering-senior-developer.md` — Add "Common Rationalizations I Reject" section
 3. `CLAUDE.md` — Add authority matrix section
 

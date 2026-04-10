@@ -73,35 +73,39 @@ Step 2: Select review agents based on phase type
 
   | Phase Type     | Primary Reviewer              | Secondary Reviewer                    |
   |----------------|-------------------------------|---------------------------------------|
-  | code           | testing-reality-checker       | testing-evidence-collector            |
-  | api            | testing-api-tester            | testing-reality-checker               |
-  | design         | design-brand-guardian         | testing-reality-checker               |
-  | marketing      | testing-workflow-optimizer    | testing-reality-checker               |
-  | infrastructure | testing-reality-checker       | testing-performance-benchmarker       |
-  | workflow       | testing-workflow-optimizer    | testing-reality-checker               |
+  | code           | testing-qa-verification-specialist       | testing-evidence-collector            |
+  | api            | testing-api-tester            | testing-qa-verification-specialist               |
+  | design         | design-brand-guardian         | testing-qa-verification-specialist               |
+  | marketing      | testing-workflow-optimizer    | testing-qa-verification-specialist               |
+  | infrastructure | testing-qa-verification-specialist       | testing-performance-benchmarker       |
+  | workflow       | testing-workflow-optimizer    | testing-qa-verification-specialist               |
 
   Rules:
-  - Always include testing-reality-checker as either primary or secondary — they are the
+  - Always include testing-qa-verification-specialist as either primary or secondary — they are the
     final quality gate for any phase type
   - For phases touching multiple types, include one reviewer per type (max 3 reviewers total)
-  - If a phase spans 3+ types, use testing-reality-checker as universal secondary and pick
+  - If a phase spans 3+ types, use testing-qa-verification-specialist as universal secondary and pick
     the two most relevant primary reviewers
   - Present selected reviewers to the user for confirmation before spawning any agents
 
 Step 3: Validate reviewer availability
   - Confirm each selected agent .md file exists at the expected path (using AGENTS_DIR
     resolved via workflow-common Agent Path Resolution Protocol):
-    {AGENTS_DIR}/testing-reality-checker.md
+    {AGENTS_DIR}/testing-qa-verification-specialist.md
     {AGENTS_DIR}/testing-evidence-collector.md
     {AGENTS_DIR}/testing-api-tester.md
     {AGENTS_DIR}/testing-workflow-optimizer.md
     {AGENTS_DIR}/testing-performance-benchmarker.md
     {AGENTS_DIR}/design-brand-guardian.md
-  - If any personality file is missing: fall back to testing-reality-checker for that slot
-  - If testing-reality-checker.md is ALSO missing: run that review slot without personality
-    injection (autonomous mode). Log: "Core reviewer file missing. Running autonomous review."
-  - Log any fallback: "Warning: {agent-id}.md not found. Using testing-reality-checker for
-    {phase-type} review slot."
+  - MANDATORY: Use the Read tool to verify each personality file exists BEFORE claiming
+    it is missing. Do NOT assume files are absent — the 48 agent files ship with Legion.
+  - If Read genuinely returns file-not-found for a reviewer file: fall back to
+    testing-qa-verification-specialist for that slot (not autonomous mode).
+  - If testing-qa-verification-specialist.md is ALSO missing after a real Read attempt:
+    STOP and error — do not run autonomous reviews. Agent personality injection is the
+    core mechanism. Error: "Reviewer files not found. Run /legion:update to reinstall."
+  - Log any fallback: "Warning: {agent-id}.md not found after Read attempt. Using
+    testing-qa-verification-specialist for {phase-type} review slot."
 ```
 
 ### Reviewer Confirmation Display
@@ -117,7 +121,7 @@ Before spawning review agents, show this to the user and wait for confirmation:
 **Selected Reviewers**:
 | Slot | Agent ID                    | Role                              | Rationale |
 |------|-----------------------------|-----------------------------------|-----------|
-| 1    | testing-reality-checker     | Final quality gate                | Always included |
+| 1    | testing-qa-verification-specialist     | Final quality gate                | Always included |
 | 2    | {secondary-agent-id}        | {domain-specific expertise}       | {why selected} |
 
 Proceed with this reviewer team? (or name a replacement)
@@ -284,7 +288,7 @@ Step 4: Spawn the review agent per adapter protocol
   Use adapter.spawn_agent_personality with:
   - prompt: {constructed prompt from Step 3}
   - model: adapter.model_execution
-  - name: "{agent-id}-review-{NN}" (e.g., "testing-reality-checker-review-05")
+  - name: "{agent-id}-review-{NN}" (e.g., "testing-qa-verification-specialist-review-05")
   - Additional parameters per adapter (e.g., team_name on Claude Code)
 
   Initialize coordination before spawning (one context for the entire review lifecycle):
@@ -354,9 +358,9 @@ Step 4: Report findings to user
 
   | #  | Severity    | Confidence | File                    | Issue (brief)              | Reviewer           |
   |----|-------------|------------|-------------------------|----------------------------|--------------------|
-  | 1  | BLOCKER     | HIGH (95%) | path/to/file.md         | Missing error handling     | testing-reality-checker |
+  | 1  | BLOCKER     | HIGH (95%) | path/to/file.md         | Missing error handling     | testing-qa-verification-specialist |
   | 2  | WARNING     | HIGH (85%) | path/to/other.md        | Inconsistent naming        | testing-evidence-collector |
-  | 3  | SUGGESTION  | HIGH (80%) | path/to/third.md        | Could add more examples    | testing-reality-checker |
+  | 3  | SUGGESTION  | HIGH (80%) | path/to/third.md        | Could add more examples    | testing-qa-verification-specialist |
 
   **Blockers**: {count} | **Warnings**: {count} | **Suggestions**: {count}
   **Deferred (MEDIUM confidence)**: {count} findings not shown (--verbose to reveal)
@@ -1081,8 +1085,8 @@ How to handle failures during the review loop itself.
    Symptom: Agent tool call returns an error for a review agent
    Action:
    - Log the spawn failure
-   - If the primary reviewer failed to spawn: fall back to testing-reality-checker
-   - If testing-reality-checker itself failed to spawn: run review without that slot
+   - If the primary reviewer failed to spawn: fall back to testing-qa-verification-specialist
+   - If testing-qa-verification-specialist itself failed to spawn: run review without that slot
    - Document the spawn failure in the cycle report
    - Do NOT skip the review cycle because of a single agent spawn failure
 
@@ -1107,10 +1111,15 @@ How to handle failures during the review loop itself.
 
 4. PERSONALITY FILE MISSING FOR REVIEWER
    Symptom: Expected reviewer .md file not found at {AGENTS_DIR}/{agent-id}.md
+   IMPORTANT: This is almost always a model error. You MUST have actually attempted
+   to Read the file before claiming it is missing. The 48 agent files ship with Legion.
    Action:
-   - Fall back to testing-reality-checker for that review slot
-   - Log: "Warning: personality file not found for {agent-id}. Using testing-reality-checker."
-   - Do NOT fail the review cycle because a personality file is missing
+   - FIRST: Confirm you actually tried to Read the file. If not, do it now.
+   - If Read genuinely returns file-not-found: fall back to testing-qa-verification-specialist
+   - Log: "Warning: personality file not found for {agent-id} after Read attempt.
+     Using testing-qa-verification-specialist."
+   - If the fallback file is also genuinely missing: STOP and error.
+     Do NOT run personality-less reviews.
 
 5. STATE.md WRITE FAILURE
    Symptom: STATE.md cannot be updated after a cycle
@@ -1141,7 +1150,7 @@ Agent file paths are resolved using `agent-registry.md` Section 1 (Agent Catalog
 ### Quick Reference: Review Agent Paths
 
 ```
-{AGENTS_DIR}/testing-reality-checker.md
+{AGENTS_DIR}/testing-qa-verification-specialist.md
 {AGENTS_DIR}/testing-evidence-collector.md
 {AGENTS_DIR}/testing-api-tester.md
 {AGENTS_DIR}/testing-test-results-analyzer.md

@@ -65,7 +65,7 @@ Step 3: Filter to review-capable agents
   review, quality, testing, or validation capabilities. Eligible agents:
 
   Testing division (all 7):
-  - testing-reality-checker, testing-evidence-collector, testing-api-tester
+  - testing-qa-verification-specialist, testing-evidence-collector, testing-api-tester
   - testing-workflow-optimizer, testing-performance-benchmarker
   - testing-test-results-analyzer, testing-tool-evaluator
 
@@ -97,7 +97,7 @@ Step 4: Cap panel size and enforce diversity
 
   Mandatory: at least one Testing division agent on every panel.
   This inherits from agent-registry Step 5 (Mandatory Roles) and from
-  the existing review-loop principle that testing-reality-checker is
+  the existing review-loop principle that testing-qa-verification-specialist is
   always included.
 
 Step 5: Assign rubrics
@@ -187,7 +187,7 @@ Include in each finding: `- **Confidence**: {HIGH | MEDIUM | LOW} — {percentag
 
 #### Testing Division
 
-**testing-reality-checker** — Production Readiness
+**testing-qa-verification-specialist** — Production Readiness
 | # | Criterion | What to Check |
 |---|-----------|---------------|
 | 1 | Error handling | Edge cases covered, failures degrade gracefully, no silent swallowing |

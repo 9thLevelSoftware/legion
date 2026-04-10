@@ -79,11 +79,16 @@ The resolved profile is a set of 5 boolean flags: `authority_enforcement`, `doma
 
 ## Agent Path Resolution (Core)
 
-Resolve once per command invocation:
-1. `~/.claude/agents/agents-orchestrator.md` (Claude global install)
-2. `agents/agents-orchestrator.md` (local dev mode)
-3. Manifest fallback: `~/.claude/legion/manifest.json` then `~/.legion/manifest.json`
-4. If none found: fail fast with install guidance
+Resolve once per command invocation by **actually reading the probe file** (not assuming):
+
+1. **Use the Read tool** on `~/.claude/agents/agents-orchestrator.md` (global install — preferred path)
+   - If Read succeeds: set `AGENTS_DIR = ~/.claude/agents` and STOP resolution. This is the standard installed location and should work for all npm-installed Legion users.
+2. Only if step 1 returns a file-not-found error: **Use the Read tool** on `agents/agents-orchestrator.md` (local dev mode)
+   - If Read succeeds: set `AGENTS_DIR = agents` (relative to project root)
+3. Only if both fail: check manifests `~/.claude/legion/manifest.json` then `~/.legion/manifest.json` for an `agents_dir` key
+4. If none found: fail fast with: "Agent files not found. Run: npm install -g @anthropic/legion"
+
+**CRITICAL**: Do NOT skip the Read probe. Do NOT assume a path doesn't exist without trying it. Do NOT claim "agent files aren't on disk" without a real file-not-found error from the Read tool. The global install path (`~/.claude/agents/`) contains all 48 agent files for any npm-installed Legion instance.
 
 Use resolved path for all personality reads:
 `{AGENTS_DIR}/{agent-id}.md`

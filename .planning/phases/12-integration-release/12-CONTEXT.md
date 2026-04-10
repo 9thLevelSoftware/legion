@@ -49,11 +49,11 @@ Cross-phase regression testing, documentation updates, repo hygiene, and version
 
 - Architecture proposals: skipped (straightforward release phase)
 - Wave structure: 2 plans across 2 waves (testing/docs first, then version bump/release)
-- Agent selection: testing-reality-checker + engineering-senior-developer (wave 1), project-management-studio-producer + engineering-senior-developer (wave 2)
+- Agent selection: testing-qa-verification-specialist + engineering-senior-developer (wave 1), project-management-studio-producer + engineering-senior-developer (wave 2)
 
 ## Plan Structure
 
 | Plan | Wave | Focus | Agents |
 |------|------|-------|--------|
-| 12-01 | 1 | Regression Testing & Documentation Updates | testing-reality-checker, engineering-senior-developer |
+| 12-01 | 1 | Regression Testing & Documentation Updates | testing-qa-verification-specialist, engineering-senior-developer |
 | 12-02 | 2 | Version Bump & Release | project-management-studio-producer, engineering-senior-developer |

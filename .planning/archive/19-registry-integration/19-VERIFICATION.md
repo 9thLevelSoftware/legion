@@ -121,7 +121,7 @@ Three agents verified through the complete chain (registry entry -> file exists 
 | Agent | Registry | File | Content | name: | division: |
 |-------|----------|------|---------|-------|-----------|
 | engineering-senior-developer | PASS | PASS | PASS | PASS | PASS |
-| testing-reality-checker | PASS | PASS | PASS | PASS | PASS |
+| testing-qa-verification-specialist | PASS | PASS | PASS | PASS | PASS |
 | design-ui-designer | PASS | PASS | PASS | PASS | PASS |
 
 ---

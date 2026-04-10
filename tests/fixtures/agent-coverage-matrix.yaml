@@ -446,7 +446,7 @@ agents:
       - "No incident response"
     notes: "Performance testing, partial SRE coverage"
 
-  testing-reality-checker:
+  testing-qa-verification-specialist:
     division: "Testing"
     covers_roles:
       - "incident-responder"
@@ -532,7 +532,7 @@ coverage_summary:
       - "support-finance-tracker"
       - "testing-api-tester"
       - "testing-performance-benchmarker"
-      - "testing-reality-checker"
+      - "testing-qa-verification-specialist"
       
   no_coverage:
     count: 37

@@ -224,7 +224,7 @@ The following agents are available for orchestration based on task requirements:
 
 ### 🧪 Testing & Quality Agents
 - **EvidenceQA**: Screenshot-obsessed QA specialist requiring visual proof
-- **testing-reality-checker**: Evidence-based certification, defaults to "NEEDS WORK"
+- **testing-qa-verification-specialist**: Evidence-based certification, defaults to "NEEDS WORK"
 - **API Tester**: Comprehensive API validation, performance testing, quality assurance
 - **Performance Benchmarker**: System performance measurement, analysis, optimization
 - **Test Results Analyzer**: Test evaluation, quality metrics, actionable insights

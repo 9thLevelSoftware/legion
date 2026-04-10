@@ -144,7 +144,7 @@ All agents referenced in `.planning/config/intent-teams.yaml` exist:
 
 | Intent | Agents | Status |
 |--------|--------|--------|
-| harden | testing-reality-checker, engineering-security-engineer, testing-api-tester, testing-evidence-collector | ✅ VALID |
+| harden | testing-qa-verification-specialist, engineering-security-engineer, testing-api-tester, testing-evidence-collector | ✅ VALID |
 | document | product-technical-writer, engineering-frontend-developer | ✅ VALID |
 | security-only | engineering-security-engineer, testing-api-tester | ✅ VALID |
 | skip-frontend | (filters only) | ✅ VALID |

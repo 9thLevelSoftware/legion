@@ -4,7 +4,7 @@
 
 ## Review Details
 - **Cycles**: 2 (findings in cycle 1, fixes applied, verified in cycle 2)
-- **Reviewers**: testing-reality-checker, testing-workflow-optimizer
+- **Reviewers**: testing-qa-verification-specialist, testing-workflow-optimizer
 - **Completion Date**: 2026-03-07
 
 ## Findings Summary
@@ -40,7 +40,7 @@
 
 | Reviewer | Cycle 1 | Key Observations |
 |----------|---------|------------------|
-| testing-reality-checker | NEEDS WORK | Found lifecycle detection logic bugs, missing keyword, step numbering issues. Rating: B+ |
+| testing-qa-verification-specialist | NEEDS WORK | Found lifecycle detection logic bugs, missing keyword, step numbering issues. Rating: B+ |
 | testing-workflow-optimizer | NEEDS WORK | Found process flow issues, substring matching, cross-command dead ends. 2 BLOCKERs on step numbering |
 
 ## Suggestions (not required)

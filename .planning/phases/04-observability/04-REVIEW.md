@@ -3,7 +3,7 @@
 ## Result: PASSED
 
 - **Cycles used**: 1
-- **Reviewers**: testing-reality-checker, testing-workflow-optimizer, engineering-senior-developer
+- **Reviewers**: testing-qa-verification-specialist, testing-workflow-optimizer, engineering-senior-developer
 - **Review mode**: Dynamic review panel (3 reviewers, cross-domain)
 - **Completion date**: 2026-03-06
 
@@ -26,18 +26,18 @@
 | 2 | WARNING | tests/observability-summary.test.js:66-73 | Same loose-match issue for Phase Decision Summary headers | engineering-senior-developer | Accepted — inherent to markdown template testing |
 | 3 | WARNING | tests/observability-summary.test.js:117-124 | Graceful degradation assertions test words independently | engineering-senior-developer | Accepted — tests catch feature removal |
 | 4 | WARNING | tests/observability-cycle-delta.test.js:131-139 | Brittle exact count (==3) assertion, redundant with section-specific tests | engineering-senior-developer | Accepted — redundant but harmless |
-| 5 | WARNING | 04-01-PLAN.md frontmatter | Plan verification command references "Score Breakdown" but implementation uses "Score Export" | testing-reality-checker | Accepted — plan file archived, implementation correct |
+| 5 | WARNING | 04-01-PLAN.md frontmatter | Plan verification command references "Score Breakdown" but implementation uses "Score Export" | testing-qa-verification-specialist | Accepted — plan file archived, implementation correct |
 | 6 | SUGGESTION | skills/review-loop/SKILL.md | Step 1.5 and Cycle Comparison overlap — future consolidation candidate | testing-workflow-optimizer | Noted for future refactor |
 | 7 | SUGGESTION | skills/wave-executor/SKILL.md | LLM-native re-derivation approach could use a worked example | testing-workflow-optimizer | Noted — add if clarity issues arise |
 | 8 | SUGGESTION | tests/observability-summary.test.js | OBS-03 coverage is indirect | engineering-senior-developer | Accepted — adequate for markdown templates |
 | 9 | SUGGESTION | tests/ (both files) | Inconsistent file-reading patterns between test files | engineering-senior-developer | Noted — minor style difference |
-| 10 | SUGGESTION | skills/agent-registry/SKILL.md | Pre-existing: agent count says 52, CLAUDE.md says 53 | testing-reality-checker | Out of scope — Phase 12 item |
+| 10 | SUGGESTION | skills/agent-registry/SKILL.md | Pre-existing: agent count says 52, CLAUDE.md says 53 | testing-qa-verification-specialist | Out of scope — Phase 12 item |
 
 ## Reviewer Verdicts
 
 | Reviewer | Verdict | Key Observations |
 |----------|---------|-----------------|
-| testing-reality-checker | PASS | All 4 ROADMAP success criteria met with evidence. Cross-file references consistent. 44/44 tests pass. |
+| testing-qa-verification-specialist | PASS | All 4 ROADMAP success criteria met with evidence. Cross-file references consistent. 44/44 tests pass. |
 | testing-workflow-optimizer | PASS | Score_export pipeline consistent across 3 files. Graceful degradation documented. Two-tier fingerprint well-defined. |
 | engineering-senior-developer | PASS | Tests follow correct toolchain. Coverage adequate for all OBS requirements. Fingerprint test is model example. |
 

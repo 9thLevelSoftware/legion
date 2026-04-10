@@ -293,7 +293,11 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
         4. Read the ENTIRE plan .md file
         5. Construct the prompt per wave-executor Section 3, Step 4 format
         6. Agent name: "{agent-id}-{NN}-{PP}" (e.g., "engineering-senior-developer-04-01")
-        - If personality file is missing at {AGENTS_DIR}/{agent-id}.md: fall back to autonomous mode, log the warning including the attempted path
+        - IMPORTANT: You MUST actually use the Read tool on the agent file path. Do NOT
+          claim the file is missing without a real file-not-found error from Read. The standard
+          path is ~/.claude/agents/{agent-id}.md — all 48 agent files are installed there.
+        - If Read genuinely returns file-not-found: STOP this plan. Do NOT fall back to
+          autonomous mode. Error: "Agent file {agent-id}.md not found. Run /legion:update."
 
       For autonomous plans (autonomous: true):
         1. Read the ENTIRE plan .md file
@@ -381,7 +385,7 @@ For intents with mode: "ad_hoc" (e.g., --just-harden):
    - Get: harden template (agents, domains, mode)
 
 2. **Resolve Team**
-   - Primary agents: testing-reality-checker, engineering-security-engineer
+   - Primary agents: testing-qa-verification-specialist, engineering-security-engineer
    - Secondary agents: testing-api-tester, testing-evidence-collector
    - Read personalities: agents/{agent}.md
 

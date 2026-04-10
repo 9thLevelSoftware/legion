@@ -5,7 +5,7 @@
 ## Review Details
 - **Cycles used**: 1 of 3
 - **Review mode**: Dynamic review panel
-- **Reviewers**: testing-reality-checker, testing-evidence-collector, project-management-project-shepherd
+- **Reviewers**: testing-qa-verification-specialist, testing-evidence-collector, project-management-project-shepherd
 - **Completion date**: 2026-03-06
 
 ## Findings Summary
@@ -35,7 +35,7 @@
 
 | Reviewer | Verdict | Key Observations |
 |----------|---------|-----------------|
-| testing-reality-checker | PASS | Schema fields complete, validation rules accurate, verdict integration correct, contract/quality distinction clear |
+| testing-qa-verification-specialist | PASS | Schema fields complete, validation rules accurate, verdict integration correct, contract/quality distinction clear |
 | testing-evidence-collector | PASS | 16/16 tests pass, fixtures realistic, verification commands meaningful, self-validation works |
 | project-management-project-shepherd | PASS | Cross-reference integrity solid, requirements DSC-01/02/03 fully traceable, no downstream breakage expected |
 

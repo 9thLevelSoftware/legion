@@ -3,7 +3,7 @@
 ## Status: Complete
 
 ## Agent
-testing-reality-checker
+testing-qa-verification-specialist
 
 ## What Changed
 Added Section 5 "Schema Conformance Check" to `skills/plan-critique/SKILL.md` with three validation rules enforcing v6.0 plan schema at planning time.

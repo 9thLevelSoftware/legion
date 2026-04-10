@@ -258,7 +258,7 @@ function loadIntentTeams() {
  *   description: 'Security audit with Testing + Security divisions',
  *   mode: 'ad_hoc',
  *   agents: {
- *     primary: ['testing-reality-checker', 'engineering-security-engineer'],
+ *     primary: ['testing-qa-verification-specialist', 'engineering-security-engineer'],
  *     secondary: ['testing-api-tester', 'testing-evidence-collector']
  *   },
  *   domains: ['security', 'owasp', 'stride', 'vulnerability-assessment']
@@ -1334,7 +1334,7 @@ function handleNLResult(result, currentCommand) {
 
 | Intent | Mode | Primary Agents | Use Case |
 |--------|------|----------------|----------|
-| harden | ad_hoc | testing-reality-checker, engineering-security-engineer | Security audit |
+| harden | ad_hoc | testing-qa-verification-specialist, engineering-security-engineer | Security audit |
 | document | filter_plans | product-technical-writer | Generate docs only |
 | skip-frontend | filter_plans | n/a | Exclude UI tasks |
 | skip-backend | filter_plans | n/a | Exclude API tasks |
