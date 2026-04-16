@@ -348,3 +348,13 @@ LEGION-47-110 re-files the S05 `model_tier` dead-metadata finding against `skill
 ### Next session
 S07 — candidate scope: next batch of skills (agent registry, phase-decomposer, review-evaluators, plan-critique, spec-pipeline, authority-enforcer). Expect the dual-ground-truth agent-ID pattern inversion check on `agent-registry` specifically (deferred from S05 next-session note). `adapter.prompt_free_text` architectural decision still outstanding and blocks remediation of LEGION-47-093 plus S03 inherited findings. `dispatch-specification` cluster (now 4 findings in S06) may grow further when reviewing phase-decomposer's dispatch contract with cli-dispatch.
 
+---
+
+## Session S07 — Planning Skills
+
+**Started:** 2026-04-16 19:35
+**Target:** skills/{phase-decomposer,plan-critique,spec-pipeline,questioning-flow,intent-router}/SKILL.md
+**Files audited:** (in progress)
+**Findings:** (in progress)
+**Status:** in_progress
+
