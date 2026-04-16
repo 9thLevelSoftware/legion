@@ -162,8 +162,44 @@ S03 — Commands 1-6 under `commands/legion/` (per plan Task 6). Commands are pr
 ## Session S03 — Commands 1-6
 
 **Started:** 2026-04-16
+**Closed:** 2026-04-16
 **Target:** commands/{advise,agent,board,build,explore,learn}.md
-**Files audited:** (in progress)
-**Findings:** (in progress)
-**Status:** in_progress
+**Total lines in scope:** 1,871 (advise 203, agent 119, board 333, build 531, explore 436, learn 249 — build and explore are heavy files)
+**Audit focus:** user-facing prompts, agent dispatch, branching logic, escalation surfaces per METHODOLOGY.md. Commands are prose-heavy with high CAT-1 / CAT-3 yield per plan's threat model.
+**Files audited:** 6 (all targets)
+**Findings:** 20 total — 0 P0, 3 P1, 14 P2, 3 P3
+**IDs assigned:** LEGION-47-011 through LEGION-47-030
+**Status:** completed
+
+### Per-file summary
+- `commands/advise.md` (203 lines): 3 findings — 1 P1 (CAT-1, confirmed), 1 P2 (CAT-1, confirmed), 1 P3 (CAT-9)
+- `commands/agent.md` (119 lines): 2 findings — 1 P2 (CAT-1, confirmed), 1 P2 (CAT-2)
+- `commands/board.md` (333 lines): 3 findings — 2 P2 (CAT-1, both confirmed), 1 P3 (CAT-9)
+- `commands/build.md` (531 lines): 5 findings — 2 P1 (CAT-1, both confirmed), 2 P2 (CAT-1 confirmed + CAT-2), 1 P2 (CAT-3, confirmed)
+- `commands/explore.md` (436 lines): 4 findings — 2 P2 (CAT-1, both confirmed), 1 P2 (CAT-2, confirmed), 1 P3 (CAT-2)
+- `commands/learn.md` (249 lines): 3 findings — 1 P2 (CAT-1, confirmed), 1 P2 (CAT-2, confirmed), 1 P3 (CAT-9)
+
+### Themes surfaced this session
+- **closed-set-enforcement dominance** (10 findings, 50% of session): Every audited command has at least one CAT-1 failure at user-facing prompts. Recurring sub-patterns:
+  - `adapter.ask_user` / AskUserQuestion invoked without an options array (board.md L45-51; advise.md L155-160; explore.md L59-307; learn.md L143) — the empty-options or free-text-masquerade anti-pattern.
+  - Raw `[Y/n]` or natural-language confirmation prompts violating CLAUDE.md's AskUserQuestion mandate (build.md L168; advise.md L74-84; agent.md L47-49; explore.md L44-53).
+  - Decorative menu formats (unicode arrows, "Option 1/2/3" prose) that 4.7 cannot interpret as tool options (explore.md L44-53, L303-307).
+  - Over-listed option sets where one option is duplicative or unreachable (learn.md L82-88; advise.md L74-84; board.md L76-89).
+  - **Systemic remediation**: Legion needs a single documented "adapter text-input primitive" distinct from AskUserQuestion. The CLAUDE.md mandate is currently unimplementable for any prompt that requires free-text capture, because AskUserQuestion requires a non-empty options array.
+- **trigger-explicitness recurrence** (5 findings): Keyword-based classification and detection without closed registries — agent.md "already answered"; build.md analysis-plan substring match; explore.md intervention triggers; learn.md signal-keyword overlap. The learn.md finding (028) extends the S02c cross-cut: even when the keyword registry IS inlined in the file, overlap between categories breaks the classifier.
+- **dispatch-specification** (1 finding, build.md L307-311): CAT-3 fan-out specification gap. Delegation to wave-executor is correct but the inlined summary in build.md omits the single-tool-call fan-out instruction and the file-overlap safety check — readers consuming only build.md miss the dispatch safety net.
+- **response-calibration** (2 findings): Unbounded output shapes — advise.md "brief summary of prior advice"; learn.md tag extraction.
+- **No P0 findings**, but **3 P1 findings** all concentrate in build.md (2) and advise.md (1). All three are confirmed CAT-1 on high-traffic user-facing gates (architecture review gate, intent-flag confirmation, primary advisor selection).
+
+### Cross-cutting observation — AskUserQuestion contract ambiguity
+Five separate files in this session (advise, agent, board, build, explore, learn) have findings that would be resolved by answering one question: *what is the supported contract for free-text user capture?* If the answer is "AskUserQuestion requires non-empty options," then every free-text prompt in Legion (at minimum: board.md L45 topic capture; advise.md L155 follow-up question; explore.md Compare/Debate openings; learn.md L143 next-lesson; agent.md all stage re-prompts; build.md wave-number capture) is structurally broken. Recommend that the remediation pipeline adds an `adapters/<cli>.md` section defining a `adapter.prompt_free_text` primitive alongside `adapter.ask_user`, and updates `CLAUDE.md` to scope the AskUserQuestion mandate to **bounded-choice** questions only. This single upstream fix unblocks ~8 of this session's 20 findings.
+
+### Cumulative progress
+- **Sessions completed:** S01, S02a, S02b, S02c, S02d, S03
+- **Files audited:** 25 / 125
+- **Findings so far:** 30 (0 P0, 3 P1, 22 P2, 5 P3)
+- **Clusters touched:** `precondition-verification` (2), `trigger-explicitness` (8), `acceptance-criteria` (1), `intent-front-loading` (1), `authority-language` (1), `closed-set-enforcement` (12), `dispatch-specification` (1), `response-calibration` (4)
+
+### Next session
+S04 — Commands 7-12 under `commands/legion/` (per plan Task 7). Remaining command files. Continue expected CAT-1 / CAT-3 density. The AskUserQuestion contract question flagged above should be resolved (or explicitly deferred with a tracking issue) before remediation begins on the closed-set-enforcement cluster; S04 should surface any additional evidence to sharpen that upstream decision.
 
