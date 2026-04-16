@@ -32,6 +32,6 @@
 
 | File | Session | Findings | Max Severity |
 |------|---------|----------|--------------|
-| `(root) AGENTS.md` | S02a | 2 | P0 |
-| `(root) CLAUDE.md` | S02a | 2 | P0 |
-| `(root) README.md` | S02a | 1 | P0 |
+| `(root) AGENTS.md` | S02a | 2 | P2 |
+| `(root) CLAUDE.md` | S02a | 2 | P2 |
+| `(root) README.md` | S02a | 1 | P3 |

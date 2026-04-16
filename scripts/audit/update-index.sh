@@ -72,9 +72,16 @@ find "$AUDIT_DIR/findings" -name "*.md" -not -name ".gitkeep" -type f | sort | w
   # Extract metadata from findings file header
   SESSION=$(grep -oE '\*\*Audited in session:\*\* S[0-9a-e.]+' "$ff" | head -n 1 | sed 's/.*S/S/')
   TOTAL_FINDINGS=$(grep -oE '\*\*Total findings:\*\* [0-9]+' "$ff" | head -n 1 | grep -oE '[0-9]+')
-  # Max severity: derive from FINDINGS-DB for entries with this file
-  # (simpler: grep the findings file for severity headers)
-  MAX_SEV=$(grep -oE 'P[0-3]' "$ff" | sort | head -n 1)
+  # Max severity: look up FINDINGS-DB entries where "file" matches the source
+  # basename. The findings markdown itself contains "0 P0, 0 P1, ..." summary
+  # lines, which would break a naive `grep P[0-3]` approach.
+  BASENAME=$(basename "$ff")
+  DB_ENTRIES=$(grep -F "\"file\":\"$BASENAME\"" "$DB" 2>/dev/null || true)
+  if [[ -n "$DB_ENTRIES" ]]; then
+    MAX_SEV=$(echo "$DB_ENTRIES" | grep -oE '"severity":"P[0-3]"' | grep -oE 'P[0-3]' | sort | head -n 1)
+  else
+    MAX_SEV=""
+  fi
   [[ -z "$MAX_SEV" ]] && MAX_SEV="—"
   [[ -z "$TOTAL_FINDINGS" ]] && TOTAL_FINDINGS="0"
   [[ -z "$SESSION" ]] && SESSION="—"
