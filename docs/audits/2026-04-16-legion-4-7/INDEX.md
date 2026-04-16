@@ -3,30 +3,30 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (44 / 125 files audited)
+**Status:** in_progress (49 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
-- P1: 12 findings
-- P2: 91 findings
+- P1: 13 findings
+- P2: 120 findings
 - P3: 9 findings
-- **Total:** 112 findings
+- **Total:** 142 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 36 | P1 |
-| CAT-2 | 23 | P2 |
-| CAT-3 | 8 | P1 |
-| CAT-4 | 5 | P2 |
-| CAT-5 | 3 | P2 |
-| CAT-6 | 15 | P1 |
-| CAT-7 | 0 | - |
-| CAT-8 | 12 | P2 |
-| CAT-9 | 7 | P2 |
-| CAT-10 | 3 | P2 |
+| CAT-1 | 42 | P1 |
+| CAT-2 | 28 | P2 |
+| CAT-3 | 12 | P1 |
+| CAT-4 | 6 | P2 |
+| CAT-5 | 4 | P2 |
+| CAT-6 | 20 | P1 |
+| CAT-7 | 1 | P2 |
+| CAT-8 | 17 | P2 |
+| CAT-9 | 8 | P2 |
+| CAT-10 | 4 | P2 |
 
 ## Files
 
@@ -70,6 +70,11 @@
 | `docs/settings.schema.json` | S02d | 0 | — |
 | `docs/schemas/summary.schema.json` | S02d | 1 | P2 |
 | `skills/cli-dispatch/SKILL.md` | S06 | 5 | P2 |
+| `skills/intent-router/SKILL.md` | S07 | 7 | P2 |
+| `skills/phase-decomposer/SKILL.md` | S07 | 7 | P2 |
+| `skills/plan-critique/SKILL.md` | S07 | 5 | P2 |
+| `skills/questioning-flow/SKILL.md` | S07 | 6 | P1 |
+| `skills/spec-pipeline/SKILL.md` | S07 | 5 | P2 |
 | `skills/wave-executor/SKILL.md` | S06 | 9 | P1 |
 | `skills/workflow-common/SKILL.md` | S06 | 4 | P1 |
 | `skills/workflow-common-core/SKILL.md` | S06 | 3 | P2 |

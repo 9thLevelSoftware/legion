@@ -1,8 +1,11 @@
 # Audit Findings — skills/intent-router/SKILL.md
 
-**File size:** 1348 lines
-**Session:** S07
+**Audited in session:** S07
 **Rubric version:** 1.0
+**File layer:** skill
+**File length:** 1348 lines
+**Total findings:** 7 (7 P2)
+**Baseline commit:** audit-v47-baseline
 
 **Context:** Intent-router is the natural-language routing and intent-flag validation engine consumed by `/legion:build`, `/legion:review`, `/legion:status`, and (indirectly via context suggestions) most other commands. CAT-1 / CAT-2 hotspot per Task 10 guidance.
 

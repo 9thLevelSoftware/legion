@@ -1,8 +1,11 @@
 # Audit Findings — skills/phase-decomposer/SKILL.md
 
-**File size:** 978 lines
-**Session:** S07
+**Audited in session:** S07
 **Rubric version:** 1.0
+**File layer:** skill
+**File length:** 978 lines
+**Total findings:** 7 (7 P2)
+**Baseline commit:** audit-v47-baseline
 
 ---
 

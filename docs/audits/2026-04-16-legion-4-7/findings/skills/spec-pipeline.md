@@ -1,8 +1,11 @@
 # Audit Findings — skills/spec-pipeline/SKILL.md
 
-**File size:** 786 lines
-**Session:** S07
+**Audited in session:** S07
 **Rubric version:** 1.0
+**File layer:** skill
+**File length:** 786 lines
+**Total findings:** 5 (5 P2)
+**Baseline commit:** audit-v47-baseline
 
 ---
 

@@ -1,8 +1,11 @@
 # Audit Findings — skills/questioning-flow/SKILL.md
 
-**File size:** 258 lines
-**Session:** S07
+**Audited in session:** S07
 **Rubric version:** 1.0
+**File layer:** skill
+**File length:** 258 lines
+**Total findings:** 6 (1 P1, 5 P2)
+**Baseline commit:** audit-v47-baseline
 
 **Context:** This is Legion's canonical closed-set-question skill, referenced by `commands/start.md` as the engine for project-initialization questioning. Whatever it says about AskUserQuestion contracts propagates to every consumer. High-density CAT-1/CAT-4/CAT-8 focus per Task 10 guidance.
 
