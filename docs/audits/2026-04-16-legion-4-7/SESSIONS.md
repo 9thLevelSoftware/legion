@@ -252,26 +252,31 @@ S05 — Commands 13-17 (per plan Task 8). Remaining commands: ship.md, start.md,
 **Closed:** 2026-04-16
 **Target:** commands/{ship,start,status,update,validate}.md
 **Files audited:** 5 (all targets)
-**Findings:** 29 total across S05 + S05.1 (0 P0, 3 P1, 25 P2, 1 P3)
-**IDs assigned:** LEGION-47-058 through LEGION-47-088 (contiguous)
+**Findings:** 29 total (0 P0, 3 P1, 25 P2, 1 P3)
+**IDs assigned:** LEGION-47-058 through LEGION-47-088 with gaps at 077 and 078 (deleted — see Deferred cross-cuts below)
 **Status:** completed
 
 ### Per-file summary
 | File | Findings | Max severity | Notes |
 |------|----------|--------------|-------|
 | `commands/ship.md` | 6 | P1 | 1 P1 CAT-1 confirmed (ship-action gate L184-198 with 3 unbounded options); CAT-3 dispatch for verification commands; CAT-6 post-ship verification twice without drift definition |
-| `commands/start.md` | 8 | P1 | 2 P1 CAT-1 confirmed (pre-flight reinit + exploration offer); 3 P2 CAT-1 (brownfield, Stage-3 workflow prefs, integration question L87); CAT-2 confirmed (marketing/design keyword inheritance); plus S05.1 LEGION-47-076 orphan config reference |
+| `commands/start.md` | 8 | P1 | 2 P1 CAT-1 confirmed (pre-flight reinit + exploration offer); 3 P2 CAT-1 (brownfield, Stage-3 workflow prefs, integration question L87); CAT-2 confirmed (marketing/design keyword inheritance); LEGION-47-076 orphan config reference (cost_profile unused) |
 | `commands/status.md` | 5 | P2 | CAT-1 confirmed status-emoji set L147-151; CAT-2 confirmed milestone-keyword substring; CAT-6 STATE.md regex preconditions; CAT-4 intent-front-loading on dashboard format; CAT-5 prohibitive cluster on graceful-degradation |
 | `commands/update.md` | 5 | P2 | CAT-8 confirmed (no restart step after install); CAT-1 confirmed yes/no install; CAT-6 confirmed manifest precondition (concurrent-install ambiguity); CAT-9 confirmed changelog length; CAT-8 post-install verification scope |
 | `commands/validate.md` | 5 | P2 | 2 P2 CAT-6 confirmed: LEGION-47-084 intent-teams.yaml schema mismatch (pre-existing bug, parity with LEGION-47-052) + LEGION-47-085 dual agent-source ground-truth; CAT-2 division-count regex-by-example; CAT-8 FIX_MODE re-run unbounded; CAT-5 prohibitive tail |
 
-### S05.1 interlude
-Mid-session, 3 findings surfaced spanning outside the five command files but discovered while tracing their dependencies:
-- LEGION-47-076 (commands/start.md) — orphan config reference surfaced during Stage 3 workflow prefs review
-- LEGION-47-077 (skills/cli-dispatch/SKILL.md) — CAT-3 dispatch spec, surfaced tracing ship.md verification_commands path
-- LEGION-47-078 (adapters/claude-code.md) — CAT-3 adapter-layer Agent tool dispatch, surfaced during ship.md PR-creation flow review
+### Deferred cross-cuts (IDs 077, 078 — removed from DB)
 
-These were committed under `session: "S05.1"`. They promote skills/cli-dispatch and adapters/claude-code to partially-audited status in INDEX.md but are not part of the core five-file S05 scope.
+Mid-session the subagent filed 3 findings under a `session: "S05.1"` label. Two of them targeted files owned by later sessions and were removed from FINDINGS-DB.jsonl to prevent duplication / session-label schema violations (METHODOLOGY regex `^S[0-9]+[a-e]?$` rejects `S05.1`). The third (LEGION-47-076, commands/start.md) was in-scope for S05 and has been relabeled `session: "S05"`, cluster `precondition-verification`.
+
+The deleted findings' analysis is preserved below for the S06 and S16 subagents to consume and re-file in the correct session:
+
+- **Target: `skills/cli-dispatch/SKILL.md` (owned by S06) — CAT-3 P2 confirmed, cluster `dispatch-specification`.** `model_tier` is declared in `agent-registry:147`, passed by `phase-decomposer:459`, set to `execution` by `review-evaluators:1259` — but `skills/cli-dispatch/SKILL.md` never reads it. Section 3 constructs the prompt from PERSONALITY_CONTENT + TASK_DESCRIPTION + RESULT_INSTRUCTION + CONTROL_SCOPE + HANDOFF_CONTEXT with no `model_tier` lookup. The Claude-Code adapter's `spawn_agent_personality` row hardcodes `model: {model_execution}` for every spawn. Net effect: all tiers collapse to `model_execution` (sonnet). Maintainers adding `model_tier` to new agents accumulate dead metadata. Path A: wire `model_tier` through cli-dispatch Section 3 (resolve from agent frontmatter, map to `adapter.model_{tier}`, substitute in spawn call); update each adapter's spawn row. Path B: delete `model_tier` declarations. See `proposals/per-command-model-override.md` if present. S06 subagent: re-file as appropriate finding ID within S06 range.
+
+- **Target: `adapters/claude-code.md` (owned by S16) — CAT-3 P2 confirmed, cluster `dispatch-specification`.** Users have three model knobs (`models.planning`, `models.execution`, `models.check`) and an adapter that hardcodes the tier→model mapping. No mechanism to declare per-command model selection. Inline-executing commands (`start`, `explore`, `plan`) inherit session model — Legion has no override. Spawned-subagent commands bind to `model_execution` (because cli-dispatch ignores `model_tier`). User assumption that setting `models.planning: opus` affects `/legion:plan` is false — inline command uses session model; only the decomposer subagent honors `planning_reasoning: true`. Remediation: add `model:` key to command frontmatter parsed by adapter dispatch (planning|execution|check|explicit-model-name); document inline-vs-spawned distinction in `adapters/ADAPTER.md`. S16 subagent: re-file as appropriate finding ID within S16 range.
+
+### Script-infrastructure fix applied during cleanup
+`scripts/audit/update-index.sh` was undercounting severity aggregates: its grep patterns required compact JSON (`"severity":"P2"`), but some findings had been serialized with `"severity": "P2"` (space after colon). Python parsing saw all 88 lines correctly; grep missed 4 P2 and 1 P3 line. Patched the severity-count and category-count greps to accept optional whitespace via `"severity":[[:space:]]*"P2"`. Simultaneously normalized the 5 drifted DB lines to canonical compact format. INDEX.md now matches Python authoritative count.
 
 ### Themes surfaced this session
 - **closed-set-enforcement remains dominant** — 9 of 26 core S05 findings are CAT-1, consistent with S03 and S04 distributions. Highest-stakes gates: ship.md L184-198 (3 options, no closure), start.md L28-31 (reinit prompt), start.md L37-60 (exploration offer with free-text sub-states).
@@ -285,12 +290,12 @@ These were committed under `session: "S05.1"`. They promote skills/cli-dispatch 
 `commands/validate.md` is Legion's self-validation command. Its own defects (intent-teams.yaml schema mismatch, dual agent-source inconsistency) mean silent-pass false negatives in `/legion:validate` have been masking real drift in config YAMLs. LEGION-47-084 and S02c's cross-cutting observation (intent-teams.yaml has no marketing/design keyword registry, yet three root surfaces claim it does) are the same underlying defect viewed from different angles: validate.md can't detect the drift because validate.md expects a schema that doesn't exist. Remediation for LEGION-47-084 must be sequenced before trust-by-validator is restored.
 
 ### Cumulative progress
-- **Files audited:** 39 / 125 (31.2%)
-- **Findings:** 88 total (0 P0, 10 P1, 70 P2, 8 P3) per FINDINGS-DB.jsonl authoritative count
-- **Sessions completed:** S01, S02a-d, S03, S04, S05 (+ S05.1 interlude)
+- **Files audited:** 37 / 125 (29.6%)
+- **Findings:** 86 total (0 P0, 10 P1, 68 P2, 8 P3) per FINDINGS-DB.jsonl authoritative count
+- **Sessions completed:** S01, S02a-d, S03, S04, S05
 
 ### Next session
-S06 — Skills batch 1 (orchestration skills). Priority targets: `skills/wave-executor/SKILL.md` (CAT-3 dispatch hotspot, core orchestration), `skills/cli-dispatch/SKILL.md` (partial re-audit for completeness), `skills/execution-tracker/SKILL.md`, `skills/review-loop/SKILL.md`. Expect heavy CAT-3/CAT-4/CAT-6/CAT-8 density. Cross-cuts to carry forward: (a) `adapter.prompt_free_text` architectural decision still open, (b) intent-teams.yaml schema drift remediation (LEGION-47-084) must precede validator trust restoration, (c) dual-ground-truth agent-ID pattern — check whether agent-registry skill itself exhibits the inverse problem.
+S06 — Core orchestration skills (Task 9 per plan): `skills/workflow-common*` (5 files), `skills/wave-executor/SKILL.md`, `skills/cli-dispatch/SKILL.md`. Expect heavy CAT-3/CAT-4/CAT-6/CAT-8 density. Cross-cuts to carry forward: (a) `adapter.prompt_free_text` architectural decision still open; (b) intent-teams.yaml schema drift remediation (LEGION-47-084) must precede validator trust restoration; (c) dual-ground-truth agent-ID pattern — check whether agent-registry skill itself exhibits the inverse problem; (d) deferred cross-cut against `skills/cli-dispatch/SKILL.md` (model_tier dead metadata) — re-file as proper S06 finding.
 
 ---
 

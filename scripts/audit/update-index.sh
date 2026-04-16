@@ -14,10 +14,13 @@ TOTAL=$(grep -c '^' "$DB" 2>/dev/null || true)
 # Note: `grep -c ... || echo 0` is double-counting on empty DB (grep prints 0
 # AND exits 1, so the `|| echo 0` fires and appends a second 0). Suppress the
 # non-match exit via `|| true` so the real zero from grep is preserved.
-P0=$(grep -c '"severity":"P0"' "$DB" || true); [[ -z "$P0" ]] && P0=0
-P1=$(grep -c '"severity":"P1"' "$DB" || true); [[ -z "$P1" ]] && P1=0
-P2=$(grep -c '"severity":"P2"' "$DB" || true); [[ -z "$P2" ]] && P2=0
-P3=$(grep -c '"severity":"P3"' "$DB" || true); [[ -z "$P3" ]] && P3=0
+# Whitespace-tolerant severity match: some JSONL producers emit `"severity": "P2"`
+# (space after colon) instead of compact `"severity":"P2"`. Both are valid JSON.
+# Use [[:space:]]* to handle both.
+P0=$(grep -cE '"severity":[[:space:]]*"P0"' "$DB" || true); [[ -z "$P0" ]] && P0=0
+P1=$(grep -cE '"severity":[[:space:]]*"P1"' "$DB" || true); [[ -z "$P1" ]] && P1=0
+P2=$(grep -cE '"severity":[[:space:]]*"P2"' "$DB" || true); [[ -z "$P2" ]] && P2=0
+P3=$(grep -cE '"severity":[[:space:]]*"P3"' "$DB" || true); [[ -z "$P3" ]] && P3=0
 
 AUDITED_COUNT=$(find "$AUDIT_DIR/findings" -name "*.md" -not -name ".gitkeep" | wc -l | tr -d ' ')
 
@@ -44,8 +47,8 @@ cat > "$INDEX.tmp" <<EOF
 EOF
 
 for CAT in CAT-1 CAT-2 CAT-3 CAT-4 CAT-5 CAT-6 CAT-7 CAT-8 CAT-9 CAT-10; do
-  COUNT=$(grep -c "\"category\":\"$CAT\"" "$DB" || true)
-  MAX_SEV=$(grep "\"category\":\"$CAT\"" "$DB" 2>/dev/null | grep -oE '"severity":"P[0-3]"' | sort | head -n 1 | grep -oE 'P[0-3]' || echo "-")
+  COUNT=$(grep -cE "\"category\":[[:space:]]*\"$CAT\"" "$DB" || true)
+  MAX_SEV=$(grep -E "\"category\":[[:space:]]*\"$CAT\"" "$DB" 2>/dev/null | grep -oE '"severity":[[:space:]]*"P[0-3]"' | grep -oE 'P[0-3]' | sort | head -n 1 || echo "-")
   echo "| $CAT | $COUNT | $MAX_SEV |" >> "$INDEX.tmp"
 done
 
@@ -74,7 +77,7 @@ find "$AUDIT_DIR/findings" -name "*.md" -not -name ".gitkeep" -type f | sort | w
   # the findings markdown would produce.
   DB_ENTRIES=$(grep -F "\"file\":\"$SRC\"" "$DB" 2>/dev/null || true)
   if [[ -n "$DB_ENTRIES" ]]; then
-    MAX_SEV=$(echo "$DB_ENTRIES" | grep -oE '"severity":"P[0-3]"' | grep -oE 'P[0-3]' | sort | head -n 1)
+    MAX_SEV=$(echo "$DB_ENTRIES" | grep -oE '"severity":[[:space:]]*"P[0-3]"' | grep -oE 'P[0-3]' | sort | head -n 1)
   else
     MAX_SEV=""
   fi
