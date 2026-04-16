@@ -3,7 +3,7 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (4 / 125 files audited)
+**Status:** in_progress (5 / 125 files audited)
 
 ## Summary by Severity
 
@@ -36,3 +36,4 @@
 | `(root) CLAUDE.md` | S02a | 2 | P2 |
 | `(root) README.md` | S02a | 1 | P3 |
 | `(root) doc-control-modes.md` | S02b | 0 | — |
+| `(root) doc-runtime-audit.md` | S02b | 0 | — |
