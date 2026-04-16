@@ -299,3 +299,11 @@ S06 — Core orchestration skills (Task 9 per plan): `skills/workflow-common*` (
 
 ---
 
+## Session S06 — Core Orchestration Skills
+
+**Started:** 2026-04-16 19:18
+**Target:** skills/workflow-common* (5) + wave-executor + cli-dispatch
+**Files audited:** (in progress)
+**Findings:** (in progress)
+**Status:** in_progress
+
