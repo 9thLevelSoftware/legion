@@ -9,15 +9,15 @@
 
 - P0: 0 findings
 - P1: 0 findings
-- P2: 6 findings
+- P2: 7 findings
 - P3: 3 findings
-- **Total:** 9 findings
+- **Total:** 10 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 1 | P3 |
+| CAT-1 | 2 | P2 |
 | CAT-2 | 3 | P2 |
 | CAT-3 | 0 | - |
 | CAT-4 | 1 | P2 |
@@ -50,4 +50,4 @@
 | `docs/schemas/plan-frontmatter.schema.json` | S02d | 0 | — |
 | `docs/schemas/review-finding.schema.json` | S02d | 1 | P3 |
 | `docs/settings.schema.json` | S02d | 0 | — |
-| `docs/schemas/summary.schema.json` | S02d | 1 | — |
+| `docs/schemas/summary.schema.json` | S02d | 1 | P2 |
