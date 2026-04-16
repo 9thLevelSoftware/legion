@@ -1,0 +1,8 @@
+{
+  "audit_version": "1.0",
+  "rubric_version": "1.0",
+  "baseline_git_tag": "audit-v47-baseline",
+  "total_files_in_scope": 125,
+  "started": "2026-04-16",
+  "source_spec": "docs/superpowers/specs/2026-04-16-legion-4-7-audit-design.md"
+}
