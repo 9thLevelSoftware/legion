@@ -156,3 +156,14 @@ S02d — JSON schemas under `docs/schemas/` (5 files, per plan Task 5).
 
 ### Next session
 S03 — Commands 1-6 under `commands/legion/` (per plan Task 6). Commands are prose-heavy with dispatch and AskUserQuestion gates — expect higher finding density than schemas. First 6 files per the plan's command grouping.
+
+---
+
+## Session S03 — Commands 1-6
+
+**Started:** 2026-04-16
+**Target:** commands/{advise,agent,board,build,explore,learn}.md
+**Files audited:** (in progress)
+**Findings:** (in progress)
+**Status:** in_progress
+
