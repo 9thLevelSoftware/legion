@@ -286,7 +286,7 @@ These were committed under `session: "S05.1"`. They promote skills/cli-dispatch 
 
 ### Cumulative progress
 - **Files audited:** 39 / 125 (31.2%)
-- **Findings:** 88 total (0 P0, 10 P1, 69 P2, 9 P3)
+- **Findings:** 88 total (0 P0, 10 P1, 70 P2, 8 P3) per FINDINGS-DB.jsonl authoritative count
 - **Sessions completed:** S01, S02a-d, S03, S04, S05 (+ S05.1 interlude)
 
 ### Next session
