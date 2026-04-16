@@ -3,21 +3,21 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (21 / 125 files audited)
+**Status:** in_progress (22 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
 - P1: 1 findings
-- P2: 10 findings
-- P3: 4 findings
-- **Total:** 15 findings
+- P2: 12 findings
+- P3: 5 findings
+- **Total:** 18 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 5 | P1 |
+| CAT-1 | 7 | P1 |
 | CAT-2 | 4 | P2 |
 | CAT-3 | 0 | - |
 | CAT-4 | 1 | P2 |
@@ -25,7 +25,7 @@
 | CAT-6 | 2 | P2 |
 | CAT-7 | 0 | - |
 | CAT-8 | 1 | P3 |
-| CAT-9 | 1 | P3 |
+| CAT-9 | 2 | P3 |
 | CAT-10 | 1 | P2 |
 
 ## Files
@@ -34,6 +34,7 @@
 |------|---------|----------|--------------|
 | `commands/advise.md` | S03 | 3 | P1 |
 | `commands/agent.md` | S03 | 2 | P2 |
+| `commands/board.md` | S03 | 3 | P2 |
 | `AGENTS.md` | S02a | 2 | P2 |
 | `CLAUDE.md` | S02a | 2 | P2 |
 | `.planning/config/agent-communication.yaml` | S02c | 1 | P2 |
