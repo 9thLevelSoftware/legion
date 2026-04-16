@@ -14,3 +14,13 @@
 **Status:** completed (at commit of this file)
 
 Notes: establishes audit infrastructure. No files audited in this session.
+
+---
+
+## Session S02a — Root Markdown
+
+**Started:** 2026-04-16
+**Target:** CLAUDE.md, AGENTS.md, README.md
+**Files audited:** (in progress)
+**Findings:** (in progress)
+**Status:** in_progress
