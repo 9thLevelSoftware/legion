@@ -3,7 +3,7 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (6 / 125 files audited)
+**Status:** in_progress (7 / 125 files audited)
 
 ## Summary by Severity
 
@@ -38,3 +38,4 @@
 | `docs/control-modes.md` | S02b | 0 | — |
 | `docs/runtime-audit.md` | S02b | 0 | — |
 | `docs/runtime-certification-checklists.md` | S02b | 1 | P3 |
+| `docs/security/install-integrity.md` | S02b | 0 | — |
