@@ -25,7 +25,9 @@
 
 ---
 
-## LEGION-47-002 — P2, CAT-2 Ambiguous Triggers (suspected)
+## LEGION-47-002 — P2, CAT-2 Ambiguous Triggers (confirmed)
+
+**Status update (post-S02c):** Flag changed `suspected` → `confirmed` after S02c audit of `.planning/config/intent-teams.yaml` verified that no `marketing_keywords` or `design_keywords` entries exist in the canonical registry. The trigger language references an authoritative list that is structurally absent — this is no longer hypothetical.
 
 **Lines 110-112**
 

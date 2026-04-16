@@ -34,7 +34,6 @@
 |------|---------|----------|--------------|
 | `AGENTS.md` | S02a | 2 | P2 |
 | `CLAUDE.md` | S02a | 2 | P2 |
-| `README.md` | S02a | 1 | P3 |
 | `.planning/config/agent-communication.yaml` | S02c | 1 | P2 |
 | `.planning/config/authority-matrix.yaml` | S02c | 1 | P2 |
 | `.planning/config/control-modes.yaml` | S02c | 0 | — |
@@ -46,3 +45,4 @@
 | `docs/runtime-audit.md` | S02b | 0 | — |
 | `docs/runtime-certification-checklists.md` | S02b | 1 | P3 |
 | `docs/security/install-integrity.md` | S02b | 0 | — |
+| `README.md` | S02a | 1 | P3 |
