@@ -3,7 +3,7 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (38 / 125 files audited)
+**Status:** in_progress (39 / 125 files audited)
 
 ## Summary by Severity
 
@@ -11,7 +11,7 @@
 - P1: 10 findings
 - P2: 66 findings
 - P3: 7 findings
-- **Total:** 83 findings
+- **Total:** 88 findings
 
 ## Summary by Category
 
@@ -49,9 +49,11 @@
 | `commands/start.md` | S05 | 7 | P1 |
 | `commands/status.md` | S05 | 5 | P2 |
 | `commands/update.md` | S05 | 5 | P2 |
+| `commands/validate.md` | S05 | 5 | — |
 | `cross-cutting: model-tier configuration` | S05.1 | 3 | — |
 | `AGENTS.md` | S02a | 2 | P2 |
 | `CLAUDE.md` | S02a | 2 | P2 |
+| `README.md` | S02a | 1 | P3 |
 | `.planning/config/agent-communication.yaml` | S02c | 1 | P2 |
 | `.planning/config/authority-matrix.yaml` | S02c | 1 | P2 |
 | `.planning/config/control-modes.yaml` | S02c | 0 | — |
@@ -63,7 +65,6 @@
 | `docs/runtime-audit.md` | S02b | 0 | — |
 | `docs/runtime-certification-checklists.md` | S02b | 1 | P3 |
 | `docs/security/install-integrity.md` | S02b | 0 | — |
-| `README.md` | S02a | 1 | P3 |
 | `docs/schemas/outcomes-record.schema.json` | S02d | 0 | — |
 | `docs/schemas/plan-frontmatter.schema.json` | S02d | 0 | — |
 | `docs/schemas/review-finding.schema.json` | S02d | 1 | P3 |
