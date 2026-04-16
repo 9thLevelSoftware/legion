@@ -58,25 +58,21 @@ echo "|------|---------|----------|--------------|" >> "$INDEX.tmp"
 
 # Iterate findings files and extract metadata
 find "$AUDIT_DIR/findings" -name "*.md" -not -name ".gitkeep" -type f | sort | while IFS= read -r ff; do
-  # Derive source file path from findings path (reverse the layer mapping)
-  REL="${ff#$AUDIT_DIR/findings/}"
-  case "$REL" in
-    commands/*) SRC="commands/${REL#commands/}" ;;
-    skills/*)   SRC="skills/${REL#skills/}"; SRC="${SRC%.md}/SKILL.md" ;;
-    agents/*)   SRC="agents/${REL#agents/}" ;;
-    adapters/*) SRC="adapters/${REL#adapters/}" ;;
-    root/*)     SRC="(root) ${REL#root/}" ;;
-    *)          SRC="$REL" ;;
-  esac
+  # Source path is the authoritative identifier. Extract it from the findings
+  # file H1 header: `# Audit Findings — <source path>`. This avoids lossy
+  # reverse-mapping of slug conventions (e.g. `doc-security-install-integrity`
+  # → `docs/security/install-integrity.md`).
+  SRC=$(head -n 1 "$ff" | sed -E 's/^# Audit Findings — //' | tr -d '\r')
+  [[ -z "$SRC" ]] && SRC="(unknown) $(basename "$ff")"
 
   # Extract metadata from findings file header
   SESSION=$(grep -oE '\*\*Audited in session:\*\* S[0-9a-e.]+' "$ff" | head -n 1 | sed 's/.*S/S/')
   TOTAL_FINDINGS=$(grep -oE '\*\*Total findings:\*\* [0-9]+' "$ff" | head -n 1 | grep -oE '[0-9]+')
-  # Max severity: look up FINDINGS-DB entries where "file" matches the source
-  # basename. The findings markdown itself contains "0 P0, 0 P1, ..." summary
-  # lines, which would break a naive `grep P[0-3]` approach.
-  BASENAME=$(basename "$ff")
-  DB_ENTRIES=$(grep -F "\"file\":\"$BASENAME\"" "$DB" 2>/dev/null || true)
+  # Max severity: look up FINDINGS-DB entries where "file" matches the
+  # source path extracted from the H1. Exact-string match prevents the
+  # `0 P0, 0 P1, ...` summary-line false-positive that a naive grep of
+  # the findings markdown would produce.
+  DB_ENTRIES=$(grep -F "\"file\":\"$SRC\"" "$DB" 2>/dev/null || true)
   if [[ -n "$DB_ENTRIES" ]]; then
     MAX_SEV=$(echo "$DB_ENTRIES" | grep -oE '"severity":"P[0-3]"' | grep -oE 'P[0-3]' | sort | head -n 1)
   else
