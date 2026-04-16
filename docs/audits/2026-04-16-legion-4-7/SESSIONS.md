@@ -302,8 +302,49 @@ S06 — Core orchestration skills (Task 9 per plan): `skills/workflow-common*` (
 ## Session S06 — Core Orchestration Skills
 
 **Started:** 2026-04-16 19:18
+**Closed:** 2026-04-16 19:32
 **Target:** skills/workflow-common* (5) + wave-executor + cli-dispatch
-**Files audited:** (in progress)
-**Findings:** (in progress)
-**Status:** in_progress
+**Files audited:** 7
+**Findings:** 26 (0 P0, 2 P1, 23 P2, 1 P3) — IDs LEGION-47-089 through LEGION-47-114
+**Status:** completed
+
+### Per-file summary
+| File | Findings | Max severity | Notes |
+|------|----------|--------------|-------|
+| `skills/workflow-common/SKILL.md` | 4 | P1 | LEGION-47-089 P1 CAT-6 confirmed: "compatibility shim" label vs. 518-line skill still referenced by CLAUDE.md Dynamic Knowledge Index — shim status is aspirational; CAT-2 marketing/design keyword re-inheritance (S02c cross-cut); CAT-8 acceptance ambiguity on AGENTS_DIR scaffolding; CAT-4 intent-late on authority-matrix invocation |
+| `skills/workflow-common-core/SKILL.md` | 3 | P2 | LEGION-47-093 P2 CAT-1 confirmed: free-text capture routed through AskUserQuestion despite S03 contract defect (prompt_free_text primitive still outstanding); CAT-6 {AGENTS_DIR} Resolution Protocol present but race ordering unclear when skill loaded mid-execution; CAT-10 contract doc under-specifies failure mode when all 4 resolution paths miss |
+| `skills/workflow-common-domains/SKILL.md` | 1 | P2 | LEGION-47-096 P2 CAT-2 confirmed: marketing/design keyword registry again absent — domain skill references keywords it does not enumerate (S02c cross-cut); domains skill is the canonical place this registry belongs |
+| `skills/workflow-common-github/SKILL.md` | 2 | P2 | CAT-6 precondition-verification on `gh` auth state (silent-pass on missing auth); CAT-8 acceptance-criteria on opt-in detection (multiple remotes, non-origin remotes) |
+| `skills/workflow-common-memory/SKILL.md` | 2 | P2 | CAT-6 precondition-verification on `.planning/memory/OUTCOMES.md` shape before append (schema drift not detected); CAT-8 acceptance-criteria on graceful-degradation completion signal when memory layer absent |
+| `skills/wave-executor/SKILL.md` | 9 | P1 | LEGION-47-101 P1 CAT-3 confirmed: "Issue ALL agent spawn calls simultaneously" does not specify same-response Bash fan-out mechanism — dispatch authority silently serializes; LEGION-47-102 CAT-3 parallel-mechanism repeat; LEGION-47-103 CAT-2 confirmed trigger-explicitness; LEGION-47-104 CAT-8 confirmed acceptance-criteria for wave completion; LEGION-47-109 P3 CAT-9 response-calibration on "agent appears idle" with no threshold |
+| `skills/cli-dispatch/SKILL.md` | 5 | P2 | LEGION-47-110 P2 CAT-3 confirmed: **S05 deferred model_tier cross-cut re-filed** — model_tier declared by agent-registry/phase-decomposer/review-evaluators, never read by cli-dispatch Section 3; Claude-Code adapter hardcodes model_execution; all tiers collapse; LEGION-47-111 CAT-6 bare `agents/{agent-id}.md` contradicts Path Resolution Protocol (paired with LEGION-47-091); LEGION-47-112 CAT-3 fan-out again; LEGION-47-113 CAT-8 surgical fallback done-state undefined; LEGION-47-114 CAT-2 Design division absent from affinity table |
+
+### Themes surfaced this session
+
+1. **Dispatch specification is the load-bearing gap.** Four CAT-3 findings clustered on `dispatch-specification` (LEGION-47-101, 102, 110, 112) — the orchestration spine tells agents to "spawn in parallel" without specifying the same-response Bash fan-out mechanism that makes parallelism real. Model tier collapse (LEGION-47-110) and bare agent path (LEGION-47-111) compound: when dispatch executes, it dispatches to the wrong model reading from the wrong location. `dispatch-specification` is now the largest cluster in S06 (4 findings) tied with `precondition-verification` and `trigger-explicitness` (6 each).
+
+2. **Precondition verification is systematically under-specified in orchestration.** Six CAT-6 findings on preconditions across the 7 files — AGENTS_DIR resolution timing, gh auth state, OUTCOMES.md schema, agent file location. Orchestration skills describe what to do but not what to verify before doing it. Pattern matches S04/S05 density.
+
+3. **Acceptance criteria vague in dispatch-flow skills.** Four CAT-8 findings — wave completion, surgical fallback, gh opt-in detection, memory degradation. Skills define entry but not exit.
+
+4. **Marketing/design keyword registry still orphaned (S02c re-inheritance).** LEGION-47-090 (workflow-common) and LEGION-47-096 (workflow-common-domains) both cite keywords that no registry defines. Domains skill is the canonical owner but does not enumerate them. This is now a 3-session cross-cut (S02c → S04 → S06) with no remediation.
+
+5. **AskUserQuestion contract defect (S03) persists in free-text capture.** LEGION-47-093 (workflow-common-core CAT-1 confirmed) — skill routes free-text through a bounded-options primitive. `adapter.prompt_free_text` architectural decision still not made.
+
+6. **"Compatibility shim" label contradicts reality.** LEGION-47-089 P1 — `skills/workflow-common/SKILL.md` self-identifies as a shim but is 518 lines, still referenced from CLAUDE.md Dynamic Knowledge Index, and contains authoritative content for AGENTS_DIR scaffolding and user interaction conventions. Misleading labels create trust debt.
+
+### Cross-cutting observation — orchestration spine fragility
+
+Five of the seven S06 files form the dispatch chain: `workflow-common` (shim/entry) → `workflow-common-core` (path resolution) → `wave-executor` (orchestration) → `cli-dispatch` (adapter translation) → back to `workflow-common-core` for any agent read. Failures are compounded, not isolated: the bare agent path in cli-dispatch (LEGION-47-111) and the model tier collapse (LEGION-47-110) both ride on top of dispatch mechanism ambiguity (LEGION-47-101/102/112). A reader of any single skill gets a plausible-looking dispatch flow. A reader tracing the full chain finds four simultaneous under-specifications stacked. Remediation must be sequenced: (a) specify same-response Bash fan-out in wave-executor, (b) add model_tier read to cli-dispatch Part 6, (c) normalize `{AGENTS_DIR}/{agent-id}.md` substitution everywhere, (d) promote workflow-common from "shim" to either deleted or properly authoritative. Doing any one in isolation leaves the other three masking.
+
+### S05 deferred cross-cut resolved
+LEGION-47-110 re-files the S05 `model_tier` dead-metadata finding against `skills/cli-dispatch/SKILL.md` as a proper S06 P2 CAT-3 confirmed finding in cluster `dispatch-specification`. Content matches the S05 deferral specification exactly (agent-registry:147 / phase-decomposer:459 / review-evaluators:1259 declare and pass; cli-dispatch Section 3 never reads; Claude-Code adapter hardcodes `model_execution`; net all tiers collapse to sonnet).
+
+### Cumulative progress
+- **Files audited:** 44 / 125 (35.2%)
+- **Findings:** 112 total (0 P0, 12 P1, 91 P2, 9 P3) per FINDINGS-DB.jsonl authoritative count
+- **Sessions completed:** S01, S02a-d, S03, S04, S05, S06
+
+### Next session
+S07 — candidate scope: next batch of skills (agent registry, phase-decomposer, review-evaluators, plan-critique, spec-pipeline, authority-enforcer). Expect the dual-ground-truth agent-ID pattern inversion check on `agent-registry` specifically (deferred from S05 next-session note). `adapter.prompt_free_text` architectural decision still outstanding and blocks remediation of LEGION-47-093 plus S03 inherited findings. `dispatch-specification` cluster (now 4 findings in S06) may grow further when reviewing phase-decomposer's dispatch contract with cli-dispatch.
 
