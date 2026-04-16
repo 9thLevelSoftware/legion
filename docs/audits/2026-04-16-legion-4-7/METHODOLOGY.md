@@ -41,7 +41,7 @@ One line per finding. All fields required.
 - `remediation_effort`: one of `small`,`medium`,`large`
 - `remediation_cluster`: lowercase kebab-case identifier (e.g., `closed-set-enforcement`, `dispatch-specification`, `intent-front-loading`, `persona-calibration`, `acceptance-criteria`, `authority-language`, `prohibitive-to-positive`, `response-calibration`, `precondition-verification`, `trigger-explicitness`)
 - `status`: one of `open`,`in-remediation`,`resolved`,`wontfix`
-- `session`: matches regex `^S[0-9]+[a-d]?$`
+- `session`: matches regex `^S[0-9]+[a-e]?$` (widened to accommodate S17e review-gate session)
 
 ### Per-File Findings Document Template
 
