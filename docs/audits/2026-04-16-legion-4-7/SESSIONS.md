@@ -208,8 +208,41 @@ S04 — Commands 7-12 under `commands/legion/` (per plan Task 7). Remaining comm
 ## Session S04 — Commands 7-12
 
 **Started:** 2026-04-16
+**Closed:** 2026-04-16
 **Target:** commands/{milestone,plan,portfolio,quick,retro,review}.md
-**Files audited:** (in progress)
-**Findings:** (in progress)
-**Status:** in_progress
+**Files audited:** 6 (all targets)
+**Findings:** 27 total — 0 P0, 4 P1, 23 P2, 0 P3
+**IDs assigned:** LEGION-47-031 .. LEGION-47-057
+**Status:** completed
+
+### Per-file summary
+| File | Findings | Max severity | Notes |
+|------|----------|--------------|-------|
+| `commands/milestone.md` | 4 | P2 | CAT-1 closed-set gaps on mode / archive / scope-detection prompts |
+| `commands/plan.md` | 6 | P1 | 1 P1 (CAT-1, confirmed); bracketed "existing behavior" stubs (CAT-8); marketing keyword trigger (CAT-2, confirmed) |
+| `commands/portfolio.md` | 3 | P2 | Multiple CAT-1 mode-select gates without closure |
+| `commands/quick.md` | 4 | P1 | 1 P1 free-text AskUserQuestion (CAT-1, confirmed) inherits S03 `adapter.prompt_free_text` defect; keyword-substring match (CAT-2) |
+| `commands/retro.md` | 3 | P2 | CAT-1 scope-and-format gates; keyword-substring match on retro-type detection |
+| `commands/review.md` | 7 | P1 | 2 P1 (reviewer-selection gate CAT-1 confirmed; fix-agent dispatch table CAT-3 confirmed with 2 non-existent agent IDs — pre-existing bug); 5 P2 covering loop-exit partitioning, bracketed stubs, git-diff precondition, substring triggers |
+
+### Themes surfaced this session
+- **closed-set-enforcement dominant** (14 of 27 findings, all CAT-1). Reviewer-selection (L230-247 review.md) and phase-agent-swap (L263 plan.md) are the most load-bearing.
+- **dispatch-specification pre-existing bug** (LEGION-47-052): `commands/review.md` fix-agent routing table references `engineering-devops-automator` and `marketing-content-creator` — neither exists in Legion's roster. This is a bug regardless of 4.7 literalism. Fix in Phase 2 cluster, flagged for roster cross-check in REMEDIATION.md.
+- **Bracketed-stub pattern** (LEGION-47-050, 055): `[Existing Step 6 logic unchanged]` and `(existing behavior)` — editor placeholders that 4.7-literal readers will either skip or treat as instructions. Recurring class across commands.
+- **Keyword-substring matching** (LEGION-47-044, 048, 057, peer 028): recurring trigger pattern using bare substring match instead of word-boundary or path-component regex. Upgrades to `confirmed` where CAT-2 peers exist (044 quick.md, 057 review.md security-file detection).
+- **AskUserQuestion free-text inheritance**: LEGION-47-041 (quick.md), 045 (plan.md), 051 (review.md `Other` option) all exhibit the upstream defect first surfaced in S03. `adapter.prompt_free_text` primitive decision still outstanding — blocks full remediation of the closed-set-enforcement cluster.
+
+### Cross-cutting observation — load-bearing gates in orchestration commands
+Of the 4 P1 findings this session, 3 are user-facing decision gates (advisor swap, reviewer selection, review-mode select) and 1 is a dispatch table with non-existent agent IDs. REMEDIATION.md should sequence these before any of the lower-severity closed-set findings — they are the highest-leverage wins for 4.7 correctness.
+
+### Cumulative progress
+- **Sessions completed:** S01, S02a, S02b, S02c, S02d, S03, S04
+- **Files audited:** 31 / 125
+- **Findings so far:** 57 (0 P0, 7 P1, 45 P2, 5 P3)
+- **Clusters touched:** `precondition-verification` (3), `trigger-explicitness` (9), `acceptance-criteria` (4), `intent-front-loading` (1), `authority-language` (1), `closed-set-enforcement` (22), `dispatch-specification` (2), `response-calibration` (4)
+
+### Next session
+S05 — Commands 13-17 (per plan Task 8). Remaining commands: ship.md, start.md, status.md, update.md, validate.md. start.md = CAT-1 user-interaction hotspot; ship.md = CAT-3 dispatch hotspot.
+
+---
 
