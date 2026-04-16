@@ -119,3 +119,40 @@ S02c — config YAMLs under `.planning/config/` (7 files).
 
 ### Next session
 S02d — JSON schemas under `docs/schemas/` (5 files, per plan Task 5).
+
+---
+
+## Session S02d — JSON Schemas
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** docs/settings.schema.json + 4 schemas in docs/schemas/ (outcomes-record, plan-frontmatter, review-finding, summary)
+**Total lines in scope:** 289 (settings 109, plan-frontmatter 69, summary 72, outcomes-record 20, review-finding 19)
+**Audit focus:** `title`, `description`, `examples` fields per METHODOLOGY.md. Structural keys (`type`, `enum`, `required`, `properties`) are not LLM-facing behavior.
+**Files audited:** 5 (all targets)
+**Findings:** 2 total — 0 P0, 0 P1, 1 P2, 1 P3
+**IDs assigned:** LEGION-47-009, LEGION-47-010
+**Status:** completed
+
+### Per-file summary
+| File | Findings | Max severity | Notes |
+|------|----------|--------------|-------|
+| `docs/settings.schema.json` | 0 | — | All gated values use closed enums; single description (control_mode) delegates to in-repo config with exact path |
+| `docs/schemas/outcomes-record.schema.json` | 0 | — | Closed enums on outcome/importance; `task_type` free-string flagged for S10 cross-check, not filed here (schema vs. consumer-contract boundary) |
+| `docs/schemas/plan-frontmatter.schema.json` | 0 | — | Pattern-bounded strings, descriptive field docs; `agent` free-string accepted (registry too large to inline); "must NOT modify" on files_forbidden is a closed-boundary CAT-5 close-call, rejected per rubric |
+| `docs/schemas/review-finding.schema.json` | 1 | P3 | LEGION-47-009 (CAT-1, suspected) — `category` is free string while sibling `severity`/`status` are closed enums; invites divergent category inventions across review cycles |
+| `docs/schemas/summary.schema.json` | 1 | P2 | LEGION-47-010 (CAT-1, confirmed) — `escalations[].type` is free string while CLAUDE.md + escalation-protocol.yaml define a closed 8-value set; schema drifts from documented protocol |
+
+### Themes surfaced this session
+- **closed-set-enforcement** (2 findings): both findings land in the same cluster — schemas that should enumerate but don't. One is low-severity drift (`category` has no canonical list yet), the other is confirmed contract drift (`escalations[].type` has a canonical list that the schema omits).
+- **Parity with LEGION-47-008:** summary.schema escalation-type drift is the schema-side mirror of authority-matrix exclusive_domains drift — both are closed-set contracts asserted in prose but not enforced structurally. Remediation should be coordinated across schema + protocol + root doc.
+- **Schema-vs-consumer boundary discipline:** several close-calls (`task_type` enumeration, `handoff_context` sub-key requirements, `verification_commands` "proving success" semantics, `agent` registry resolution) were deferred to consumer-skill audits (S08, S10) rather than filed against the structural schemas. This keeps schema findings focused on structural drift rather than dispatch semantics.
+
+### Cumulative progress
+- **Sessions completed:** S01, S02a, S02b, S02c, S02d
+- **Files audited:** 19 / 125
+- **Findings so far:** 10 (0 P0, 0 P1, 7 P2, 3 P3)
+- **Clusters touched:** `precondition-verification` (2), `trigger-explicitness` (3), `acceptance-criteria` (1), `intent-front-loading` (1), `authority-language` (1), `closed-set-enforcement` (2)
+
+### Next session
+S03 — Commands 1-6 under `commands/legion/` (per plan Task 6). Commands are prose-heavy with dispatch and AskUserQuestion gates — expect higher finding density than schemas. First 6 files per the plan's command grouping.
