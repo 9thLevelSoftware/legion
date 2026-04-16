@@ -203,3 +203,13 @@ Five separate files in this session (advise, agent, board, build, explore, learn
 ### Next session
 S04 — Commands 7-12 under `commands/legion/` (per plan Task 7). Remaining command files. Continue expected CAT-1 / CAT-3 density. The AskUserQuestion contract question flagged above should be resolved (or explicitly deferred with a tracking issue) before remediation begins on the closed-set-enforcement cluster; S04 should surface any additional evidence to sharpen that upstream decision.
 
+---
+
+## Session S04 — Commands 7-12
+
+**Started:** 2026-04-16
+**Target:** commands/{milestone,plan,portfolio,quick,retro,review}.md
+**Files audited:** (in progress)
+**Findings:** (in progress)
+**Status:** in_progress
+
