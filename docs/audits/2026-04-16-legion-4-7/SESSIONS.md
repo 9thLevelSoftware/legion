@@ -78,3 +78,44 @@ S02b — reference docs under `docs/`.
 
 ### Next session
 S02c — config YAMLs under `.planning/config/` (7 files).
+
+---
+
+## Session S02c — Config YAMLs
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** .planning/config/{agent-communication,authority-matrix,control-modes,directory-mappings,escalation-protocol,intent-teams,roster-gap-config}.yaml
+**Total lines in scope:** 2,021 (heavy — authority-matrix 687, intent-teams 444, roster-gap-config 343, escalation-protocol 223, agent-communication 189, directory-mappings 85, control-modes 50)
+**Audit focus:** `description`, `trigger`, free-prose fields per METHODOLOGY.md. Structural YAML keys are not LLM-facing behavior.
+**Files audited:** 7 (all targets)
+**Findings:** 2 total — 0 P0, 0 P1, 2 P2, 0 P3
+**IDs assigned:** LEGION-47-007, LEGION-47-008
+**Status:** completed
+
+### Per-file summary
+| File | Findings | Max severity | Notes |
+|------|----------|--------------|-------|
+| `.planning/config/agent-communication.yaml` | 1 | P2 | LEGION-47-007 (CAT-4) — `orchestrator_mediation.protocol` instructs "best-effort approach" with no definition; 4+ divergent 4.7 interpretations |
+| `.planning/config/authority-matrix.yaml` | 1 | P2 | LEGION-47-008 (CAT-10, confirmed) — multiple agents overlap on "exclusive_domains" (data-pipelines, experimentation, resource-allocation, creative-direction); tiebreak rule does not resolve same-level ties |
+| `.planning/config/control-modes.yaml` | 0 | — | Closed-set profiles and flags, explicit descriptions |
+| `.planning/config/directory-mappings.yaml` | 0 | — | Closed mappings; minor comment-vs-list mismatch noted but not rubric-actionable |
+| `.planning/config/escalation-protocol.yaml` | 0 | — | Closed severity/type/status sets; surgical-mode "floor is warning" lives in prose only (close-call, not finding) |
+| `.planning/config/intent-teams.yaml` | 0 | — | Internally clean; cross-cutting observation below |
+| `.planning/config/roster-gap-config.yaml` | 0 | — | Analysis output may be stale (e.g. `engineering-security-engineer` listed as missing but present in authority-matrix); data-freshness bug, not a 4.7-literalism finding |
+
+### Themes surfaced this session
+- **intent-front-loading** (1 finding): underspecified "best-effort" protocol step in orchestrator mediation; needs a deterministic decision tree.
+- **authority-language** (1 finding): "exclusive_domains" contradicted by same-level overlaps; resolution rules do not tiebreak.
+
+### Cross-cutting observation — keyword registry gap
+`intent-teams.yaml` is the authoritative keyword/intent registry, but it contains **no "marketing keywords" or "design keywords"** entries. CLAUDE.md / AGENTS.md / README.md (LEGION-47-002, -004, -005) all reference these keyword triggers as if they were defined. This retroactively elevates the practical severity of that cluster: the referenced keywords are not merely unenumerated, they are absent from the canonical registry. Remediation for the `trigger-explicitness` cluster must either (a) add explicit keyword entries here, or (b) remove the keyword-based trigger language from the three root surfaces entirely. Tracked as a remediation-plan input; no new finding ID opened because the surface texts were already captured in S02a.
+
+### Cumulative progress
+- **Sessions completed:** S01, S02a, S02b, S02c
+- **Files audited:** 14 / 125
+- **Findings so far:** 8 (0 P0, 0 P1, 6 P2, 2 P3)
+- **Clusters touched:** `precondition-verification` (2), `trigger-explicitness` (3), `acceptance-criteria` (1), `intent-front-loading` (1), `authority-language` (1)
+
+### Next session
+S02d — JSON schemas under `docs/schemas/` (5 files, per plan Task 5).
