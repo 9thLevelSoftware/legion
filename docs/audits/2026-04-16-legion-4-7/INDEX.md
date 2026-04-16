@@ -3,22 +3,22 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (28 / 125 files audited)
+**Status:** in_progress (29 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
-- P1: 3 findings
-- P2: 30 findings
+- P1: 4 findings
+- P2: 33 findings
 - P3: 7 findings
-- **Total:** 40 findings
+- **Total:** 44 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 20 | P1 |
-| CAT-2 | 11 | P2 |
+| CAT-1 | 23 | P1 |
+| CAT-2 | 12 | P2 |
 | CAT-3 | 1 | P2 |
 | CAT-4 | 1 | P2 |
 | CAT-5 | 0 | - |
@@ -40,6 +40,7 @@
 | `commands/learn.md` | S03 | 3 | P2 |
 | `commands/milestone.md` | S04 | 4 | P2 |
 | `commands/portfolio.md` | S04 | 3 | P2 |
+| `commands/quick.md` | S04 | 4 | P1 |
 | `commands/retro.md` | S04 | 3 | P2 |
 | `AGENTS.md` | S02a | 2 | P2 |
 | `CLAUDE.md` | S02a | 2 | P2 |
