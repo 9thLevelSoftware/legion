@@ -259,7 +259,7 @@ if [[ ! -f "$DB" ]] || [[ ! -s "$DB" ]]; then
   exit 0
 fi
 
-LAST=$(tail -n 1 "$DB" | grep -oE '"id":"LEGION-47-[0-9]{3}"' | grep -oE '[0-9]{3}$')
+LAST=$(tail -n 1 "$DB" | grep -oE 'LEGION-47-[0-9]{3}' | grep -oE '[0-9]{3}')
 NEXT=$((10#$LAST + 1))
 printf "LEGION-47-%03d\n" "$NEXT"
 ```
