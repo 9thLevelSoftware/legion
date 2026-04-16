@@ -3,28 +3,28 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (43 / 125 files audited)
+**Status:** in_progress (44 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
 - P1: 12 findings
-- P2: 86 findings
+- P2: 91 findings
 - P3: 9 findings
-- **Total:** 107 findings
+- **Total:** 112 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
 | CAT-1 | 36 | P1 |
-| CAT-2 | 22 | P2 |
-| CAT-3 | 6 | P1 |
+| CAT-2 | 23 | P2 |
+| CAT-3 | 8 | P1 |
 | CAT-4 | 5 | P2 |
 | CAT-5 | 3 | P2 |
-| CAT-6 | 14 | P1 |
+| CAT-6 | 15 | P1 |
 | CAT-7 | 0 | - |
-| CAT-8 | 11 | P2 |
+| CAT-8 | 12 | P2 |
 | CAT-9 | 7 | P2 |
 | CAT-10 | 3 | P2 |
 
@@ -69,6 +69,7 @@
 | `docs/schemas/review-finding.schema.json` | S02d | 1 | P3 |
 | `docs/settings.schema.json` | S02d | 0 | — |
 | `docs/schemas/summary.schema.json` | S02d | 1 | P2 |
+| `skills/cli-dispatch/SKILL.md` | S06 | 5 | P2 |
 | `skills/wave-executor/SKILL.md` | S06 | 9 | P1 |
 | `skills/workflow-common/SKILL.md` | S06 | 4 | P1 |
 | `skills/workflow-common-core/SKILL.md` | S06 | 3 | P2 |
