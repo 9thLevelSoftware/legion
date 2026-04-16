@@ -9,8 +9,9 @@ if [[ ! -f "$DB" ]]; then
 fi
 
 # 1. Every line is valid JSON
+# `|| [[ -n "$line" ]]` catches a final line lacking a trailing newline.
 LINE_NUM=0
-while IFS= read -r line; do
+while IFS= read -r line || [[ -n "$line" ]]; do
   LINE_NUM=$((LINE_NUM + 1))
   if [[ -z "$line" ]]; then continue; fi
   if ! echo "$line" | python3 -c "import sys,json; json.loads(sys.stdin.read())" 2>/dev/null; then
@@ -18,7 +19,7 @@ while IFS= read -r line; do
   fi
 done < "$DB"
 
-# 2. All IDs are unique and sequential
+# 2. All IDs are unique (gaps from deletions are permitted; sequentiality is not enforced)
 # Empty DB is valid; suppress grep's non-match exit under `set -e`.
 IDS=$( { grep -oE '"id":"LEGION-47-[0-9]{3}"' "$DB" || true; } | grep -oE 'LEGION-47-[0-9]{3}' | sort || true)
 DUPES=$( { echo "$IDS" | uniq -d; } || true)
@@ -27,7 +28,7 @@ if [[ -n "$DUPES" ]]; then
 fi
 
 # 3. Every finding in DB references a findings file that exists
-while IFS= read -r line; do
+while IFS= read -r line || [[ -n "$line" ]]; do
   if [[ -z "$line" ]]; then continue; fi
   FILE=$(echo "$line" | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['file'])")
   # Map source path to findings path
@@ -43,4 +44,9 @@ while IFS= read -r line; do
   fi
 done < "$DB"
 
-echo "OK: $(wc -l < "$DB") findings, all valid"
+# `grep -c '^'` counts every line including a final unterminated line; `wc -l` would
+# undercount. Use `|| true` (not `|| echo 0`) because grep already emits "0" to stdout
+# on empty input AND exits 1 — `|| echo 0` would produce "0\n0".
+COUNT=$(grep -c '^' "$DB" 2>/dev/null || true)
+[[ -z "$COUNT" ]] && COUNT=0
+echo "OK: $COUNT findings, all valid"

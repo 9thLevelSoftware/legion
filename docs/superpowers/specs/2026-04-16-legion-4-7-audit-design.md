@@ -324,7 +324,7 @@ Phases are labeled `must-ship-v7.4.0`, `recommended-v7.4.0`, or `defer-v7.5.0`. 
 | S15 | Agents — Spatial + Specialized (9) | 9 | 1 hr |
 | S16 | Adapters (10) | 10 | 1.5 hr |
 | S17 | Cross-cut review: re-scan INDEX for patterns, validate clustering, rescore S02/S06/S11/S16 samples against final rubric state | — | 1 hr |
-| S17.5 | `/legion:advise` review gate — QA-verification-specialist + technical-writer agents review stratified sample | — | 1 hr |
+| S17e | `/legion:advise` review gate — QA-verification-specialist + technical-writer agents review stratified sample | — | 1 hr |
 | S18 | Generate REMEDIATION.md | — | 2 hr |
 | S19 | Final self-review, commit cleanup, audit sign-off | — | 1 hr |
 
@@ -342,7 +342,7 @@ Phases are labeled `must-ship-v7.4.0`, `recommended-v7.4.0`, or `defer-v7.5.0`. 
 
 ---
 
-## 9. Review Gate (S17.5)
+## 9. Review Gate (S17e)
 
 Before REMEDIATION.md is generated, a formal review gate is executed via `/legion:advise` with two agents:
 
@@ -378,7 +378,7 @@ If either verdict is negative, the audit does not progress to S18. Findings are 
 | 5 | Audit output staleness | Baseline git tag + `excerpt` field per finding makes findings robust to line drift; rebase pass before remediation |
 | 6 | Too many remediation phases for v7.4.0 capacity | Phases explicitly labeled must-ship / recommended / defer; known-issues documented in release notes |
 | 7 | Context budget blown mid-session | Hard 10-file cap; stop at 70% context; heavy files get dedicated sessions |
-| 8 | No second-party review of audit deliverables | S17.5 `/legion:advise` gate with QA-verification + technical-writer agents; negative verdict blocks progression to REMEDIATION.md |
+| 8 | No second-party review of audit deliverables | S17e `/legion:advise` gate with QA-verification + technical-writer agents; negative verdict blocks progression to REMEDIATION.md |
 
 ---
 
@@ -402,7 +402,7 @@ This audit is complete when all of the following are true:
 2. `INDEX.md` shows 124/124 audited, with severity and category rollups.
 3. `FINDINGS-DB.jsonl` contains one line per finding, each with a stable `LEGION-47-NNN` ID.
 4. `REMEDIATION.md` groups every finding into a thematic cluster with phase-to-release mapping.
-5. S17.5 review gate produces `ship-audit` + `publish-ready` verdicts.
+5. S17e review gate produces `ship-audit` + `publish-ready` verdicts.
 6. `SESSIONS.md` documents every session with start/end timestamps, files completed, findings surfaced.
 7. All audit work is committed to git with traceable history.
 8. The audit baseline git tag `audit-v47-baseline` exists and points to the commit against which findings were recorded.

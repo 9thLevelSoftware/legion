@@ -259,7 +259,11 @@ if [[ ! -f "$DB" ]] || [[ ! -s "$DB" ]]; then
   exit 0
 fi
 
-LAST=$(tail -n 1 "$DB" | grep -oE 'LEGION-47-[0-9]{3}' | grep -oE '[0-9]{3}')
+LAST=$(tail -n 1 "$DB" | grep -oE '"id":"LEGION-47-[0-9]{3}"' | head -n 1 | grep -oE '[0-9]{3}')
+if [[ -z "$LAST" ]]; then
+  echo "ERROR: could not extract last finding ID from $DB" >&2
+  exit 1
+fi
 NEXT=$((10#$LAST + 1))
 printf "LEGION-47-%03d\n" "$NEXT"
 ```
@@ -868,7 +872,7 @@ Run index update + validation. Update SESSIONS.md S02b with end time, 4 files, K
 - `agents/testing-workflow-optimizer.md`
 
 **Estimated duration:** 1 hr
-**Note:** `testing-qa-verification-specialist` has orchestration authority (participates in the S17.5 review gate) — audit with extra scrutiny. Expected to have CAT-7 elevated to P1 per RUBRIC.md guidance.
+**Note:** `testing-qa-verification-specialist` has orchestration authority (participates in the S17e review gate) — audit with extra scrutiny. Expected to have CAT-7 elevated to P1 per RUBRIC.md guidance.
 
 - [ ] **Step 1: Open session S13.**
 
@@ -991,13 +995,13 @@ For each of the 5 files:
 - [ ] **Step 5: Decide on rubric versioning**
 
 Decision rule (document the decision in SESSIONS.md S17 section):
-- If rescoring produces <5% change in findings across the sample: **rubric stays at v1.0**, audit proceeds to S17.5.
+- If rescoring produces <5% change in findings across the sample: **rubric stays at v1.0**, audit proceeds to S17e.
 - If rescoring produces 5-15% change: **bump rubric to v1.1**, re-audit the 4 sampled non-zero files + all files that showed mismatches.
 - If rescoring produces >15% change: **bump rubric to v1.1** AND re-audit the full category where mismatch concentrated.
 
 - [ ] **Step 6: Close session S17**
 
-If re-auditing is required, treat it as a separate session (e.g., S17a) before proceeding to S17.5.
+If re-auditing is required, treat it as a separate session (e.g., S17a) before proceeding to S17e.
 
 ```bash
 bash scripts/audit/update-index.sh
@@ -1008,13 +1012,13 @@ git commit -m "audit: close session S17 — cross-cut review, rubric <v1.0|v1.1>
 
 ---
 
-## Task 21: Review Gate via `/legion:advise` (S17.5)
+## Task 21: Review Gate via `/legion:advise` (S17e)
 
 **Purpose:** Formal second-party review of audit deliverables before REMEDIATION.md is generated. Two agents review a stratified sample.
 
 **Expected duration:** 1 hr
 
-- [ ] **Step 1: Open session S17.5 in SESSIONS.md.**
+- [ ] **Step 1: Open session S17e in SESSIONS.md.**
 
 - [ ] **Step 2: Prepare the stratified review sample (5 files)**
 
@@ -1025,7 +1029,7 @@ Select 5 findings files that represent:
 - 1 zero-findings file
 - 1 agent persona file
 
-Record the sample selection in SESSIONS.md under `## Session S17.5 — Review Gate`.
+Record the sample selection in SESSIONS.md under `## Session S17e — Review Gate`.
 
 - [ ] **Step 3: Dispatch QA-verification review**
 
@@ -1075,11 +1079,11 @@ Record verdict in SESSIONS.md.
   - For `re-audit-sample`: re-audit the flagged sample with the current rubric, re-run the gate.
   - For `revise`: apply clarity/consistency fixes to findings files, update INDEX.md, re-run the gate (writer review only).
 
-- [ ] **Step 6: Close session S17.5**
+- [ ] **Step 6: Close session S17e**
 
 ```bash
 git add docs/audits/2026-04-16-legion-4-7/SESSIONS.md
-git commit -m "audit: close session S17.5 — review gate (<qa-verdict>, <writer-verdict>)"
+git commit -m "audit: close session S17e — review gate (<qa-verdict>, <writer-verdict>)"
 ```
 
 ---
@@ -1322,7 +1326,7 @@ Expected: `OK: <N> findings, all valid`
 
 Re-run the cross-reference check from Task 22 Step 6. Expected: `OK: all findings accounted for in REMEDIATION.md`
 
-- [ ] **Step 6: Verify success criterion 5 — S17.5 verdicts recorded**
+- [ ] **Step 6: Verify success criterion 5 — S17e verdicts recorded**
 
 ```bash
 grep -E "ship-audit|publish-ready" docs/audits/2026-04-16-legion-4-7/SESSIONS.md
@@ -1368,7 +1372,7 @@ Append to SESSIONS.md:
 - [x] 2. INDEX.md shows 125/125 audited
 - [x] 3. FINDINGS-DB.jsonl validated (N findings)
 - [x] 4. REMEDIATION.md groups all findings (M phases)
-- [x] 5. S17.5 gate verdicts recorded: ship-audit + publish-ready
+- [x] 5. S17e gate verdicts recorded: ship-audit + publish-ready
 - [x] 6. SESSIONS.md documents all sessions (K entries)
 - [x] 7. Git history traceable (L commits since baseline)
 - [x] 8. audit-v47-baseline tag exists
@@ -1446,7 +1450,7 @@ Ran through the plan against the design spec:
 - Spec Section 8.1 (session rules) → METHODOLOGY.md heavy-file rule + validators
 - Spec Section 8.2 (baseline/rebase) → Task 1 Step 10 (tag) + Task 22 Step 5 (rebase)
 - Spec Section 9 (review gate) → Task 21
-- Spec Section 10 (risks) → mitigated via validators (Risk 5), per-session commits (Risk 7), S17 (Risk 1), S17.5 (Risk 8)
+- Spec Section 10 (risks) → mitigated via validators (Risk 5), per-session commits (Risk 7), S17 (Risk 1), S17e (Risk 8)
 - Spec Section 12 (success criteria) → Task 23 (all 8 verified)
 
 **Placeholder scan:** no TBD/TODO markers. The `<N>`, `<NN-MM>`, `<severity summary>` patterns in commit messages and templates are runtime substitutions (not plan-time gaps) — the engineer fills them from actual audit results.
