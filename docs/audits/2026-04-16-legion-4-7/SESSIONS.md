@@ -246,3 +246,13 @@ S05 — Commands 13-17 (per plan Task 8). Remaining commands: ship.md, start.md,
 
 ---
 
+## Session S05 — Commands 13-17
+
+**Started:** 2026-04-16
+**Target:** commands/{ship,start,status,update,validate}.md
+**Files audited:** (in progress)
+**Findings:** (in progress)
+**Status:** in_progress
+
+---
+
