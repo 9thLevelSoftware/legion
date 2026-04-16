@@ -3,22 +3,22 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (2 / 125 files audited)
+**Status:** in_progress (3 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
 - P1: 0 findings
 - P2: 4 findings
-- P3: 0 findings
-- **Total:** 4 findings
+- P3: 1 findings
+- **Total:** 5 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
 | CAT-1 | 0 | - |
-| CAT-2 | 2 | P2 |
+| CAT-2 | 3 | P2 |
 | CAT-3 | 0 | - |
 | CAT-4 | 0 | - |
 | CAT-5 | 0 | - |
@@ -34,3 +34,4 @@
 |------|---------|----------|--------------|
 | `(root) AGENTS.md` | S02a | 2 | P0 |
 | `(root) CLAUDE.md` | S02a | 2 | P0 |
+| `(root) README.md` | S02a | 1 | P0 |
