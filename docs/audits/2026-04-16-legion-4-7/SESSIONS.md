@@ -249,10 +249,48 @@ S05 — Commands 13-17 (per plan Task 8). Remaining commands: ship.md, start.md,
 ## Session S05 — Commands 13-17
 
 **Started:** 2026-04-16
+**Closed:** 2026-04-16
 **Target:** commands/{ship,start,status,update,validate}.md
-**Files audited:** (in progress)
-**Findings:** (in progress)
-**Status:** in_progress
+**Files audited:** 5 (all targets)
+**Findings:** 29 total across S05 + S05.1 (0 P0, 3 P1, 25 P2, 1 P3)
+**IDs assigned:** LEGION-47-058 through LEGION-47-088 (contiguous)
+**Status:** completed
+
+### Per-file summary
+| File | Findings | Max severity | Notes |
+|------|----------|--------------|-------|
+| `commands/ship.md` | 6 | P1 | 1 P1 CAT-1 confirmed (ship-action gate L184-198 with 3 unbounded options); CAT-3 dispatch for verification commands; CAT-6 post-ship verification twice without drift definition |
+| `commands/start.md` | 8 | P1 | 2 P1 CAT-1 confirmed (pre-flight reinit + exploration offer); 3 P2 CAT-1 (brownfield, Stage-3 workflow prefs, integration question L87); CAT-2 confirmed (marketing/design keyword inheritance); plus S05.1 LEGION-47-076 orphan config reference |
+| `commands/status.md` | 5 | P2 | CAT-1 confirmed status-emoji set L147-151; CAT-2 confirmed milestone-keyword substring; CAT-6 STATE.md regex preconditions; CAT-4 intent-front-loading on dashboard format; CAT-5 prohibitive cluster on graceful-degradation |
+| `commands/update.md` | 5 | P2 | CAT-8 confirmed (no restart step after install); CAT-1 confirmed yes/no install; CAT-6 confirmed manifest precondition (concurrent-install ambiguity); CAT-9 confirmed changelog length; CAT-8 post-install verification scope |
+| `commands/validate.md` | 5 | P2 | 2 P2 CAT-6 confirmed: LEGION-47-084 intent-teams.yaml schema mismatch (pre-existing bug, parity with LEGION-47-052) + LEGION-47-085 dual agent-source ground-truth; CAT-2 division-count regex-by-example; CAT-8 FIX_MODE re-run unbounded; CAT-5 prohibitive tail |
+
+### S05.1 interlude
+Mid-session, 3 findings surfaced spanning outside the five command files but discovered while tracing their dependencies:
+- LEGION-47-076 (commands/start.md) — orphan config reference surfaced during Stage 3 workflow prefs review
+- LEGION-47-077 (skills/cli-dispatch/SKILL.md) — CAT-3 dispatch spec, surfaced tracing ship.md verification_commands path
+- LEGION-47-078 (adapters/claude-code.md) — CAT-3 adapter-layer Agent tool dispatch, surfaced during ship.md PR-creation flow review
+
+These were committed under `session: "S05.1"`. They promote skills/cli-dispatch and adapters/claude-code to partially-audited status in INDEX.md but are not part of the core five-file S05 scope.
+
+### Themes surfaced this session
+- **closed-set-enforcement remains dominant** — 9 of 26 core S05 findings are CAT-1, consistent with S03 and S04 distributions. Highest-stakes gates: ship.md L184-198 (3 options, no closure), start.md L28-31 (reinit prompt), start.md L37-60 (exploration offer with free-text sub-states).
+- **Pre-existing bug parity with LEGION-47-052** — validate.md LEGION-47-084 is S05's second confirmed pre-existing bug in `precondition-verification`: the intent-teams.yaml parser expects `intents:` / `agents.primary` / `filter.exclude_agents` schema that does not exist (actual keys: `command_routes:`, `natural_language:`, `context_rules:`). Validator silently passes or throws an un-mapped parse error. Same defect class as S04's fix-agent routing table referencing non-existent agent IDs — both are schema drift between command instructions and current config reality.
+- **Dual ground-truth sources** — validate.md LEGION-47-085 documents a pattern where two adjacent steps need "the valid agent IDs" but use different sources (agent-registry skill vs. direct filesystem listing) with no priority rule. First instance of this sub-class; likely recurs in other skills pre-dating agent-registry extraction.
+- **Regex-by-example** — validate.md L186 ("e.g., `# TESTING DIVISION (6 agents)`") joins the keyword-substring pattern family (peer LEGION-47-028, 044, 048, 057, 072, 086). Regex-by-example is a consistent defect class across the audit.
+- **AskUserQuestion free-text cross-cut persists** — S03 first flagged it; S04 added 3 inheriting findings; S05 adds more (LEGION-47-065 start.md exploration offer with free-text "Explore more"/"Park"; LEGION-47-067 Stage-1 questioning is fully free-text). `adapter.prompt_free_text` primitive decision still outstanding.
+- **Fix-mode acceptance criteria** — validate.md LEGION-47-087 and update.md LEGION-47-083 both document unbounded post-action verification. Emerging sub-cluster within `acceptance-criteria`.
+
+### Cross-cutting observation — validate.md audits the audit instrument
+`commands/validate.md` is Legion's self-validation command. Its own defects (intent-teams.yaml schema mismatch, dual agent-source inconsistency) mean silent-pass false negatives in `/legion:validate` have been masking real drift in config YAMLs. LEGION-47-084 and S02c's cross-cutting observation (intent-teams.yaml has no marketing/design keyword registry, yet three root surfaces claim it does) are the same underlying defect viewed from different angles: validate.md can't detect the drift because validate.md expects a schema that doesn't exist. Remediation for LEGION-47-084 must be sequenced before trust-by-validator is restored.
+
+### Cumulative progress
+- **Files audited:** 39 / 125 (31.2%)
+- **Findings:** 88 total (0 P0, 10 P1, 69 P2, 9 P3)
+- **Sessions completed:** S01, S02a-d, S03, S04, S05 (+ S05.1 interlude)
+
+### Next session
+S06 — Skills batch 1 (orchestration skills). Priority targets: `skills/wave-executor/SKILL.md` (CAT-3 dispatch hotspot, core orchestration), `skills/cli-dispatch/SKILL.md` (partial re-audit for completeness), `skills/execution-tracker/SKILL.md`, `skills/review-loop/SKILL.md`. Expect heavy CAT-3/CAT-4/CAT-6/CAT-8 density. Cross-cuts to carry forward: (a) `adapter.prompt_free_text` architectural decision still open, (b) intent-teams.yaml schema drift remediation (LEGION-47-084) must precede validator trust restoration, (c) dual-ground-truth agent-ID pattern — check whether agent-registry skill itself exhibits the inverse problem.
 
 ---
 
