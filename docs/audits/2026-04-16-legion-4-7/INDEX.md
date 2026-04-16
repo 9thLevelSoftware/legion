@@ -3,26 +3,26 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (40 / 125 files audited)
+**Status:** in_progress (41 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
 - P1: 11 findings
-- P2: 75 findings
+- P2: 77 findings
 - P3: 8 findings
-- **Total:** 94 findings
+- **Total:** 96 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
 | CAT-1 | 36 | P1 |
-| CAT-2 | 19 | P2 |
+| CAT-2 | 20 | P2 |
 | CAT-3 | 4 | P1 |
 | CAT-4 | 4 | P2 |
 | CAT-5 | 3 | P2 |
-| CAT-6 | 11 | P1 |
+| CAT-6 | 12 | P1 |
 | CAT-7 | 0 | - |
 | CAT-8 | 9 | P2 |
 | CAT-9 | 6 | P2 |
@@ -72,3 +72,4 @@
 | `skills/workflow-common/SKILL.md` | S06 | 4 | P1 |
 | `skills/workflow-common-core/SKILL.md` | S06 | 3 | P2 |
 | `skills/workflow-common-domains/SKILL.md` | S06 | 1 | P2 |
+| `skills/workflow-common-github/SKILL.md` | S06 | 2 | P2 |
