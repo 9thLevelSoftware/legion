@@ -238,7 +238,7 @@ Of the 4 P1 findings this session, 3 are user-facing decision gates (advisor swa
 ### Cumulative progress
 - **Sessions completed:** S01, S02a, S02b, S02c, S02d, S03, S04
 - **Files audited:** 31 / 125
-- **Findings so far:** 57 (0 P0, 7 P1, 45 P2, 5 P3)
+- **Findings so far:** 57 (0 P0, 7 P1, 43 P2, 7 P3)
 - **Clusters touched:** `precondition-verification` (3), `trigger-explicitness` (9), `acceptance-criteria` (4), `intent-front-loading` (1), `authority-language` (1), `closed-set-enforcement` (22), `dispatch-specification` (2), `response-calibration` (4)
 
 ### Next session
