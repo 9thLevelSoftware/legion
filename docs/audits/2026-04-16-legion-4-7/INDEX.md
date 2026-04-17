@@ -3,28 +3,28 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (60 / 125 files audited)
+**Status:** in_progress (61 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
-- P1: 15 findings
-- P2: 185 findings
+- P1: 16 findings
+- P2: 188 findings
 - P3: 9 findings
-- **Total:** 209 findings
+- **Total:** 213 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 46 | P1 |
-| CAT-2 | 37 | P1 |
+| CAT-1 | 47 | P1 |
+| CAT-2 | 38 | P1 |
 | CAT-3 | 23 | P1 |
 | CAT-4 | 8 | P2 |
 | CAT-5 | 8 | P2 |
-| CAT-6 | 32 | P1 |
+| CAT-6 | 33 | P1 |
 | CAT-7 | 6 | P2 |
-| CAT-8 | 30 | P2 |
+| CAT-8 | 31 | P2 |
 | CAT-9 | 9 | P2 |
 | CAT-10 | 10 | P2 |
 
@@ -52,6 +52,7 @@
 | `cross-cutting: model-tier configuration` | S05.1 | 3 | — |
 | `AGENTS.md` | S02a | 2 | P2 |
 | `CLAUDE.md` | S02a | 2 | P2 |
+| `README.md` | S02a | 1 | P3 |
 | `.planning/config/agent-communication.yaml` | S02c | 1 | P2 |
 | `.planning/config/authority-matrix.yaml` | S02c | 1 | P2 |
 | `.planning/config/control-modes.yaml` | S02c | 0 | — |
@@ -63,7 +64,6 @@
 | `docs/runtime-audit.md` | S02b | 0 | — |
 | `docs/runtime-certification-checklists.md` | S02b | 1 | P3 |
 | `docs/security/install-integrity.md` | S02b | 0 | — |
-| `README.md` | S02a | 1 | P3 |
 | `docs/schemas/outcomes-record.schema.json` | S02d | 0 | — |
 | `docs/schemas/plan-frontmatter.schema.json` | S02d | 0 | — |
 | `docs/schemas/review-finding.schema.json` | S02d | 1 | P3 |
@@ -79,6 +79,7 @@
 | `skills/marketing-workflows/SKILL.md` | S09 | 4 | P2 |
 | `skills/phase-decomposer/SKILL.md` | S07 | 7 | P2 |
 | `skills/plan-critique/SKILL.md` | S07 | 5 | P2 |
+| `skills/polymath-engine/SKILL.md` | S10 | 4 | P1 |
 | `skills/questioning-flow/SKILL.md` | S07 | 6 | P1 |
 | `skills/review-evaluators/SKILL.md` | S08 | 7 | P2 |
 | `skills/review-loop/SKILL.md` | S08 | 10 | P1 |
@@ -87,8 +88,8 @@
 | `skills/ship-pipeline/SKILL.md` | S09 | 4 | P2 |
 | `skills/spec-pipeline/SKILL.md` | S07 | 5 | P2 |
 | `skills/wave-executor/SKILL.md` | S06 | 9 | P1 |
-| `skills/workflow-common/SKILL.md` | S06 | 4 | P1 |
 | `skills/workflow-common-core/SKILL.md` | S06 | 3 | P2 |
 | `skills/workflow-common-domains/SKILL.md` | S06 | 1 | P2 |
 | `skills/workflow-common-github/SKILL.md` | S06 | 2 | P2 |
 | `skills/workflow-common-memory/SKILL.md` | S06 | 2 | P2 |
+| `skills/workflow-common/SKILL.md` | S06 | 4 | P1 |
