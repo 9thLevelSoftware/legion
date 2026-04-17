@@ -97,6 +97,28 @@ function checkVersionSync() {
   }
 }
 
+function checkCodexPluginVersionSync() {
+  const pkg = JSON.parse(read('package.json'));
+  const pluginPath = path.join(ROOT, '.codex-plugin', 'plugin.json');
+
+  if (!fs.existsSync(pluginPath)) {
+    fail('.codex-plugin/plugin.json is missing');
+    return;
+  }
+
+  let plugin;
+  try {
+    plugin = JSON.parse(fs.readFileSync(pluginPath, 'utf8'));
+  } catch (err) {
+    fail(`.codex-plugin/plugin.json is not valid JSON: ${err.message}`);
+    return;
+  }
+
+  if (plugin.version !== pkg.version) {
+    fail(`Version mismatch: .codex-plugin/plugin.json=${plugin.version}, package.json=${pkg.version}`);
+  }
+}
+
 function checkReadmeMetrics() {
   const readme = read('README.md');
   const commands = listMarkdown('commands').length;
@@ -208,6 +230,7 @@ function checkContextBudgets() {
 
 function main() {
   checkVersionSync();
+  checkCodexPluginVersionSync();
   checkReadmeMetrics();
   checkRuntimeSupportTable();
   checkCommandSkillMapping();

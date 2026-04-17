@@ -36,7 +36,7 @@ Step 0: Check for override file
 Step 1: Tool probe (primary detection)
   - For each adapter in adapters/, check the detection.primary field:
     - Claude Code: TeamCreate tool is available
-    - Codex CLI: `.codex/prompts/legion-start.md` or `~/.codex/prompts/legion-start.md` exists
+    - Codex CLI: `.codex-plugin/plugin.json`, `.codex/prompts/legion-start.md`, or `~/.codex/prompts/legion-start.md` exists
     - Cursor: `.cursor/rules/legion.mdc` exists
     - Copilot CLI: `.github/skills/legion-start/SKILL.md`, `~/.copilot/skills/legion-start/SKILL.md`, `.github/agents/legion-orchestrator.agent.md`, or `~/.config/copilot/agents/legion-orchestrator.agent.md` exists
     - Gemini CLI: `.gemini/commands/legion/start.toml` or `~/.gemini/commands/legion/start.toml` exists

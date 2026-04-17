@@ -16,6 +16,8 @@ const ROOT = path.resolve(__dirname, '..');
 const COMMANDS_DIR = path.join(ROOT, 'commands');
 const AGENTS_DIR = path.join(ROOT, 'agents');
 const CATALOG_PATH = path.join(ROOT, 'skills', 'agent-registry', 'CATALOG.md');
+const PACKAGE_PATH = path.join(ROOT, 'package.json');
+const CODEX_PLUGIN_MANIFEST_PATH = path.join(ROOT, '.codex-plugin', 'plugin.json');
 
 function listCommandFiles() {
   return fs.readdirSync(COMMANDS_DIR).filter((f) => f.endsWith('.md')).sort();
@@ -108,4 +110,22 @@ test.describe('Cross-reference validation: agent files back-referenced in CATALO
       );
     });
   }
+});
+
+test.describe('Cross-reference validation: repo-native Codex plugin wiring', () => {
+  test('.codex-plugin/plugin.json exists and stays version-synced with package.json', () => {
+    assert.ok(
+      fs.existsSync(CODEX_PLUGIN_MANIFEST_PATH),
+      '.codex-plugin/plugin.json should exist for the repo-native Codex plugin path'
+    );
+
+    const pkg = JSON.parse(fs.readFileSync(PACKAGE_PATH, 'utf8'));
+    const pluginManifest = JSON.parse(fs.readFileSync(CODEX_PLUGIN_MANIFEST_PATH, 'utf8'));
+
+    assert.equal(
+      pluginManifest.version,
+      pkg.version,
+      '.codex-plugin/plugin.json version should stay in sync with package.json'
+    );
+  });
 });

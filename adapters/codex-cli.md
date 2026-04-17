@@ -10,7 +10,7 @@ capabilities:
   native_task_tracking: false
   read_only_agents: false
 detection:
-  primary: ".codex/prompts/legion-start.md or ~/.codex/prompts/legion-start.md exists"
+  primary: ".codex-plugin/plugin.json, .codex/prompts/legion-start.md, or ~/.codex/prompts/legion-start.md exists"
   secondary: ".agents/skills/legion/SKILL.md or ~/.agents/skills/legion/SKILL.md exists"
 max_prompt_size: 128000
 known_quirks:

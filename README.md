@@ -65,6 +65,15 @@ If you install with `--codex`, Legion writes its workflow files into `.legion/`,
 - Global Codex installs appear as `/prompts:legion-start`, `/prompts:legion-plan`, `/prompts:legion-build`, and so on
 - Legacy `/legion:*` aliases remain bridge-only fallbacks, and plain-language Legion intents still work
 
+### Repo-native Codex plugin
+
+This repository now also ships a repo-native Codex plugin manifest at `.codex-plugin/plugin.json`.
+
+- Use the repo-native plugin path when you want Codex to load Legion directly from this checkout as a local plugin bundle
+- The repo-native plugin exposes a top-level `legion` bridge skill at `skills/legion/SKILL.md`, which routes plain-language Legion requests and legacy `/legion:*` intents to the matching workflow under `commands/`
+- This path is additive: it does not replace or modify the existing `npx @9thlevelsoftware/legion --codex` installer flow
+- The `npx` installer remains the path that writes native Codex prompt commands into `.codex/prompts/` or `~/.codex/prompts/`
+
 ### Native entry points
 
 | Runtime | Local install | Global install |
@@ -142,6 +151,17 @@ These are the canonical Legion command names. Each runtime maps them to its own 
 /legion:learn <lesson>   Standalone → Record patterns, pitfalls, and preferences (any time)
 ```
 
+## Claude Opus 4.7 Hardening
+
+Recent releases rewrote large parts of Legion to behave better on Claude Opus 4.7 and other literal, high-context models. The goal was not to flatten the system. It was to lower hot-path prompt weight, tighten interaction contracts, and remove ambiguity that caused retries or drift.
+
+- **Lean always-load core**: `workflow-common-core` now carries the minimum shared contract - adapter detection, state and path resolution, control-mode defaults, and context ceilings. Heavier behavior stays in optional skills.
+- **Retrieval over preload**: AGENTS.md and CLAUDE.md keep a compressed index in context, then commands read the exact agent or skill file they need instead of dragging the full roster into every command.
+- **Conditional skill loading**: `/legion:plan`, `/legion:build`, `/legion:review`, and `/legion:status` load brownfield, GitHub, critique, panel, and domain skills only when their activation conditions are met.
+- **Prompt-budget enforcement**: `wave-executor` estimates prompt size before spawning, warns near adapter limits, and blocks oversized launches instead of letting agents fail mid-flight.
+- **Smaller coordinator context**: spawned agents report structured summaries and downstream waves receive focused handoff context rather than full execution traces.
+- **More deterministic control flow**: the v7.3.3 audit replaced vague triggers, free-form gates, and underspecified dispatch wording with concrete activation rules, closed-set AskUserQuestion flows, completion gates, and explicit dispatch tables.
+
 ## Workflows
 
 ### Core Workflow: start → plan → build → review
@@ -195,7 +215,7 @@ Spawns agents with full personality injection to execute all plans for the curre
 2. Discover plans via `wave-executor` — parse YAML frontmatter, build wave map, validate no circular dependencies or file conflicts
 3. Create a Claude Code Team via TeamCreate (`phase-{NN}-execution`) with TaskCreate for each plan and cross-wave dependencies via TaskUpdate
 4. Execute plans wave by wave via `wave-executor` — all agents within a wave spawn in parallel via Agent tool with `model: "sonnet"`
-5. Each agent receives its complete personality .md (currently 155-677 lines) concatenated with the plan file as its prompt; autonomous plans skip personality injection
+5. Each agent receives its complete personality .md (currently 156-680 lines) concatenated with the plan file as its prompt; autonomous plans skip personality injection
 6. Agents auto-remediate environment issues (missing deps, wrong versions) — classify errors as BLOCKER vs ENVIRONMENT, retry once after remediation
 7. Collect results via SendMessage — parse structured summaries, write `{NN}-{PP}-SUMMARY.md` files
 8. Track progress via `execution-tracker` — update STATE.md, ROADMAP.md progress table, create atomic git commits per successful plan
@@ -603,7 +623,7 @@ Legion didn't invent its patterns from scratch. It cherry-picked the best ideas 
 
 #### The Agent Personality Foundation — [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)
 
-Legion now ships 48 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 2 Legion-native specializations, consolidated from the original 53 via 5 agent merges. These are not generic role labels — they are structured character sheets (current range 155-677 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
+Legion now ships 48 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 2 Legion-native specializations, consolidated from the original 53 via 5 agent merges. These are not generic role labels — they are structured character sheets (current range 156-680 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
 
 #### From [GSD (Get Shit Done)](https://github.com/gsd-build/get-shit-done)
 
@@ -709,13 +729,17 @@ Puzld.ai's DPO (Direct Preference Optimization) extraction pattern — capturing
 
 Beyond combining these twelve projects, Legion introduced several original patterns:
 
-- **Personality-first agents**: The 48 agent personalities are not role labels — they are 155-677 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its *complete personality* as system instructions, not a generic "you are a backend developer" prompt.
+- **Personality-first agents**: The 48 agent personalities are not role labels — they are 156-680 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its complete personality as system instructions, not a generic "you are a backend developer" prompt.
 
 - **Hybrid agent selection**: The workflow recommends agents based on task analysis (keyword matching, division affinity, past performance), but the user always confirms or overrides. No black-box assignment.
+
+- **Lean core + conditional loading**: The always-load surface is intentionally small (`workflow-common-core`), while domain, GitHub, critique, panel, and brownfield skills only load when their preconditions are met. This keeps the orchestration path lighter on large models without flattening Legion's feature set.
 
 - **Domain-specific workflow detection**: When `/legion:plan` encounters marketing requirements (MKT-*) or design requirements (DSN-*), it automatically switches to domain-specific wave patterns and team assembly — campaign planning with content calendars for marketing, design systems with three-lens review for design — instead of forcing engineering patterns onto non-engineering work.
 
 - **Graceful degradation everywhere**: GitHub integration, cross-session memory, brownfield analysis, marketing workflows, and design workflows are all opt-in features that activate when their prerequisites exist and skip silently when they don't. The core workflow (start → plan → build → review) works identically with or without any optional feature.
+
+- **Audit-hardened interaction contracts** (v7.3.3): A Claude Opus 4.7 audit drove 226 fixes across 91 files. User gates are now closed-set AskUserQuestion flows, activation triggers are concrete, dispatch tables spell out when, why, how many, and by what mechanism, and critical skills declare explicit completion gates.
 
 - **Cross-session memory with decay**: After each build/review cycle, outcomes are recorded with importance scores and `task_type` classification. During future planning, past outcomes boost agent recommendations — with time-based decay (recent outcomes matter more) and archetype-weighted boosts (agents that succeed at similar task types get priority).
 
@@ -729,18 +753,20 @@ Beyond combining these twelve projects, Legion introduced several original patte
 
 ### Design Choices and Tradeoffs
 
-Legion intentionally optimizes for orchestration ergonomics (few commands, markdown-first state, personality injection) over strict uniformity across all runtimes. The table below summarizes the tradeoffs against other orchestration systems:
+Legion intentionally optimizes for orchestration ergonomics (few commands, markdown-first state, personality injection) and, after the v7.3.3 audit pass, lower hot-path context cost on literal models over strict uniformity across all runtimes. The table below summarizes the tradeoffs against other orchestration systems:
 
 | Design Axis | Typical Alternative | Legion Choice | Tradeoff |
 |-------------|---------------------|---------------|----------|
 | Command surface | 15-33+ command sets | 17 commands | Faster onboarding, but less granular command specialization |
 | State storage | JSON/DB/hybrid state | Markdown-only `.planning/` | Human-readable and git-native, but less strict schema enforcement |
 | Setup model | CLI bootstrap + config | `npx` installer | Simpler install path, but runtime capabilities can vary more |
-| Agent model | Generic role prompts | 48 full personalities | Higher domain specificity, but larger context footprint |
+| Always-load context | Monolithic shared instructions | Lean `workflow-common-core` + optional extensions | Lower prompt cost on hot paths, but activation rules must stay accurate |
+| Agent model | Generic role prompts | 48 full personalities + retrieval-led loading | Higher specificity without preloading the full roster, but prompt discipline still matters for large agents |
+| User interaction gates | Free-form confirmations | Closed-set AskUserQuestion flows | More deterministic on literal models, but less conversational looseness |
 | Runtime coverage | Single-runtime focus | 9 runtime adapters | Broader portability, but feature parity differs by runtime tier |
 | Memory strategy | Hook-based/global memory | Project-local explicit memory | Better project isolation, but requires explicit integration points |
 
-Current repository metrics: 17 commands, 31 skills, 48 agent personalities, 9 runtime adapters, and 4 control mode presets.
+Current repository metrics: 17 commands, 32 skills, 48 agent personalities, 9 runtime adapters, and 4 control mode presets.
 
 ## The 48 Agents
 
@@ -786,7 +812,7 @@ legion/                     <- Project root
 │   ├── learn.md
 │   ├── update.md
 │   └── validate.md
-├── skills/                 <- 31 reusable workflow skills
+├── skills/                 <- 32 reusable workflow skills
 │   ├── workflow-common-core/SKILL.md <- Lean always-load core conventions
 │   ├── workflow-common/SKILL.md      <- Compatibility shim for legacy references
 │   ├── agent-registry/
@@ -800,7 +826,7 @@ legion/                     <- Project root
 │   ├── review-panel/SKILL.md       <- Dynamic multi-reviewer composition with rubrics
 │   ├── plan-critique/SKILL.md      <- Pre-mortem analysis + assumption hunting
 │   ├── hooks-integration/SKILL.md  <- Claude Code hooks for lifecycle automation
-│   └── + 14 more (portfolio, milestone, memory, agents, GitHub, brownfield, marketing, design, spec pipeline, ship pipeline, security review, and workflow-common extensions)
+│   └── + 21 more (portfolio, milestone, memory, agents, GitHub, brownfield, marketing, design, spec pipeline, ship pipeline, security review, Legion bridge integration, and workflow-common extensions)
 ├── agents/                 <- 48 personality .md files (flat, with division in frontmatter)
 │   ├── engineering-senior-developer.md
 │   ├── design-ui-designer.md
@@ -829,15 +855,16 @@ legion/                     <- Project root
 - **CLI-agnostic**: Works with 9 AI CLI runtimes — skills, commands, and agents adapt via per-runtime adapters (support tiers listed below)
 - **Human-readable state**: All planning files are markdown, readable without tools
 - **Full personality injection**: Agents are spawned with their complete .md as instructions
-- **Standardized format**: All 48 agents use Format A — emoji section headings, "Your" pronouns, current range 155-677 lines (minimum 80)
-- **Balanced cost**: Opus for planning, Sonnet for execution, Haiku for checks
+- **Standardized format**: All 48 agents use Format A — emoji section headings, "Your" pronouns, current range 156-680 lines (minimum 80)
+- **Budget-aware orchestration**: Heavier reasoning is reserved for planning and governance when the adapter supports it; execution stays on faster defaults, optional skills stay unloaded until needed, and prompt ceilings prevent oversized spawns
 - **Default max 3 tasks per plan (configurable)**: Keeps work focused and reviewable
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides
 - **Plan contracts**: `files_forbidden`, `expected_artifacts`, and mandatory `verification_commands` enforce discipline at planning time
 - **Wave execution**: Plans grouped by dependency; parallel within waves, sequential between. File overlap detection and `sequential_files` prevent conflicts
 - **Control modes**: Four presets (autonomous, guarded, advisory, surgical) adjust authority enforcement per-project
+- **Deterministic gates**: User-facing decisions use closed-set AskUserQuestion flows and explicit trigger rules, reducing ambiguity on literal models such as Claude Opus 4.7
 - **Observability**: Decision logging in SUMMARY.md and cycle-over-cycle diffs in REVIEW.md provide agent decision audit trails
-- **Retrieval-led reasoning**: A compressed Dynamic Knowledge Index in AGENTS.md maps every agent and skill file by division/category. Combined with a "prefer retrieval over pre-training" directive, this eliminates LLM laziness during agent spawning — agents always read their personality files instead of hallucinating personas. Based on [Vercel's Context Engineering research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals).
+- **Retrieval-led reasoning**: A compressed Dynamic Knowledge Index in AGENTS.md maps every agent and skill file by division/category. Combined with a "prefer retrieval over pre-training" directive, this eliminates LLM laziness during agent spawning while keeping the coordinator's hot path lighter — agents read the exact files they need instead of hallucinating personas. Based on [Vercel's Context Engineering research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals).
 - **Graceful degradation**: Optional features (GitHub, memory, marketing, design, panels, critique) activate when available, skip silently when not
 - **Read-only advisory**: Consultation agents explore but never modify — tool-level enforcement via Explore subagent type
 - **Domain-weighted review**: Each reviewer evaluates against non-overlapping criteria scoped to their expertise, not generic checklists
@@ -869,7 +896,7 @@ These activate automatically when their prerequisites are met:
 
 <!-- legion-metrics:start -->
 - Commands: 17
-- Skills: 31
+- Skills: 32
 - Agents: 48
 - Agent personality line range (current): 156-680
 <!-- legion-metrics:end -->
