@@ -5,6 +5,22 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.3.3] - 2026-04-17
+
+### Fixed
+- **226 audit findings resolved** — Comprehensive v4.7 audit remediation across 91 files:
+  - All user-facing gates now use AskUserQuestion + closure language
+  - 4-field dispatch specifications (when/why/how-many/mechanism) added to all agent spawn sites
+  - Vague triggers ("marketing keywords") replaced with concrete conditions (MKT-* prefix)
+  - Completion Gate sections added to 12 skills
+  - ALWAYS/NEVER/OBSESSED persona language replaced with calibrated alternatives
+  - Invalid agent IDs corrected (testing-evidence-collector, engineering-devops-automator, marketing-content-creator)
+
+## [7.3.2] - 2026-04-15
+
+### Fixed
+- **Audit session infrastructure** — Added audit rubric, session tracking, and findings database for systematic codebase review.
+
 ## [7.3.1] - 2026-04-10
 
 ### Fixed

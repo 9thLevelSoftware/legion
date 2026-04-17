@@ -871,7 +871,7 @@ These activate automatically when their prerequisites are met:
 - Commands: 17
 - Skills: 31
 - Agents: 48
-- Agent personality line range (current): 156-678
+- Agent personality line range (current): 156-680
 <!-- legion-metrics:end -->
 
 ## Requirements
