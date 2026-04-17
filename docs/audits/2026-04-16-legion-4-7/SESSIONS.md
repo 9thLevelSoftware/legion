@@ -8,10 +8,41 @@
 ## Session S10 — Intelligence & Tracking Skills
 
 **Started:** 2026-04-16
+**Closed:** 2026-04-16
 **Target:** skills/{polymath-engine,memory-manager,milestone-tracker,portfolio-manager,agent-creator,agent-registry,github-sync,hooks-integration}/SKILL.md
-**Files audited:** (in progress)
-**Findings:** (in progress)
-**Status:** in_progress
+**Files audited:** 8 (all targets)
+**Findings:** 35 total — 0 P0, 5 P1, 29 P2, 1 P3
+**IDs assigned:** LEGION-47-212 .. LEGION-47-246
+**Status:** completed
+
+### Per-file summary
+| File | Findings | Max severity | Notes |
+|------|----------|--------------|-------|
+| `skills/polymath-engine/SKILL.md` | 4 | P1 | LEGION-47-212 P1: undefined fallback for all modes failing |
+| `skills/memory-manager/SKILL.md` | 5 | P2 | OUTCOMES.md format underspecified, file explosion risk |
+| `skills/milestone-tracker/SKILL.md` | 4 | P2 | Archive path inconsistency, missing validation |
+| `skills/portfolio-manager/SKILL.md` | 4 | P1 | LEGION-47-225 P1: division drift 9 vs 10 |
+| `skills/agent-creator/SKILL.md` | 5 | P1 | LEGION-47-229 P1: template propagation risk |
+| `skills/agent-registry/SKILL.md` | 5 | P1 | LEGION-47-234 P1: dual ground truth (4 sources) |
+| `skills/github-sync/SKILL.md` | 4 | P2 | Race condition in fallback, inconsistent messaging |
+| `skills/hooks-integration/SKILL.md` | 4 | P1 | LEGION-47-243 P1: CLAUDE_TOOL_INPUT likely undefined |
+
+### Themes surfaced this session
+- **dispatch-specification** (12 findings): Division drift, schema incompleteness, dead metadata, structural fragmentation
+- **precondition-verification** (8 findings): Implicit preconditions, shell command failure modes, env var assumptions
+- **persona-calibration** (4 findings): Template propagation, maximalist language in constraints
+- **trigger-explicitness** (3 findings): Dual keyword maps, ambiguous mode triggers
+- **graceful-degradation** (3 findings): Inconsistent messaging, undefined timeout
+- **closed-set-enforcement** (3 findings): Free-text escape hatches in agent-creator prompts
+- **acceptance-criteria** (2 findings): Loose validation, missing success criteria
+
+### Cumulative progress
+- **Sessions completed:** S01-S10
+- **Files audited:** 72 / 125
+- **Findings so far:** 246 (0 P0, 19 P1, 202 P2, 25 P3)
+
+### Next session
+S11-S16 — Agent personalities (48 files), CLI adapters (10 files). Parallel execution via team dispatch.
 
 ---
 
