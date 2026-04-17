@@ -3,30 +3,30 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (62 / 125 files audited)
+**Status:** in_progress (63 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
 - P1: 16 findings
-- P2: 193 findings
+- P2: 197 findings
 - P3: 9 findings
-- **Total:** 218 findings
+- **Total:** 222 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 47 | P1 |
+| CAT-1 | 48 | P1 |
 | CAT-2 | 38 | P1 |
 | CAT-3 | 24 | P1 |
 | CAT-4 | 9 | P2 |
 | CAT-5 | 9 | P2 |
-| CAT-6 | 34 | P1 |
+| CAT-6 | 35 | P1 |
 | CAT-7 | 6 | P2 |
-| CAT-8 | 32 | P2 |
+| CAT-8 | 33 | P2 |
 | CAT-9 | 9 | P2 |
-| CAT-10 | 10 | P2 |
+| CAT-10 | 11 | P2 |
 
 ## Files
 
@@ -78,6 +78,7 @@
 | `skills/intent-router/SKILL.md` | S07 | 7 | P2 |
 | `skills/marketing-workflows/SKILL.md` | S09 | 4 | P2 |
 | `skills/memory-manager/SKILL.md` | S10 | 5 | P2 |
+| `skills/milestone-tracker/SKILL.md` | S10 | 4 | P2 |
 | `skills/phase-decomposer/SKILL.md` | S07 | 7 | P2 |
 | `skills/plan-critique/SKILL.md` | S07 | 5 | P2 |
 | `skills/polymath-engine/SKILL.md` | S10 | 4 | P1 |
