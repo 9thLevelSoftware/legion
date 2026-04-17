@@ -3,28 +3,28 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (50 / 125 files audited)
+**Status:** in_progress (51 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
-- P1: 13 findings
-- P2: 124 findings
+- P1: 14 findings
+- P2: 133 findings
 - P3: 9 findings
-- **Total:** 146 findings
+- **Total:** 156 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 42 | P1 |
-| CAT-2 | 29 | P2 |
-| CAT-3 | 12 | P1 |
+| CAT-1 | 43 | P1 |
+| CAT-2 | 30 | P2 |
+| CAT-3 | 14 | P1 |
 | CAT-4 | 6 | P2 |
-| CAT-5 | 4 | P2 |
-| CAT-6 | 21 | P1 |
-| CAT-7 | 1 | P2 |
-| CAT-8 | 18 | P2 |
+| CAT-5 | 5 | P2 |
+| CAT-6 | 22 | P1 |
+| CAT-7 | 3 | P2 |
+| CAT-8 | 20 | P2 |
 | CAT-9 | 8 | P2 |
 | CAT-10 | 5 | P2 |
 
@@ -75,6 +75,7 @@
 | `skills/phase-decomposer/SKILL.md` | S07 | 7 | P2 |
 | `skills/plan-critique/SKILL.md` | S07 | 5 | P2 |
 | `skills/questioning-flow/SKILL.md` | S07 | 6 | P1 |
+| `skills/review-loop/SKILL.md` | S08 | 10 | P1 |
 | `skills/spec-pipeline/SKILL.md` | S07 | 5 | P2 |
 | `skills/wave-executor/SKILL.md` | S06 | 9 | P1 |
 | `skills/workflow-common/SKILL.md` | S06 | 4 | P1 |
