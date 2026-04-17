@@ -65,6 +65,15 @@ If you install with `--codex`, Legion writes its workflow files into `.legion/`,
 - Global Codex installs appear as `/prompts:legion-start`, `/prompts:legion-plan`, `/prompts:legion-build`, and so on
 - Legacy `/legion:*` aliases remain bridge-only fallbacks, and plain-language Legion intents still work
 
+### Repo-native Codex plugin
+
+This repository now also ships a repo-native Codex plugin manifest at `.codex-plugin/plugin.json`.
+
+- Use the repo-native plugin path when you want Codex to load Legion directly from this checkout as a local plugin bundle
+- The repo-native plugin exposes a top-level `legion` bridge skill at `skills/legion/SKILL.md`, which routes plain-language Legion requests and legacy `/legion:*` intents to the matching workflow under `commands/`
+- This path is additive: it does not replace or modify the existing `npx @9thlevelsoftware/legion --codex` installer flow
+- The `npx` installer remains the path that writes native Codex prompt commands into `.codex/prompts/` or `~/.codex/prompts/`
+
 ### Native entry points
 
 | Runtime | Local install | Global install |
