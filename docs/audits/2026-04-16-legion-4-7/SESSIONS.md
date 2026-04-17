@@ -489,3 +489,92 @@ Systemic remediation: the review subsystem should be treated as a single unit in
 ### Next session
 S09 — Domain & Integration Skills (6 files): candidate scope includes `security-review/SKILL.md` (deferred from S08 due to scope cut — this skill is the "Full methodology defined in" target for review-evaluators Security Evaluator per LEGION-47-171, and inherits pending audit risk), `design-workflows/SKILL.md`, `marketing-workflows/SKILL.md`, `github-sync/SKILL.md`, `hooks-integration/SKILL.md`, and one more domain/integration skill per the skills index. Expect (a) the marketing/design keyword-registry cluster (intent-teams.yaml schema drift LEGION-47-084, 140, 160, 174) to recur directly at the workflow sources; (b) the dispatch-specification cluster (LEGION-47-101/102/112/125/128/141/155/180) to extend as integration skills dispatch to external services (GitHub, hooks); (c) the CAT-10 authority carve-out issue (LEGION-47-146, 176) to recur if integration skills write to project state. The `adapter.prompt_free_text` primitive decision remains outstanding and blocks remediation of LEGION-47-016, 040, 093, 117, 120, 122, 127, 132, 133, 138, 150, 162 plus inherited S03/S04/S05/S06/S07 findings. The agent-ID validation CI check proposed above must land before S11 (engineering agent audits) to avoid compounding non-existent-ID findings.
 
+
+---
+
+## Session S09 — Domain & Integration Skills
+
+**Started:** 2026-04-16 20:23
+**Closed:** 2026-04-16
+**Target:** skills/{design-workflows,marketing-workflows,security-review,ship-pipeline,board-of-directors,codebase-mapper}/SKILL.md
+**Files audited:** 6
+**Findings:** 31 total — 0 P0, 0 P1, 31 P2, 0 P3
+**IDs assigned:** LEGION-47-181 .. LEGION-47-211
+**Status:** completed
+
+### Per-file summary
+
+**design-workflows/SKILL.md — 5 findings (1 confirmed, 5 P2)**
+- LEGION-47-181 (CAT-2 P2, confirmed): Canonical design-keyword list (L41) not in intent-teams.yaml; fourth independent registry; seven sites drift. Peer LEGION-47-002/004/005/084/140/160/174.
+- LEGION-47-182 (CAT-3 P2): Four-wave 2A/2B/3/4 plan lacks parallel-dispatch contract, model_tier, fan-out, file-overlap declaration; "review agents" L637 unspecified. Peer dispatch-specification.
+- LEGION-47-183 (CAT-8 P2): 7-pass scoring has no iteration bound, gap between `<7` remediate and `8+` acknowledge (scores 7.0-7.9 unspecified), `<5` average non-blocking. Peer exit-condition state-partition LEGION-47-054, 151.
+- LEGION-47-184 (CAT-6 P2): settings.review.evaluator_depth and "SUMMARY.md files exist for build plans" preconditions not verified; settings-schema.json review block undocumented.
+- LEGION-47-185 (CAT-5 P2): Two "Blacklisted (never use)" clusters (15 items) with only one hedge; CAT-5 convertible to positive catalog.
+
+**marketing-workflows/SKILL.md — 4 findings (2 confirmed, 4 P2)**
+- LEGION-47-186 (CAT-2 P2, confirmed): MKT-* keywords list (L41) diverges from design and absent from intent-teams.yaml; eight-site registry drift.
+- LEGION-47-187 (CAT-3 P2, confirmed): **Catastrophic non-existent-agent-ID bug.** 6 marketing agent-ids referenced (marketing-twitter-engager, marketing-instagram-curator, marketing-tiktok-strategist, marketing-reddit-community-builder, marketing-content-creator, marketing-social-media-strategist) — **NONE exist**; actual division has 4 agents. ~25 references across 6 sections. Largest concentration of non-existent-agent bug in audit. Frontmatter claims "8 marketing agents"; CLAUDE.md says 4. Peer LEGION-47-052, 119, 149, 159, 199. **Blocks S12 Marketing agent audit.**
+- LEGION-47-188 (CAT-6 P2): "agent-registry Section 4 Marketing Campaign team" precondition unverified; L135 "Section 4" vs L537 "Section 2.3" naming drift.
+- LEGION-47-189 (CAT-8 P2): Four lifecycle states (Planning/Active/Measuring/Complete) with no transition criteria; "Final report written" no path, no schema, no agent; OUTCOMES.md task_type for marketing completion unspecified.
+
+**security-review/SKILL.md — 5 findings (1 confirmed, 5 P2)**
+- LEGION-47-190 (CAT-2 P2, confirmed): Fourth/fifth/sixth independent security-keyword registry; diverges from authority-enforcer detect_domain and review-panel L27/439/494-495. L31-32 prose matches with no grep protocol. Peer LEGION-47-084, 140, 160, 174.
+- LEGION-47-191 (CAT-3 P2): "Dispatch Target: Internal" ambiguous; no model_tier; 6-step analysis runs serial but Sections 5/6/7 independent-scan parallel candidates.
+- LEGION-47-192 (CAT-10 P2): Silent fallback from engineering-security-engineer to engineering-senior-developer bypasses domain-owner trust model; authority-enforcer Section 4 and review-panel BLOCKER-override both compromised. Authority-language defect.
+- LEGION-47-193 (CAT-8 P2): Four "non-negotiable" verdict-overrides have no acceptance spec for interaction with review-loop cycles and authority-enforcer filter; [VERDICT-OVERRIDE] prefix unparseable schema. Peer LEGION-47-151, 161.
+- LEGION-47-194 (CAT-6 P2): `*middleware*` broad substring-match overmatches node_modules / test fixtures; "API route files with authentication decorators" / "Configuration files with secrets or keys" prose-only; skip list excludes .env.example but not config.example.*.
+
+**ship-pipeline/SKILL.md — 4 findings (1 confirmed, 4 P2)**
+- LEGION-47-195 (CAT-1 P2, confirmed): "Ship anyway — skip gate (user takes responsibility)" as third bounded option is authority-bypass escape hatch; no escalation, no audit log, no secondary confirm. Peer closed-set-enforcement cluster.
+- LEGION-47-196 (CAT-8 P2): Check 6 "Clean Working Tree" followed by Section 2 writing SHIP-REPORT.md makes tree dirty; re-entry / canary re-invocation fails Check 6 forever. Commit-vs-gitignore policy for SHIP-REPORT.md unspecified. Peer exit-condition LEGION-47-054, 151, 161, 202.
+- LEGION-47-197 (CAT-6 P2): Step 1/3/4 assume SUMMARY.md structured sections, REVIEW.md severity fields, plan-schema v6.0 verification_commands — none verified; Step 3 Total/Passed/Failed extraction format-mismatch with Check 5 exit-code-only output.
+- LEGION-47-198 (CAT-3 P2): Canary monitoring "1/5/15 minutes after deploy" requires ≥15-minute run incompatible with 4.7 per-turn execution; no adapter.schedule_followup primitive; Ctrl+C described for non-existent harness handler. Peer LEGION-47-180.
+
+**board-of-directors/SKILL.md — 7 findings (2 confirmed, 7 P2)**
+- LEGION-47-199 (CAT-3 P2, confirmed): "53-agent pool" (actual 48). Third distinct incorrect agent-count claim after review-panel "52-agent pool" (LEGION-47-159). Non-existent-agent-ID class peer LEGION-47-052, 119, 149, 187.
+- LEGION-47-200 (CAT-1 P2, confirmed): "Other — enter custom agent IDs manually" as fifth bounded option; free-text capture defect; no closure; peer LEGION-47-012, 040, 051, 150, 162.
+- LEGION-47-201 (CAT-6 P2): task_type-to-CLI-capability mapping hypothetical ("design-ux-architect might map to ui_design"); cli-dispatch.md has no such table; adapter.parallel_execution read without existence check.
+- LEGION-47-202 (CAT-8 P2): Resolution formula at N=2 makes condition 2 (APPROVED WITH CONDITIONS) unreachable because condition 1 already captures approve=2; ABSTAIN path silently reduces effective-N without announcement. Exit-condition partition peer LEGION-47-054, 151, 161, 196.
+- LEGION-47-203 (CAT-10 P2): Board skill writes to `.planning/board/**` and `.planning/memory/OUTCOMES.md` paths not in any plan's files_modified → authority-enforcer surgical-mode flags as scope violations (LEGION-47-146, 176). System-paths carve-out missing.
+- LEGION-47-204 (CAT-4 P2): "Rationale for internal execution" (why Phase 2 is internal) placed mid-Section 3; a reader of Section 1-2 already saw cli-dispatch as option and expects Phase 2 to follow. WHY deferred; WHAT should be front-loaded in Section 1 Execution Model.
+- LEGION-47-205 (CAT-7 P2): Injection density across three spawn phases — "You MUST produce" (L143), "You MUST choose... no CONCERNS option" (L335-336), "IMPORTANT: no default... must be deliberate" (L338-341), CHALLENGE/AGREE/QUESTION/CLARIFY/SHIFT 8-imperative list. Peer persona-calibration LEGION-47-152, 157, 158, 172, 177.
+
+**codebase-mapper/SKILL.md — 6 findings (1 confirmed, 6 P2)**
+- LEGION-47-206 (CAT-2 P2): Three-state detection ambiguous — extension list excludes Zig/PHP/Dart/etc.; "ONLY .md files" doesn't distinguish .md-plus-manifests from .md-only; "changed significantly" unenumerated.
+- LEGION-47-207 (CAT-6 P2, confirmed): `npm ls --all --json | node -e ...` requires node + npm + node_modules; `npm view` requires network; `2>/dev/null` swallows four distinct failure modes indistinguishably.
+- LEGION-47-208 (CAT-3 P2): 12+ analyses (Sections 2/3/4/4.6/8/9/9.4/9.5/10/11/13/14) dispatched "in sequence" with no model_tier, no parallel-safety claim, no partial-analysis handling; many independent and parallel-safe. Peer LEGION-47-180.
+- LEGION-47-209 (CAT-8 P2): Section 16 Auto-Update has no acceptance spec for mode=prompt + user-declined transition; no rollback path when downstream parse fails after write succeeds. Peer exit-condition cluster.
+- LEGION-47-210 (CAT-5 P2): Two "Never" clusters (L82, L896-899) totaling 7 Never instructions in close proximity; convertible to positive caller-contract framing. Peer LEGION-47-166.
+- LEGION-47-211 (CAT-10 P2): Section 15 writes to `.planning/config/directory-mappings.yaml` — config/ is privileged user-owned path (holds intent-teams, escalation-protocol, control-modes, authority-matrix). mode="auto" silently auto-writes without user consent, contradicting L898 "Never auto-trigger". No authority-matrix system-paths declaration. Peer LEGION-47-146, 176, 203.
+
+### Themes surfaced this session
+
+1. **Keyword-registry drift CANNOT be defered further.** S09 added two new domain-keyword registry instances (design-workflows L41, marketing-workflows L41) and two new security-keyword registry instances (security-review L27-36). Nine total sites now drift: CLAUDE.md L110-112, AGENTS.md L110-112, README L854-855, intent-teams.yaml, authority-enforcer detect_domain, review-panel detect_domain (three separate registries internally), review-loop domain-match table, security-review Section 1, design-workflows Section 1, marketing-workflows Section 1. Each subset is different. The systemic remediation — consolidate all keyword registries into `.planning/config/intent-teams.yaml` under `teams.<team>.keywords[]` with a shared schema — MUST land before S12 (Design + Marketing agent audits) or findings will compound per-agent.
+
+2. **Non-existent-agent-ID bug class: marketing-workflows is the concentration.** LEGION-47-187 references 6 non-existent agent-ids ~25 times in a single skill file. Combined with LEGION-47-199 "53-agent pool" (actual 48), the class now spans: spec-pipeline (LEGION-47-052), authority-matrix (LEGION-47-119), review-loop (LEGION-47-149), review-panel (LEGION-47-159), marketing-workflows (LEGION-47-187), board-of-directors (LEGION-47-199). Six sites, >30 distinct invalid references. The CI agent-ID validator proposed in S08 cross-cut MUST land before S11 (engineering agent audits) and S12 (design+marketing agent audits) or findings proliferate. Additional requirement: the validator must also check "{N}-agent pool" phrases against the actual count.
+
+3. **Exit-condition state-partition class now 6 distinct peers.** LEGION-47-054 (review.md), 151 (review-loop), 161 (review-panel), 196 (ship-pipeline Check 6 + SHIP-REPORT.md), 202 (board-of-directors N=2 resolution), 209 (codebase-mapper auto-update mode=prompt + declined). The pattern is consistent: a decision/state machine defines some transitions but omits the edge case; 4.7 literally applying the rule falls through silently.
+
+4. **Dispatch-specification cluster extends to 12+ sequential-when-parallel skills.** S09 added LEGION-47-182 (design-workflows 4-wave plan), 191 (security-review 6 checks), 198 (ship-pipeline canary scheduling), 208 (codebase-mapper 12+ analyses). Each skill dispatches multiple steps/agents in serial without parallel-safety claim, fan-out count, or model_tier. The systemic fix pattern is now well-understood: every dispatch point must declare {when to dispatch, why parallel-safe, fan-out count, model_tier}.
+
+5. **CAT-10 authority carve-out / system-paths defect.** LEGION-47-203 (board-of-directors writing `.planning/board/**` and OUTCOMES.md), 211 (codebase-mapper writing `.planning/config/directory-mappings.yaml`) both hit the same issue: skills write state/config files not in any plan's `files_modified`. authority-enforcer surgical mode flags them; no exemption schema exists. Peers LEGION-47-146 (execution-tracker), 176 (authority-enforcer canonical owner). System-paths allow-list in authority-matrix.yaml is now the canonical remediation and must include: .planning/STATE.md, .planning/ROADMAP.md, .planning/phases/**/SUMMARY.md, .planning/phases/**/REVIEW.md, .planning/phases/**/SHIP-REPORT.md, .planning/memory/OUTCOMES.md, .planning/board/**, .planning/campaigns/**, .planning/designs/**, .planning/state/directory-mappings.yaml (or wherever it ends up after LEGION-47-211 remediation).
+
+### Cross-cutting observation — domain-skills registry-drift lockstep
+
+Three domain skills in S09 (design-workflows, marketing-workflows, security-review) independently define the domain's activation surface with divergent subsets. Each skill is the canonical owner for its domain per CLAUDE.md, yet none of them cross-reference the authoritative config. Under 4.7 literalism, the reader of `/legion:plan` running against a phase titled "Launch marketing campaign with UX research and secure login" would apply:
+- marketing-workflows L41 activation → trigger (marketing, campaign present)
+- design-workflows L41 activation → trigger (UX research, user testing present)
+- security-review L27-36 activation → probably trigger (secure login → `*login*`, `*session*`)
+
+Three-way activation is possible — but the three skills do not describe a merge strategy. Which wave pattern wins? design-workflows Section 6.1 (research→design→integration), marketing-workflows Section 6.1 (strategy→content→distribution), or security-review's evaluator registration? The phase-decomposer (S07) does not resolve this; plan-critique does not flag it. The remediation must (1) consolidate activation surfaces, (2) declare a canonical merge rule for multi-domain phases (prefer per-requirement-ID mapping over keyword-based matching), (3) spec explicit fallback for ambiguous phases.
+
+### Cumulative progress
+
+- **Files audited:** 60 / 125 (48.0%)
+- **Findings:** 209 total (0 P0, 15 P1, 185 P2, 9 P3) per FINDINGS-DB.jsonl authoritative count
+- **Sessions completed:** S01, S02a-d, S03, S04, S05, S06, S07, S08, S09
+
+### Next session
+
+S10 — Intelligence & Tracking Skills (8 files): candidate scope includes `intent-router/SKILL.md` (already audited in S06 — confirm), `polymath-engine/SKILL.md`, `agent-registry/SKILL.md` (referenced in S08/S09 findings but not yet audited), `memory-manager/SKILL.md`, `milestone-tracker/SKILL.md`, `portfolio-manager/SKILL.md`, `github-sync/SKILL.md`, `hooks-integration/SKILL.md`. Expect (a) the non-existent-agent-ID class to recur in agent-registry (canonical owner for agent lookups — if agent-registry itself has broken references, it propagates everywhere); (b) the system-paths carve-out defect to recur in memory-manager (writes OUTCOMES.md), milestone-tracker (writes phase archive), portfolio-manager (writes multi-project state); (c) GitHub integration skills to expose adapter.create_pr / adapter.create_issue dispatch-specification gaps (peer LEGION-47-198 canary scheduling — same pattern of missing adapter primitive). The `adapter.prompt_free_text` primitive decision remains outstanding. The **agent-ID CI validator** and **keyword-registry consolidation** are now both hard blockers for S11/S12; neither can land safely without them.
+
