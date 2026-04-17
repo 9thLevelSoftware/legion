@@ -3,30 +3,30 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (53 / 125 files audited)
+**Status:** in_progress (54 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
-- P1: 14 findings
-- P2: 148 findings
+- P1: 15 findings
+- P2: 154 findings
 - P3: 9 findings
-- **Total:** 171 findings
+- **Total:** 178 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
 | CAT-1 | 44 | P1 |
-| CAT-2 | 32 | P2 |
-| CAT-3 | 16 | P1 |
+| CAT-2 | 33 | P1 |
+| CAT-3 | 17 | P1 |
 | CAT-4 | 7 | P2 |
 | CAT-5 | 6 | P2 |
-| CAT-6 | 24 | P1 |
-| CAT-7 | 4 | P2 |
-| CAT-8 | 23 | P2 |
+| CAT-6 | 26 | P1 |
+| CAT-7 | 5 | P2 |
+| CAT-8 | 24 | P2 |
 | CAT-9 | 9 | P2 |
-| CAT-10 | 6 | P2 |
+| CAT-10 | 7 | P2 |
 
 ## Files
 
@@ -69,6 +69,7 @@
 | `docs/schemas/review-finding.schema.json` | S02d | 1 | P3 |
 | `docs/settings.schema.json` | S02d | 0 | — |
 | `docs/schemas/summary.schema.json` | S02d | 1 | P2 |
+| `skills/authority-enforcer/SKILL.md` | S08 | 7 | P1 |
 | `skills/cli-dispatch/SKILL.md` | S06 | 5 | P2 |
 | `skills/execution-tracker/SKILL.md` | S08 | 4 | P2 |
 | `skills/intent-router/SKILL.md` | S07 | 7 | P2 |
