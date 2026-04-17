@@ -399,8 +399,93 @@ S08 — Execution & Review Skills (5 files): candidate scope includes `wave-exec
 ## Session S08 — Execution & Review Skills
 
 **Started:** 2026-04-16 19:59
+**Closed:** 2026-04-16
 **Target:** skills/{execution-tracker,review-loop,review-panel,review-evaluators,authority-enforcer}/SKILL.md
-**Files audited:** (in progress)
-**Findings:** (in progress)
-**Status:** in_progress
+**Files audited:** 5 (execution-tracker, review-loop, review-panel, review-evaluators, authority-enforcer)
+**Findings:** 36 total — 0 P0, 2 P1, 34 P2, 0 P3
+**IDs assigned:** LEGION-47-145 .. LEGION-47-180
+**Status:** completed
+
+### Per-file summary
+
+**execution-tracker/SKILL.md — 4 findings (4 P2)**
+- LEGION-47-145 (CAT-6 P2): Step 2 STATE.md writes assume structural sections exist — no create-if-missing for "Phase {N} Results", Progress, etc. Canonical Plan-completion write path.
+- LEGION-47-146 (CAT-10 P2): Writes STATE.md/ROADMAP.md/git — shared-state writes outside any plan's `files_modified`. No Authority Matrix reference; authority-enforcer Section 11 will flag as violations under surgical mode. Cross-cut with LEGION-47-176.
+- LEGION-47-147 (CAT-2 P2): Step 2.5 memory-recording has three conflated conditions (OUTCOMES.md exists OR memory/ exists OR can be created) with no precedence; "output as text" fallback not a structured escalation.
+- LEGION-47-148 (CAT-8 P2): Step 3.5 compaction suggestion depends on "completed phase" predicate never defined; may false-positive on just-completed current phase.
+
+**review-loop/SKILL.md — 10 findings (1 P1, 9 P2)**
+- LEGION-47-149 (CAT-3 P1, confirmed): Three non-existent agent IDs in canonical review-routing table — `testing-evidence-collector` (L76, 95, 362, 1154), `marketing-content-creator` (L397), `engineering-devops-automator` (L399). Actual IDs: no evidence-collector exists; marketing-content-social-strategist; engineering-infrastructure-devops. Peer of LEGION-47-052, 119. Every `code` phase silently loses its secondary reviewer.
+- LEGION-47-150 (CAT-1 P2, confirmed): "Proceed with this reviewer team? (or name a replacement)" is free-text without AskUserQuestion contract. Blocked on `adapter.prompt_free_text` primitive. Peer of LEGION-47-040.
+- LEGION-47-151 (CAT-8 P2, confirmed): Exit-conditions don't partition state space. Canonical owner of the LEGION-47-054 defect class.
+- LEGION-47-152 (CAT-7 P2): "Skeptical by default", "default to NEEDS WORK", "first reviews almost always surface issues" biases reviewer against PASS.
+- LEGION-47-153 (CAT-6 P2): adapter.* references (parallel_execution, spawn_agent_personality, collect_results, model_execution, commit_signature) with no resolution protocol or missing-key handling.
+- LEGION-47-154 (CAT-8 P2): Two Section 8 headings (L784 Escalation, L1045 Authority Conflict Resolution) — "go to Section 8" ambiguous.
+- LEGION-47-155 (CAT-3 P2): Fix-cycle parallel dispatch asserts non-overlap without verifying; two BLOCKERs in same file can race.
+- LEGION-47-156 (CAT-2 P2): File-type → fix-agent mapping closed-set missing .vue/.svelte/.swift/.kt/.cs/.java; L391-392 OR between two agents without disambiguation.
+- LEGION-47-157 (CAT-5 P2): Do-NOT scaffolding overused in Section 3 "IMPORTANT" block.
+- LEGION-47-158 (CAT-7 P2): "This is almost always a model error" accusation encoded as skill content, necessitated by LEGION-47-149 bug.
+
+**review-panel/SKILL.md — 8 findings (3 confirmed, 8 P2)**
+- LEGION-47-159 (CAT-3 P2, confirmed): Five agent-ID errors — "52-agent pool" (actual 48), "Testing division (all 7)" (actual 6), testing-evidence-collector (rubric defined for non-existent agent), engineering-devops-automator, short-form security-engineer/code-reviewer/ux-architect in examples. Peer of LEGION-47-149, 052, 119.
+- LEGION-47-160 (CAT-2 P2, confirmed): Three separate security-keyword registries drift out of sync (L27, L439, L494-495); "etc." at L495. Peer of LEGION-47-084, 140.
+- LEGION-47-161 (CAT-8 P2): Aggregate verdict state-partition gap (edge: BLOCKERs with all-PASS verdicts; zero must-fix with NEEDS WORK on SUGGESTIONs). Peer of LEGION-47-054, 151.
+- LEGION-47-162 (CAT-1 P2, confirmed): "Other — enter custom agent IDs" free-text. Peer of LEGION-47-150, 040.
+- LEGION-47-163 (CAT-6 P2): agent-registry.md Section 3 dependencies (Steps 1-6) unverified; OUTCOMES.md schema not checked; "review-capable" based on implicit specialty field.
+- LEGION-47-164 (CAT-4 P2): "Review Conduct Rules" claim to be injected but no injection point; Rule 6 verdict "Ready to merge? Yes/No/With fixes" contradicts review-loop Section 3 "PASS/NEEDS WORK/FAIL".
+- LEGION-47-165 (CAT-9 P2): Division default rubrics missing Marketing/Support/Spatial Computing/Specialized (per CLAUDE.md 9 divisions); existing defaults have no prompt-injection format.
+- LEGION-47-166 (CAT-5 P2): Rules 3/5 Do-NOT constructions convertible to pure positive.
+
+**review-evaluators/SKILL.md — 7 findings (2 confirmed, 7 P2)**
+- LEGION-47-167 (CAT-8 P2, confirmed): Section numbering broken — "Section 8" uses 6.1-6.5 subsections, "Section 10" uses 8.1-8.5. Cross-references "Section 6.4" land on wrong sections. Peer of LEGION-47-154.
+- LEGION-47-168 (CAT-3 P2, confirmed): `model_tier: "execution"` at L1259 — canonical setter for LEGION-47-110 dead metadata.
+- LEGION-47-169 (CAT-2 P2): File-glob evaluator triggers use substring matches not path-anchored patterns; .jsx/.tsx excluded from Code Quality (bug); overlaps silently.
+- LEGION-47-170 (CAT-6 P2): adapter.capabilities precondition unverified; "CLI configured" undefined; Section 6.4 broken reference; Security/Completeness missing from 8.1 Dispatch Targets table.
+- LEGION-47-171 (CAT-10 P2): Security Evaluator spawns engineering-security-engineer without calling authority-enforcer Section 3; defers to non-audited skills/security-review/SKILL.md.
+- LEGION-47-172 (CAT-7 P2): "Boil the Lake" + "completeness should be the default — not a stretch goal" maximalist.
+- LEGION-47-173 (CAT-8 P2): Completeness Score has no PASS/NEEDS WORK/FAIL mapping; "N/A passes count as PASS" inflates backend-phase scores to 100 with major gaps.
+
+**authority-enforcer/SKILL.md — 7 findings (3 confirmed, 1 P1, 6 P2)**
+- LEGION-47-174 (CAT-2 P1, confirmed): THE canonical `detect_domain()` function has `# ... etc` truncation — only 4 domains (security, performance, accessibility, api-design) of authority-matrix.yaml's full set; silent "general" classification makes filtering fail-open. Peer of LEGION-47-084, 140, 160.
+- LEGION-47-175 (CAT-6 P2, confirmed): authority-matrix.yaml load has no error handling; template path for "regenerate" undefined; validate runs after load (masks failure). Peer of LEGION-47-140.
+- LEGION-47-176 (CAT-10 P2): Section 11 post-execution boundary check has no carve-out for legitimate system-path writes (STATE.md, ROADMAP.md, SUMMARY.md) — under surgical mode, execution-tracker's writes get reverted. Cross-cut with LEGION-47-146.
+- LEGION-47-177 (CAT-7 P2): Injected constraints use stacked "DO NOT" + "MUST" + "Do not skip" + military "first line of defense" rhetoric. Compounds across every agent prompt.
+- LEGION-47-178 (CAT-6 P2): Two silently-default-to-guarded paths (missing control_mode_name field, missing profile entirely); agents may think they are in more permissive mode than they are.
+- LEGION-47-179 (CAT-8 P2): "BLOCKER from any agent overrides domain ownership" creates veto-by-severity-escalation anti-pattern with no evidence-check guardrail.
+- LEGION-47-180 (CAT-3 P2): Integration Points specify what to call but not fan-out parallel-safety, matrix caching contract, or serialization. Peer of LEGION-47-101/102/112/125/128/141/155.
+
+### Themes surfaced this session
+
+1. **Non-existent agent-ID bug class extends further.** S08 added 3 new sites to the pre-existing-bug catalog (LEGION-47-149 with 3 distinct IDs, LEGION-47-159 with 5 distinct errors across a single file including a stale agent-count claim). The bug class now spans spec-pipeline (LEGION-47-052), authority-matrix (LEGION-47-119), review-loop (LEGION-47-149), review-panel (LEGION-47-159). Remediation requires: (a) a CI grep/validator that every agent-ID string in skills/*.md, commands/*.md, config/*.yaml must match an existing agents/<id>.md file, and (b) a canonical agent-ID registry (possibly CATALOG.md) that all other files reference by cross-link rather than hardcoding.
+2. **Keyword-registry drift is now a crisis.** Three independent keyword registries for security/domain detection exist with different members: authority-enforcer detect_domain (L390-395 truncated), review-panel detect_domain (L437-442), review-panel intent-filtering (L493-495), plus intent-teams.yaml (S02c schema drift per LEGION-47-084). All four MUST agree but do not. LEGION-47-174 promotes authority-enforcer to canonical owner as the S08 scope requires; resolution means deleting hardcoded lists in review-panel and loading from authority-matrix.yaml's new `domain_keywords` map.
+3. **Section-numbering integrity.** Two files in this session have broken structural navigation: review-loop has two "Section 8" headings; review-evaluators uses subsection numbers that don't match their parent sections (6.1-6.5 under "Section 8"; 8.1-8.5 under "Section 10"). Every cross-reference to these sections can resolve incorrectly under 4.7 literal reading.
+4. **Exit-condition state partitioning (canonical resolution).** LEGION-47-054 (commands/review.md S05), LEGION-47-151 (review-loop canonical owner), LEGION-47-161 (review-panel aggregate verdict), LEGION-47-173 (review-evaluators completeness score) — same defect class. All rooted in non-partitioning boolean conditions that let certain states fall through without an exit path. Remediation is a single pattern: "compute a scalar gate (must-fix-count, score), then partition with `if X == 0 → PASS; elif escalation_trigger → FAIL; else → NEEDS WORK`". Apply uniformly to all four canonical decision points.
+5. **`adapter.prompt_free_text` primitive continues to block free-text AskUserQuestion gates.** S08 added LEGION-47-150 (reviewer confirmation), LEGION-47-162 (review-panel Other option). The primitive decision has now outstanding 7 sessions and blocks remediation of LEGION-47-016, 040, 093, 117, 120, 122, 127, 132, 133, 138, 150, 162 — 12 findings across 11 files.
+6. **Maximalist-language cluster is now a systemic issue.** S08 added LEGION-47-152 (skeptical by default), LEGION-47-158 (almost-always-a-model-error), LEGION-47-172 (boil the lake), LEGION-47-177 (first line of defense rhetoric). Combined with prior sessions' findings, the `persona-calibration` cluster now spans both command and skill files. A cross-cut pattern has emerged where emphatic rhetoric accumulates across injection points and amplifies under 4.7 literal reading.
+7. **Authority-enforcer cross-cut with execution-tracker.** LEGION-47-146 (execution-tracker writes STATE.md/ROADMAP.md without Authority Matrix reference) + LEGION-47-176 (authority-enforcer Section 11 post-execution check has no carve-out for system-path writes) are the same defect viewed from two ends. Under surgical control mode, execution-tracker's legitimate writes get reverted because authority-enforcer cannot distinguish them from rogue file modifications. Remediation: authority-matrix.yaml schema adds `system_paths_exempt_from_scope: [...]` consumed by both skills.
+
+### Cross-cutting observation — review subsystem integrity
+
+S08 audited four of the five files that constitute the review subsystem (review-loop, review-panel, review-evaluators, authority-enforcer; security-review deferred to S09 per scope). The subsystem as a whole has structural issues that no single file can resolve:
+
+(a) **Three independent keyword registries** (LEGION-47-174, 160, the intent-teams.yaml source) for domain detection. authority-enforcer claims ownership at L381-408 but truncates with `# ... etc`. review-panel duplicates at L437-442 and L493-495 with different members. intent-teams.yaml is the config version but has its own schema drift (LEGION-47-084). 4.7 reader routing a finding through Section 4 filterFindings computes `detect_domain()` against at least two different authoritative-sounding lists depending on code path; results differ silently.
+
+(b) **Non-existent agent IDs proliferate through the review-selection chain.** review-loop routes to testing-evidence-collector; review-panel composes panels including testing-evidence-collector, engineering-devops-automator, code-reviewer; review-evaluators spawns engineering-security-engineer (correct) and product-feedback-synthesizer as Completeness Evaluator (unusual role). Every /legion:review invocation under default settings hits at least one silent fallback.
+
+(c) **Section-numbering drift** in review-loop (two Section 8s) and review-evaluators (6.1-6.5 / 8.1-8.5 under mis-numbered sections). Cross-references break under literal reading. The review subsystem's own files cannot reliably navigate to one another's anchors.
+
+(d) **Exit-condition state partitioning** broken in both review-loop (L349-352, L789) and review-panel (L547-551) and review-evaluators (completeness score L1003-1014). Four canonical decision points with the same defect pattern.
+
+(e) **Authority enforcement carve-outs missing.** authority-enforcer Section 11 will flag legitimate state-file writes by execution-tracker, review-loop (REVIEW.md), memory-manager (OUTCOMES.md) under surgical mode. The review subsystem writes state files as a matter of course; no schema exists to declare them safe.
+
+Systemic remediation: the review subsystem should be treated as a single unit in S18 (REMEDIATION.md) with a phased plan that (1) fixes agent-ID errors (CI check), (2) consolidates keyword registries into authority-matrix.yaml, (3) repairs section numbering, (4) applies the partition-gate pattern uniformly, (5) adds system-path carve-outs. Incremental fixing of individual findings will leave the subsystem in an inconsistent intermediate state.
+
+### Cumulative progress
+
+- **Files audited:** 54 / 125 (43.2%)
+- **Findings:** 178 total (0 P0, 15 P1, 154 P2, 9 P3) per FINDINGS-DB.jsonl authoritative count
+- **Sessions completed:** S01, S02a-d, S03, S04, S05, S06, S07, S08
+
+### Next session
+S09 — Domain & Integration Skills (6 files): candidate scope includes `security-review/SKILL.md` (deferred from S08 due to scope cut — this skill is the "Full methodology defined in" target for review-evaluators Security Evaluator per LEGION-47-171, and inherits pending audit risk), `design-workflows/SKILL.md`, `marketing-workflows/SKILL.md`, `github-sync/SKILL.md`, `hooks-integration/SKILL.md`, and one more domain/integration skill per the skills index. Expect (a) the marketing/design keyword-registry cluster (intent-teams.yaml schema drift LEGION-47-084, 140, 160, 174) to recur directly at the workflow sources; (b) the dispatch-specification cluster (LEGION-47-101/102/112/125/128/141/155/180) to extend as integration skills dispatch to external services (GitHub, hooks); (c) the CAT-10 authority carve-out issue (LEGION-47-146, 176) to recur if integration skills write to project state. The `adapter.prompt_free_text` primitive decision remains outstanding and blocks remediation of LEGION-47-016, 040, 093, 117, 120, 122, 127, 132, 133, 138, 150, 162 plus inherited S03/S04/S05/S06/S07 findings. The agent-ID validation CI check proposed above must land before S11 (engineering agent audits) to avoid compounding non-existent-ID findings.
 
