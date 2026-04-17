@@ -63,11 +63,14 @@ Write a wave checklist to `.planning/phases/{NN}/WAVE-CHECKLIST.md` for tracking
 
 ### Wave Execution
 
+**Dispatch mode:** sequential subagent spawn via blocking Task tool — one subagent at a time, awaited to completion. OpenCode's Task tool does not support concurrent invocation.
+
 Plans execute sequentially (Task tool is blocking):
 1. For each plan in the wave, spawn a subagent via the Task tool
 2. Wait for subagent completion before spawning the next
 3. Each subagent writes its result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
-4. After all plans in the wave complete, parse results and build wave summary
+4. If a Task invocation fails or times out, mark the plan Failed in WAVE-CHECKLIST.md and continue with the next plan
+5. After all plans in the wave complete, parse results and build wave summary
 
 ### Read-Only Agents
 

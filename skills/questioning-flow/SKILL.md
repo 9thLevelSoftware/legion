@@ -17,9 +17,9 @@ Adaptive conversation engine for `/legion:start`. Captures everything needed to 
 1. **Vision first, technology second** — understand what the user wants to exist before asking how to build it.
 2. **Adaptive depth** — follow the user's energy. If they go deep on a topic, explore it. If they give a terse answer, move on.
 3. **Infer where possible, confirm where uncertain** — don't ask questions the user already answered implicitly. State your inference and let them correct it.
-4. **Structured choices for preferences, open conversation for vision** — Stage 1-2 are conversational; Stage 3 uses explicit choice prompts.
+4. **Always close with a bounded choice (CLAUDE.md mandate)** — every user-facing question MUST invoke `adapter.ask_user` (AskUserQuestion on Claude Code) with a finite option set. Free-text prompts are not permitted. When the concept space is unbounded, include an `Other / Add details` option that opens a single free-text capture via `adapter.prompt_free_text` — never end a turn with an open prose prompt.
 5. **Target 5-8 total exchanges** — not 20 questions. Combine related questions. Skip what's already clear.
-6. **Summarize between stages** — after each stage, reflect back what you captured and ask for corrections before moving on.
+6. **Summarize between stages with a closure question** — after each stage, reflect back what you captured and close with a bounded confirmation: `Looks correct` / `Correct a specific field` / `Add missing detail` / `Cancel`. Never close a summary with an open "Anything to add?" prompt.
 
 ---
 
@@ -29,49 +29,101 @@ Adaptive conversation engine for `/legion:start`. Captures everything needed to 
 
 **Purpose**: Capture `{project_name}`, `{project_description}`, `{value_proposition}`, `{target_users}`.
 
-**Open with**:
-> "What are you building? Give me the elevator pitch."
+**Open with an `adapter.ask_user` (AskUserQuestion) call** — not a bare prose prompt. Example option set for the opener:
 
-From the user's response, extract what you can. Then ask only what's still missing:
+| id | label | description |
+|----|-------|-------------|
+| `pitch` | Paste or type my elevator pitch | Opens `adapter.prompt_free_text` for a single free-text elevator pitch |
+| `from-spec` | I have a spec/PRD to paste | Opens `adapter.prompt_free_text` for the spec text |
+| `from-url` | Start from a link (repo, doc, deck) | Opens `adapter.prompt_free_text` for a URL |
+| `other` | None of these | Opens `adapter.prompt_free_text` for an alternative entry |
 
-| Question | Ask if... | Fills |
-|----------|-----------|-------|
-| "Who is this for? Who are the primary users?" | Not clear from pitch | `{target_users}` |
-| "What problem does this solve that isn't solved today?" | Value prop unclear | `{value_proposition}` |
-| "What exists today that's close to this?" | Competitive context missing | `{architecture_notes}` (competitive context) |
-| "What's the one thing that makes this different?" | Differentiator unclear | `{value_proposition}` refinement |
+From the captured text, extract what you can. Then ask only what's still missing — each follow-up MUST be an `adapter.ask_user` call with a bounded option set (not a prose question):
 
-**After Stage 1** — Summarize and confirm:
-> "Here's what I'm understanding: **[project_name]** is [project_description]. It's for [target_users] and the core value is [value_proposition]. Anything to correct or add?"
+| Slot to fill | Options presented via `adapter.ask_user` |
+|--------------|------------------------------------------|
+| `{target_users}` | Concrete user archetypes inferred from the pitch (3-5 options) + `Other (specify via free-text primitive)` |
+| `{value_proposition}` | Inferred value-prop candidates (2-4 options) + `Refine — describe the real differentiator` (free-text primitive) |
+| `{architecture_notes}` (competitive context) | Detected adjacent products/spaces (2-4 options) + `None of these — describe what's close` (free-text primitive) + `Nothing close exists` |
 
-Wait for confirmation before proceeding.
+Only open a free-text primitive when the user explicitly selects an `Other`/`Refine`/`Describe` option — never as the default prompt.
+
+**After Stage 1** — Summarize, then close with a bounded `adapter.ask_user` confirmation:
+
+Display the summary as plain text:
+> "Here's what I'm understanding: **[project_name]** is [project_description]. It's for [target_users] and the core value is [value_proposition]."
+
+Then invoke `adapter.ask_user` with these options (exact schema — no free-text default):
+
+| id | label | description |
+|----|-------|-------------|
+| `confirm` | Looks correct, proceed to Stage 2 | Accept the summary as captured |
+| `correct-name` | Correct the project name | Opens `adapter.prompt_free_text` scoped to `{project_name}` |
+| `correct-description` | Correct the description | Opens `adapter.prompt_free_text` scoped to `{project_description}` |
+| `correct-users` | Correct the target users | Opens `adapter.prompt_free_text` scoped to `{target_users}` |
+| `correct-value` | Correct the value proposition | Opens `adapter.prompt_free_text` scoped to `{value_proposition}` |
+| `add-missing` | Add missing detail not captured above | Opens `adapter.prompt_free_text` for an unbounded addition |
+| `cancel` | Cancel initialization | Stop the questioning flow |
+
+Wait for a selection. Do NOT emit an open "Anything to correct or add?" prompt — that is a CLAUDE.md violation.
 
 ### Stage 2: Requirements & Constraints (2-4 exchanges)
 
 **Purpose**: Capture `{requirements_list}`, `{out_of_scope}`, `{constraints}`, `{architecture_notes}`, `{decisions_table}`.
 
-**Core questions** (always ask):
-- "What are the must-have features for v1?"
-- "What's explicitly out of scope — things you do NOT want to build right now?"
+**Core capture — always via `adapter.ask_user`:**
 
-**Adaptive follow-ups** — select based on project type detected in Stage 1:
+For must-have features:
 
-| Project type signal | Follow-up questions |
-|---------------------|---------------------|
-| Code/software | Stack preferences? Existing codebase? Deployment target? |
-| Content/marketing | Platforms? Voice/tone? Publishing frequency? |
-| Design | Brand guidelines? Target devices? Accessibility requirements? |
-| Research/analysis | Data sources? Deliverable format? Stakeholder audience? |
-| Mixed/unclear | Cover the most relevant subset; skip the rest |
+| id | label | description |
+|----|-------|-------------|
+| `list-features` | Enter the v1 feature list | Opens `adapter.prompt_free_text` for a bullet-list of must-haves |
+| `from-spec` | Extract from a spec/PRD | Opens `adapter.prompt_free_text` for the spec text |
+| `defer-to-legion` | Let Legion propose a minimal v1 from the vision captured | Legion drafts a feature list for user confirmation |
 
-**General optional questions** (ask if relevant, skip if not):
-- Technical constraints or hard requirements (language, hosting, budget)
-- Biggest risk or unknown
-- Existing assets to build on (repos, designs, content)
-- Timeline or deadline pressure
+For out-of-scope:
 
-**After Stage 2** — Summarize requirements as a bullet list and confirm:
-> "Here's the v1 scope I captured: [bullet list]. Out of scope: [items]. Any adjustments?"
+| id | label | description |
+|----|-------|-------------|
+| `list-out-of-scope` | Enter explicit exclusions | Opens `adapter.prompt_free_text` for the exclusion list |
+| `none` | Nothing explicit — include whatever Legion suggests | No exclusions recorded |
+
+**Adaptive follow-ups** — after detecting project type in Stage 1, invoke one `adapter.ask_user` call per slot with option lists inferred from the stack — never a free-prose question. Examples:
+
+| Project type signal | Slot | Example option set |
+|---------------------|------|--------------------|
+| Code/software | stack | `Next.js + PostgreSQL`, `Django + Postgres`, `Rails + MySQL`, `Other (specify)`, `No preference` |
+| Code/software | codebase | `Greenfield`, `Brownfield (existing repo)`, `Fork of existing project` |
+| Code/software | deploy-target | `Vercel`, `Cloudflare`, `AWS`, `Self-hosted`, `Other (specify)`, `Undecided` |
+| Content/marketing | platforms | `LinkedIn`, `X`, `Instagram`, `TikTok`, `YouTube`, `Newsletter`, `Other (specify)` |
+| Design | devices | `Desktop web`, `Mobile web`, `Native iOS`, `Native Android`, `Cross-platform`, `Other (specify)` |
+| Research/analysis | deliverable | `Report (markdown)`, `Slide deck`, `Dashboard`, `Dataset`, `Other (specify)` |
+
+Rule: If you cannot enumerate 2-5 plausible options for a slot, do not ask — skip the slot and let the phase planner capture it later.
+
+**General optional slots** — each invoked via `adapter.ask_user` when relevant (skip the slot entirely if not):
+- `constraints` — options: `None`, `Timeline`, `Budget`, `Hosting`, `Language/stack`, `Other (specify)`
+- `risk` — options: 3-5 inferred risks + `Other (specify)` + `No major unknowns`
+- `existing-assets` — options: `Existing repo`, `Existing designs`, `Existing content`, `Nothing yet`, `Other (specify)`
+- `timeline` — options: `No deadline`, `Soft (weeks)`, `Firm (date — specify)`, `Urgent (this week)`
+
+**After Stage 2** — Summarize as plain text, then close with a bounded `adapter.ask_user` confirmation:
+
+Summary display:
+> "Here's the v1 scope I captured: [bullet list]. Out of scope: [items]."
+
+Close with:
+
+| id | label | description |
+|----|-------|-------------|
+| `confirm` | Looks correct, proceed to Stage 3 | Accept the requirements as captured |
+| `adjust-requirements` | Adjust the v1 requirements list | Opens `adapter.prompt_free_text` scoped to `{requirements_list}` |
+| `adjust-scope` | Adjust the out-of-scope list | Opens `adapter.prompt_free_text` scoped to `{out_of_scope}` |
+| `adjust-constraints` | Adjust the constraints | Opens `adapter.prompt_free_text` scoped to `{constraints}` |
+| `add-missing` | Add missing detail not captured | Opens `adapter.prompt_free_text` for an unbounded addition |
+| `cancel` | Cancel initialization | Stop the questioning flow |
+
+Do NOT close with an open "Any adjustments?" prompt — that is a CLAUDE.md violation.
 
 ### Stage 3: Workflow Preferences (1-2 exchanges)
 

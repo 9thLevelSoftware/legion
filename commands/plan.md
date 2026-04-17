@@ -54,14 +54,30 @@ DRY-RUN MODE (deterministic, no side effects)
 
    AUTO-PIPELINE MODE
    If `$ARGUMENTS` contains `--auto`:
-   - Skip all user confirmation gates (steps 3.5b, 3.6b, 6, 8.5) — auto-select recommended defaults
-   - Run the full pipeline without pausing: board quick-assess → decomposition → plan critique → design review (if applicable) → security scan (if applicable)
-   - Each stage feeds structured output to the next
-   - If any stage raises a BLOCKER-severity escalation: halt the pipeline and present to user
+   - Skip all user confirmation gates (steps 3.5b, 3.6b, 6, 8.5) and auto-select the defaults listed below.
+   - Run the full pipeline without pausing: board quick-assess → decomposition → plan critique → design review (if applicable) → security scan (if applicable).
+   - Each stage feeds structured output to the next.
+
+   **Auto-selected defaults per gate** (these replace the interactive AskUserQuestion prompts when --auto is set):
+   | Skipped gate | Default selection |
+   |---|---|
+   | Step 3.5b (board quick-assess offer) | Run board quick-assessment (equivalent to selecting "Yes, run quick assessment") |
+   | Step 3.6b (design review offer) | Run design review if phase type includes "design" AND `.planning/designs/` has files; otherwise skip |
+   | Step 6 (plan confirmation) | Select "Looks good, generate the plans" — do NOT swap agents or adjust structure in auto mode |
+   | Step 8.5 (plan critique offer) | Select "Run plan critique" (equivalent to selecting the Recommended option) |
+
+   **Per-stage abort criteria** (evaluated after each stage completes):
+   | Stage output severity | Action |
+   |---|---|
+   | BLOCKER | Halt pipeline. Display all escalations. Do not advance to next stage. Exit with non-zero status. |
+   | CAUTION / REWORK (plan critique) | If `--auto-refine` is set: trigger one re-plan cycle for affected plans (subject to MAX_REFINE_CYCLES). Otherwise: log warnings, continue to next stage. |
+   | WARNING (board, design, security) | Log warning, continue to next stage. Accumulate into consolidated summary. |
+   | INFO / PASS | Continue to next stage. |
+
    - Supports selective skips:
-     - `--auto --skip-board`: skip board quick-assessment
-     - `--auto --skip-security`: skip security surface scan
-   - After pipeline completes, display consolidated summary of all stages and proceed to state update
+     - `--auto --skip-board`: skip board quick-assessment stage (do not run; do not emit output for it)
+     - `--auto --skip-security`: skip security surface scan stage (do not run; do not emit output for it)
+   - After pipeline completes (or halts at BLOCKER), display consolidated summary of all executed stages with their verdicts and any escalations, then proceed to state update (or exit on halt).
 
    AUTO-REFINE MODE
    If `$ARGUMENTS` contains `--auto-refine`:
@@ -192,10 +208,15 @@ DRY-RUN MODE (deterministic, no side effects)
         with their own context windows. The orchestrator passes phase context
         to them and receives only structured proposal summaries back (~200 tokens
         each). This does NOT consume the orchestrator's context budget.
-      - Spawn 2-3 read-only (Explore) agents per phase-decomposer Section 2.5
-      - Include CODEBASE.md context in agent prompts if it exists (brownfield support)
-      - If a spec document exists at .planning/specs/{NN}-{phase-slug}-spec.md,
-        include it as additional context for richer proposals
+
+      **Dispatch specification — Architecture proposal agents**
+      | Field | Value |
+      |---|---|
+      | When | User selects "Yes, generate 2-3 proposals" in Step 3.5b. Fires exactly once per plan-phase invocation (no retry loop). |
+      | Why parallel is safe | All proposal agents are read-only (Explore sub-agents — no file writes). Each operates in its own context window and returns a structured proposal summary (~200 tokens). No shared write targets. No cross-agent reads. |
+      | How many | Exactly 2 or 3 agents (philosophies: Minimal, Clean, and — optionally — Pragmatic per phase-decomposer Section 2.5). Select count based on phase complexity signal from Step 3.5a; default to 3 when phase has ≥5 requirements. Do not reduce fan-out. |
+      | Mechanism | adapter.spawn_agent_readonly (Explore sub-agent on Claude Code; platform-equivalent on other CLIs). Issue all N spawn calls in a SINGLE tool call if `adapter.parallel_execution == true`; otherwise sequential. Model: adapter.model_execution. Include CODEBASE.md (if present) and `.planning/specs/{NN}-{phase-slug}-spec.md` (if present) as additional context in each spawn. |
+
       - Collect and present proposals side-by-side
       - User selects an approach (or requests hybrid)
       - Record selection in CONTEXT.md
@@ -260,11 +281,33 @@ DRY-RUN MODE (deterministic, no side effects)
    - Display the complete plan breakdown with wave structure
    - Show agent recommendations with rationale per plan
    - Show agent summary table
-   - Use adapter.ask_user: "Does this plan breakdown look right?"
-     - "Looks good, generate the plans" -- proceed
-     - "Swap an agent" -- ask which plan, present alternatives, update
-     - "Adjust the plan structure" -- discuss changes, revise decomposition
-   - Loop until user confirms
+   - Use AskUserQuestion: "Does this plan breakdown look right?"
+
+     **Select one option:**
+     - **Looks good, generate the plans** — proceed to context file + plan file generation
+     - **Swap an agent** — open a follow-up AskUserQuestion enumerating plan IDs, then candidate agents
+     - **Adjust the plan structure** — open a follow-up AskUserQuestion with structured adjustment categories
+
+     Choose one of the three options above. Do not propose alternatives.
+
+     → Use AskUserQuestion tool with these exact three options.
+
+   - If user selects **Swap an agent**:
+     a. Issue AskUserQuestion listing plan IDs (e.g., "Plan 01", "Plan 02", ...) as the options.
+        Do not accept free-text input.
+     b. After plan selected, issue AskUserQuestion listing candidate agent IDs from agent-registry
+        Section 1 (paginated by division if >10). Do not accept free-text input.
+     c. Update plan with selected agent. Loop back to the outer confirmation question.
+
+   - If user selects **Adjust the plan structure**:
+     a. Issue AskUserQuestion with these exact four options:
+        - **Change wave structure** — revise dependency waves
+        - **Change plan boundaries** — re-group deliverables across plans
+        - **Change task breakdown** — revise tasks within plans
+        - **Done adjusting** — return to the outer confirmation question
+     b. Apply the selected adjustment, then re-issue the selection AskUserQuestion.
+
+   - Loop until user selects "Looks good, generate the plans".
 
 7. GENERATE CONTEXT FILE
    Follow phase-decomposer skill Section 7 (Context File Generation):
@@ -302,6 +345,14 @@ DRY-RUN MODE (deterministic, no side effects)
       - Agent 1 runs plan-critique Section 1 (Pre-Mortem Analysis)
       - Agent 2 runs plan-critique Section 2 (Assumption Hunting)
       - For quick critique (1 agent): single agent runs both sections sequentially
+
+      **Dispatch specification — Plan critique agents**
+      | Field | Value |
+      |---|---|
+      | When | User selects "Run plan critique" in Step 8.5 OR `--auto-refine` flag is set. Fires up to MAX_REFINE_CYCLES times (default 2) if --auto-refine triggers re-plan cycles. |
+      | Why parallel is safe | Both critique agents are read-only (adapter.spawn_agent_readonly, no file writes). They operate on the same input plan files but produce independent finding reports on orthogonal dimensions (pre-mortem risks vs. assumption gaps). No shared write targets; no cross-agent reads. |
+      | How many | Standard critique: exactly 2 agents (one per plan-critique Section 1 and Section 2). Quick critique mode: exactly 1 agent running both sections sequentially (user explicitly opted for 1-agent mode). Do not reduce standard-mode fan-out below 2. |
+      | Mechanism | adapter.spawn_agent_readonly. Standard mode: if `adapter.parallel_execution == true`, issue both spawn calls in a SINGLE tool call; otherwise sequential in section order (1 then 2). Quick mode: 1 sequential call. Model: adapter.model_execution. |
 
    c. Collect findings and synthesize (plan-critique Section 3):
       - Merge pre-mortem risks and assumption findings

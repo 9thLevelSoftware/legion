@@ -16,24 +16,51 @@ Agent: `engineering-security-engineer`
 
 ## Section 1: Activation
 
-This skill activates when ANY of these conditions are met:
+This skill activates when ANY of these conditions are met. All filename globs reference the canonical registry in `.planning/config/intent-teams.yaml` under `teams.security.file_patterns[]` — do not inline divergent lists in consumers.
 
 ### Explicit Activation
 - `--security` or `--just-security` intent flag on `/legion:review`
 - `/legion:plan --auto` includes security scan (and `--skip-security` is NOT set)
 
-### Automatic Activation
-- Files modified in the current phase include security-sensitive patterns:
-  - `*auth*`, `*login*`, `*session*`, `*token*`, `*jwt*`
-  - `*password*`, `*credential*`, `*secret*`, `*encrypt*`, `*crypto*`
-  - `*permission*`, `*rbac*`, `*acl*`, `*role*`
-  - `*middleware*` (often contains auth middleware)
-  - API route files with authentication decorators
-  - Configuration files with secrets or keys
+### Automatic Activation — file-pattern globs
+
+Authoritative glob list: `.planning/config/intent-teams.yaml` → `teams.security.file_patterns[]`. Canonical set (mirror; edit the YAML first when adding):
+
+- `**/*auth*`, `**/*login*`, `**/*session*`, `**/*token*`, `**/*jwt*`
+- `**/*password*`, `**/*credential*`, `**/*secret*`, `**/*encrypt*`, `**/*crypto*`
+- `**/*permission*`, `**/*rbac*`, `**/*acl*`, `**/*role*`
+- `**/*middleware*`, `**/*guard*`, `**/*policy*`
+
+Word-boundary rule: a file qualifies only if the glob matches the filename AND the matched token is separated by `[._/\-]` from alphabetic characters on both sides (so `authorized_users_export.md` → matches `auth` token; `token_generator_template.md` → matches `token` token). If your runtime's glob engine cannot enforce word boundaries, fall back to substring match but flag the finding as confidence: medium rather than high.
+
+Restricted to source-file extensions: `.py`, `.js`, `.jsx`, `.ts`, `.tsx`, `.rb`, `.go`, `.rs`, `.java`, `.cs`, `.php`, `.swift`, `.kt`, `.scala`, `.cpp`, `.c`, `.h`.
+
+Configuration files qualify ONLY when the extension is `.env`, `.env.*`, `.yaml`, `.yml`, `.toml`, `.ini`, or `.json` AND the file content matches the secret-token grep in Section 6.1.
+
+### Automatic Activation — authentication-decorator detection
+
+Activate when a diff-modified file contains any of these authentication decorators/middleware markers. This list is enumerated — no generic "authentication decorators" prose trigger:
+
+| Framework | Markers (word-boundary regex) |
+|-----------|-------------------------------|
+| Flask | `@login_required`, `@fresh_login_required`, `@roles_required`, `@permissions_required`, `current_user\.is_authenticated` |
+| FastAPI | `Depends\(get_current_user\)`, `Depends\(get_current_active_user\)`, `OAuth2PasswordBearer`, `APIKeyHeader`, `HTTPBearer` |
+| Django | `@login_required`, `@permission_required`, `@user_passes_test`, `LoginRequiredMixin`, `PermissionRequiredMixin` |
+| Django REST Framework | `permission_classes`, `authentication_classes`, `IsAuthenticated`, `IsAdminUser`, `DjangoModelPermissions` |
+| Express (Node) | `passport\.authenticate`, `ensureAuthenticated`, `requireAuth`, `requireRole`, `jwt\(\{` |
+| NestJS | `@UseGuards\(`, `@Roles\(`, `@PermissionGuard`, `AuthGuard`, `JwtAuthGuard` |
+| Spring (Java) | `@PreAuthorize`, `@PostAuthorize`, `@Secured`, `@RolesAllowed`, `SecurityContextHolder` |
+| Rails (Ruby) | `before_action :authenticate`, `authenticate_user!`, `authorize!`, `cancan`, `pundit` |
+| ASP.NET | `\[Authorize\]`, `\[AllowAnonymous\]`, `ClaimsPrincipal`, `RoleManager`, `UserManager` |
+| Go (Gin/Echo/Chi) | `jwtauth\.Verifier`, `middleware\.Auth`, `AuthMiddleware`, `RequireAuth` |
 
 ### Codebase-Aware Activation
 - When `.planning/CODEBASE.md` exists and its Risk Areas section identifies security-critical files
 - When the phase type is `api` or `security` in CONTEXT.md frontmatter
+
+### Secret-token grep catalog (used by configuration-file activation)
+
+See Section 6.1 for the authoritative grep patterns used to decide whether a configuration file with a generic extension qualifies as security-sensitive. Non-matching configs MUST NOT trigger activation by filename alone.
 
 ### When NOT to activate
 - Non-code phases (documentation, design, marketing)
@@ -534,3 +561,15 @@ This skill is consumed by:
 | `ship-pipeline.md` | Verdict overrides for dependency/secret/supply chain findings | Section 9.4 |
 
 Security review is an optional integration — all workflows function identically without it.
+
+## Completion Gate
+
+This skill completes when ALL conditions are met (only when security review is enabled for the phase; when disabled, this skill no-ops and returns immediately):
+1. Security surface scan executed per Section 4 (dependencies, secrets, authN/authZ, input validation, crypto use, supply chain) and findings written to `.planning/phases/{NN}/SECURITY-REVIEW.md`
+2. Each finding carries required fields: `id`, `severity` (one of: blocker / critical / high / medium / low / info), `category`, `file`, `line`, `evidence`, `remediation`
+3. Per-finding verdict assigned — `must-fix`, `should-fix`, or `informational` — with a documented severity-to-verdict mapping
+4. All `blocker`-severity findings either resolved in-phase or explicitly escalated via `<escalation>` block with `type: quality`
+5. Pre-ship gate inputs populated per Section 8: unresolved-blocker count exposed for `ship-pipeline` to consume
+6. Verdict override rules (Section 9.4 — dependency / secret / supply chain) applied before the final verdict is returned
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

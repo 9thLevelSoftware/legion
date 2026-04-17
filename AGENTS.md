@@ -62,7 +62,7 @@ Agent frontmatter includes enriched metadata: `languages`, `frameworks`, `artifa
 IMPORTANT: Prefer retrieval-led reasoning over pre-training-led reasoning for Agent Personas, Skills, and Workflows. When assigned a specific agent persona (e.g., during `/legion:build`, `/legion:review`, `/legion:quick`, or `/legion:advise`), or when a workflow skill is loaded, use the `Read` tool to read their exact markdown file from the index below before generating any code, plans, or reviews. Do NOT rely on pre-trained knowledge about what an agent does — the personality file IS the source of truth.
 
 ```
-[Legion Agents Index]|root: {AGENTS_DIR} (resolve via workflow-common-core Agent Path Resolution)
+[Legion Agents Index]|root: ./agents (relative to project root; if agents/ not found, check adapters/*/agents/)
 |engineering:{engineering-ai-engineer.md,engineering-backend-architect.md,engineering-frontend-developer.md,engineering-infrastructure-devops.md,engineering-laravel-specialist.md,engineering-mobile-app-builder.md,engineering-rapid-prototyper.md,engineering-security-engineer.md,engineering-senior-developer.md}
 |design:{design-brand-guardian.md,design-ui-designer.md,design-ux-architect.md,design-ux-researcher.md,design-visual-storyteller.md,design-whimsy-injector.md}
 |marketing:{marketing-app-store-optimizer.md,marketing-content-social-strategist.md,marketing-growth-hacker.md,marketing-social-platform-specialist.md}
@@ -107,9 +107,17 @@ GitHub integration is opt-in — when a GitHub remote exists, `/legion:plan` cre
 
 Brownfield support is automatic — when `/legion:start` detects an existing codebase, it offers to analyze architecture, frameworks, risks, dependency graphs, test coverage, API surface, config/environment, and code patterns. The analysis produces `.planning/CODEBASE.md`, consumed by 5 commands: `/legion:plan` injects context into phase decomposition, `/legion:build` injects conventions and guidance into agent execution prompts, `/legion:review` injects conventions for conformance checking, `/legion:plan` (critique) cross-references risks during pre-mortem analysis, and `/legion:status` detects staleness. Standalone re-analysis is available via `/legion:quick analyze codebase`. The codebase mapper also produces dependency risk analysis (outdated packages, heavy dependencies, unmaintained packages) and test coverage correlation (critical untested files ranked by fan-in and complexity).
 
-Marketing workflows activate when `/legion:plan` detects a marketing-focused phase (MKT-* requirements or marketing keywords). Campaign planning produces structured documents at `.planning/campaigns/`, with content calendars and cross-channel coordination across the 8 marketing agents.
+Marketing workflows activate when `/legion:plan` detects:
+- Phase requirements with `MKT-*` prefix, OR
+- CONTEXT.md declares `workflow_type: marketing`
 
-Design workflows activate when `/legion:plan` detects a design-focused phase (DSN-* requirements or design keywords). Design system creation produces structured documents at `.planning/designs/`, with component specifications and three-lens review (brand, accessibility, usability) across the 6 design agents.
+No other triggers. If ambiguous, prompt user. Campaign planning produces structured documents at `.planning/campaigns/`, with content calendars and cross-channel coordination across the 8 marketing agents.
+
+Design workflows activate when `/legion:plan` detects:
+- Phase requirements with `DSN-*` prefix, OR
+- CONTEXT.md declares `workflow_type: design`
+
+No other triggers. If ambiguous, prompt user. Design system creation produces structured documents at `.planning/designs/`, with component specifications and three-lens review (brand, accessibility, usability) across the 6 design agents.
 
 ## Authority Matrix
 

@@ -8,7 +8,7 @@ summary: "Dynamic expert review panels assembled from relevant agents. Each pane
 
 # Review Panel
 
-Composes context-aware multi-perspective review teams from the 52-agent pool. Each reviewer evaluates through domain-specific weighted rubrics with non-overlapping criteria. Produces a synthesized consolidated report.
+Composes context-aware multi-perspective review teams from the 48-agent pool (roster defined in CLAUDE.md Division table; count computed at runtime from `agents/` directory). Each reviewer evaluates through domain-specific weighted rubrics with non-overlapping criteria. Produces a synthesized consolidated report.
 
 Used by `/legion:review` when panel mode is selected. Replaces the static phase-type-to-agent mapping with dynamic selection via agent-registry recommendation algorithm.
 
@@ -53,19 +53,46 @@ Step 1: Extract review signals from phase artifacts
   - Keywords from phase goal and task descriptions
   - Combine into a composite task description for the recommendation algorithm
 
+Step 1.0: Preconditions Verification (MANDATORY before composition)
+
+  Before running the scoring and filtering steps below, verify all preconditions. Missing
+  preconditions trigger documented degraded behavior, not silent success.
+
+  a) **agent-registry.md Section 3 structure** — read `skills/agent-registry/SKILL.md`.
+     Verify Sections 1 through 6 exist as named headings. If Section 6 (Memory Boost) is
+     absent: **skip the memory boost step below** and log WARN:
+     `"agent-registry Section 6 not found. Skipping memory-based agent score boost."`
+     Do not fail the review — proceed without the boost.
+
+  b) **OUTCOMES.md schema** — if `.planning/memory/OUTCOMES.md` exists, verify it conforms
+     to the memory-manager schema (required front-matter keys: `task_type`, `outcome`,
+     `agent_id`). If malformed: skip memory boost with WARN; do not fail.
+
+  c) **Agent frontmatter — `division` field** — every candidate agent .md file must have a
+     `division` key in its frontmatter. If absent on any candidate: log WARN and exclude
+     that candidate from the panel. Do not guess the division from the filename prefix.
+
+  d) **Review-capability declaration** — an agent is eligible for the panel iff its
+     frontmatter has a non-empty `review_strengths` array. This is the canonical marker;
+     do NOT infer eligibility from specialty substring matches. See Step 3 below.
+
 Step 2: Score agents using agent-registry Section 3
   Pass the composite task description to the agent-registry recommendation algorithm:
   - Step 1: Parse extracted keywords as task terms
   - Step 2: Match agents — exact (3 pts), partial (1 pt), division (2 pts)
   - Step 3: Rank by score, break ties by specificity
-  - Step 6: Apply memory boost if OUTCOMES.md exists
+  - Step 6 (optional, per precondition 1.0.a): Apply memory boost if OUTCOMES.md exists
+    AND agent-registry Section 6 is present AND OUTCOMES.md is schema-conformant.
 
 Step 3: Filter to review-capable agents
-  From the ranked list, keep only agents whose specialty includes evaluation,
-  review, quality, testing, or validation capabilities. Eligible agents:
+  From the ranked list, keep only agents whose frontmatter declares a non-empty
+  `review_strengths` array (the declarative eligibility marker established in Step 1.0.d).
 
-  Testing division (all 7):
-  - testing-qa-verification-specialist, testing-evidence-collector, testing-api-tester
+  **Reference roster — current review-capable agents** (verify against agents/ directory
+  at runtime; this list is informational, not authoritative):
+
+  Testing division (6 agents — verified against CLAUDE.md):
+  - testing-qa-verification-specialist, testing-api-tester
   - testing-workflow-optimizer, testing-performance-benchmarker
   - testing-test-results-analyzer, testing-tool-evaluator
 
@@ -74,7 +101,7 @@ Step 3: Filter to review-capable agents
 
   Engineering division (review-capable):
   - engineering-senior-developer, engineering-backend-architect
-  - engineering-frontend-developer, engineering-devops-automator
+  - engineering-frontend-developer, engineering-infrastructure-devops
 
   Product division (review-capable):
   - product-sprint-prioritizer, product-feedback-synthesizer
@@ -82,9 +109,14 @@ Step 3: Filter to review-capable agents
   Project Management (review-capable):
   - project-manager-senior, project-management-project-shepherd
 
-  If an agent from a non-review-capable role (e.g., marketing-tiktok-creator,
-  spatial-computing-xr-immersive-designer) scores highly, skip it and take the
-  next eligible agent.
+  **Note:** `testing-evidence-collector`, `engineering-devops-automator`, and
+  `marketing-content-creator` do NOT exist in the Legion 48-agent roster. They MUST NOT
+  appear in this list. If found in a prior version of this skill file, treat as a doc bug
+  and verify removal. Canonical agent IDs are in CLAUDE.md Division table.
+
+  If an agent from a non-review-capable role (e.g., a marketing-platform specialist without
+  review_strengths, or an XR-immersive role) scores highly, skip it and take the next
+  eligible agent.
 
 Step 4: Cap panel size and enforce diversity
   - 2 reviewers: single-domain phase (only one division touched)
@@ -130,6 +162,42 @@ Step 6: Present panel to user for confirmation
   If user selects "Replace a reviewer": show which reviewer to replace and alternatives
   If user selects "Other": accept custom agent IDs, validate each exists, assign default rubric
 ```
+
+### Panel Output Contract (consumed by review-loop dispatch)
+
+review-panel does NOT spawn agents. It emits a composition artifact that review-loop Section 2 consumes and review-loop Section 3/4 dispatches. The contract below is the ONLY surface review-loop reads.
+
+**Emitted artifact:** in-memory object with shape:
+```yaml
+panel:
+  reviewers:          # ordered list, length 2-4 per Step 4
+    - agent_id: {string — must match filename in agents/}
+      division: {string}
+      rubric_name: {string — matches Section 2 rubric key}
+      score: {integer}
+      rationale: {string}
+  domains_detected: [{string}, ...]
+  mode: "full" | "security-only" | "design-only" | "marketing-only"
+  confirmed_by_user: true
+```
+
+**Dispatch handoff to review-loop:**
+
+| Field | Value |
+|-------|-------|
+| **When** | AFTER Step 6 user confirmation succeeds (`confirmed_by_user: true`). If user declines all options: emit `<escalation severity=warning type=scope>` and return empty panel — do NOT fabricate a panel. |
+| **Why no dispatch here** | review-panel is pure composition. Spawning is the responsibility of review-loop Section 3 Step 4 (review agents) and Section 5 Step 4 (fix agents). Separation prevents double-dispatch bugs when panel is reused across cycles. |
+| **How many reviewers** | Exactly the count emitted in `panel.reviewers` (2-4 per Step 4 cap). review-loop must not add, drop, or reorder reviewers without re-invoking review-panel. |
+| **Mechanism** | Return value to review-loop caller. review-loop reads `panel.reviewers[*].agent_id` and treats each as input to Section 3 prompt construction, then Section 3 Step 4 dispatch spec. |
+
+**Preconditions (verify before emitting artifact):**
+1. Step 1.0 preconditions passed.
+2. Step 3 review-capability filter produced ≥ 1 eligible agent.
+3. Step 4 cap produced `count(reviewers) ∈ {2, 3, 4}`.
+4. Step 5 rubric assignment succeeded for every reviewer (no silent default).
+5. Step 6 user confirmation returned a closed-set option (never free text without validation).
+
+If any precondition fails: emit `<escalation severity=blocker type=quality>` and return empty panel. Do NOT return partial panel.
 
 ---
 
@@ -195,7 +263,7 @@ Include in each finding: `- **Confidence**: {HIGH | MEDIUM | LOW} — {percentag
 | 3 | Stability | No crashes, hangs, or resource leaks under normal operation |
 | 4 | Integration correctness | Cross-file references resolve, dependencies exist, imports work |
 
-**testing-evidence-collector** — Verification Completeness
+**testing-test-results-analyzer** — Verification Completeness
 | # | Criterion | What to Check |
 |---|-----------|---------------|
 | 1 | Proof artifacts | Test files, verification scripts, or documented test runs exist for claims |
@@ -290,7 +358,7 @@ Include in each finding: `- **Confidence**: {HIGH | MEDIUM | LOW} — {percentag
 | 2 | Rendering correctness | No unnecessary re-renders, loading states handled, errors caught |
 | 3 | Responsive design | Layout works across viewport sizes, touch targets are adequate |
 
-**engineering-devops-automator** — Operational Readiness
+**engineering-infrastructure-devops** — Operational Readiness
 | # | Criterion | What to Check |
 |---|-----------|---------------|
 | 1 | CI/CD integration | Changes are testable in pipeline, no manual deployment steps |
@@ -467,18 +535,18 @@ Algorithm:
 
    Example:
    ```
-   Panel: [security-engineer, code-reviewer, ux-architect]
+   Panel: [engineering-security-engineer, engineering-senior-developer, design-ux-architect]
    Findings:
-   - security-engineer: src/auth.ts:45 "Missing input sanitization" [BLOCKER, security]
-   - code-reviewer: src/auth.ts:45 "Auth logic should use bcrypt" [WARNING, security]
-   - code-reviewer: src/auth.ts:50 "Variable naming unclear" [SUGGESTION, general]
-   - ux-architect: src/auth.ts:45 "Form lacks aria-label" [WARNING, accessibility]
+   - engineering-security-engineer: src/auth.ts:45 "Missing input sanitization" [BLOCKER, security]
+   - engineering-senior-developer: src/auth.ts:45 "Auth logic should use bcrypt" [WARNING, security]
+   - engineering-senior-developer: src/auth.ts:50 "Variable naming unclear" [SUGGESTION, general]
+   - design-ux-architect: src/auth.ts:45 "Form lacks aria-label" [WARNING, accessibility]
 
    After filtering:
-   - Keep: security-engineer (owner of security domain)
-   - Filter: code-reviewer on security domain (security-engineer present)
-   - Keep: code-reviewer on general domain (no owner)
-   - Keep: ux-architect on accessibility domain (owner present, is owner)
+   - Keep: engineering-security-engineer (owner of security domain)
+   - Filter: engineering-senior-developer on security domain (owner present)
+   - Keep: engineering-senior-developer on general domain (no owner)
+   - Keep: design-ux-architect on accessibility domain (owner present, is owner)
    ```
 
 ---
@@ -594,7 +662,7 @@ Step 7: Produce consolidated report
   ### Filtered Findings (for reference)
   | Reviewer | File | Issue | Filtered Because |
   |----------|------|-------|------------------|
-  | code-reviewer | src/auth.ts:45 | "Auth logic" | security-engineer is domain owner |
+  | engineering-senior-developer | src/auth.ts:45 | "Auth logic" | engineering-security-engineer is domain owner |
 
    The aggregate verdict and must-fix list then feed back into the standard
    review-loop cycle (Section 5: Fix Cycle if NEEDS WORK, Section 7 if PASS,

@@ -2,18 +2,30 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Legion Review Finding",
   "description": "Schema for a single review finding in REVIEW.md",
+  "$comment": "Completion Gate: a finding is complete when (1) it validates against this schema (all required fields present, enums match, id matches pattern ^F-\\d{3,}$); (2) status is one of open|fixed|accepted|deferred (no null, no missing); (3) if status=fixed, a cycle number is recorded; (4) if severity is blocker or critical, suggested_fix is non-empty. Validators MUST fail closed — unknown severity or status values are REJECTED, not coerced.",
   "type": "object",
-  "required": ["id", "severity", "category", "description", "file"],
+  "required": ["id", "severity", "category", "description", "file", "status"],
+  "additionalProperties": false,
   "properties": {
     "id": { "type": "string", "pattern": "^F-\\d{3,}$" },
     "severity": { "type": "string", "enum": ["blocker", "critical", "major", "minor", "advisory"] },
-    "category": { "type": "string" },
-    "description": { "type": "string" },
-    "file": { "type": "string" },
+    "category": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "file": { "type": "string", "minLength": 1 },
     "line_range": { "type": "string" },
     "suggested_fix": { "type": "string" },
     "agent": { "type": "string" },
     "status": { "type": "string", "enum": ["open", "fixed", "accepted", "deferred"] },
     "cycle": { "type": "integer", "minimum": 1 }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "fixed" } }, "required": ["status"] },
+      "then": { "required": ["cycle"] }
+    },
+    {
+      "if": { "properties": { "severity": { "enum": ["blocker", "critical"] } }, "required": ["severity"] },
+      "then": { "required": ["suggested_fix"], "properties": { "suggested_fix": { "minLength": 1 } } }
+    }
+  ]
 }

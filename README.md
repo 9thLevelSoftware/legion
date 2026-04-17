@@ -851,8 +851,8 @@ These activate automatically when their prerequisites are met:
 | **GitHub Integration** | `gh` CLI authenticated + git remote exists | Links phases to issues, creates PRs, syncs milestones |
 | **Cross-Session Memory** | `.planning/memory/OUTCOMES.md` exists | Boosts agent recommendations based on past performance |
 | **Brownfield Analysis** | Existing codebase detected during `/legion:start` | Maps architecture, frameworks, risks before planning |
-| **Marketing Workflows** | MKT-* requirements or marketing keywords in phase | Campaign planning, content calendars, channel coordination |
-| **Design Workflows** | DSN-* requirements or design keywords in phase | Design systems, UX research, three-lens review (brand + accessibility + usability) |
+| **Marketing Workflows** | `MKT-*` phase requirements OR `workflow_type: marketing` in CONTEXT.md | Campaign planning, content calendars, channel coordination |
+| **Design Workflows** | `DSN-*` phase requirements OR `workflow_type: design` in CONTEXT.md | Design systems, UX research, three-lens review (brand + accessibility + usability) |
 | **Plan Critique** | User selects critique during `/legion:plan` | Pre-mortem analysis, assumption hunting, PASS/CAUTION/REWORK verdicts |
 | **Review Panels** | User selects panel mode in `/legion:review` | 2-4 domain-weighted reviewers with non-overlapping rubrics |
 | **Control Modes** | `control_mode` set in `settings.json` | Adjusts authority enforcement: autonomous, guarded, advisory, surgical |

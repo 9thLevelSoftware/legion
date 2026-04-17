@@ -378,34 +378,128 @@ def filter_findings(findings, active_agents):
 
 ### Domain Detection
 
+`authority-enforcer` is the CANONICAL OWNER of domain detection. All consumers (review-panel, review-evaluators, wave-executor) MUST delegate to `detect_domain` here — they must NOT reimplement or fork keyword lists.
+
+**Keyword source of truth:** `.planning/config/authority-matrix.yaml` under each domain's `keywords:` field. Do NOT hardcode keyword lists in this function — load from the matrix at runtime so one schema edit propagates to every consumer.
+
+**Concrete conditions (explicit if/else — no "when appropriate"):**
+
+1. IF `.planning/config/authority-matrix.yaml` exists AND parses AND contains a `domains:` map with `keywords:` entries:
+   - Build `domain_keywords` = `{d.name: d.keywords for d in matrix.domains}`
+2. ELSE (matrix missing or malformed):
+   - Fall back to the BUILT-IN registry below — logged as a WARN so the missing matrix is visible, never silent.
+3. Compute a keyword-hit score per domain against the lowercased `criterion + " " + message` text.
+4. IF at least one domain scores > 0: return the highest-scoring domain (ties broken by domain order in the matrix — first declared wins).
+5. ELSE: return `"general"` AND emit a DEBUG log `domain_detection: no keyword match for finding "{criterion_preview}"` so the "everything falls to general" failure mode from LEGION-47-174 is observable.
+
+**Built-in fallback registry (used only when the matrix is unreadable).** This list MUST mirror every domain declared in `authority-matrix.yaml` — if the matrix adds a domain, add it here too in the same PR. No `# ... etc`:
+
 ```python
-def detect_domain(criterion, message):
+BUILT_IN_DOMAIN_KEYWORDS = {
+    "security": [
+        "security", "vulnerability", "pentest", "owasp", "auth",
+        "authn", "authz", "encrypt", "decrypt", "sanitize", "injection",
+        "xss", "csrf", "ssrf", "token", "session", "cookie", "jwt",
+        "credential", "secret", "password", "hash", "tls", "ssl",
+    ],
+    "performance": [
+        "performance", "optimization", "latency", "throughput", "slow",
+        "benchmark", "profile", "memory leak", "cpu", "hot path", "n+1",
+        "cache", "queue depth", "p95", "p99",
+    ],
+    "accessibility": [
+        "accessibility", "a11y", "wcag", "screen reader", "aria",
+        "keyboard navigation", "color contrast", "focus ring", "alt text",
+    ],
+    "api-design": [
+        "api", "endpoint", "rest", "graphql", "rpc", "grpc", "contract",
+        "schema", "openapi", "swagger", "versioning", "pagination",
+    ],
+    "database": [
+        "database", "schema", "migration", "index", "query plan", "sql",
+        "nosql", "postgres", "mysql", "mongo", "transaction", "deadlock",
+        "foreign key", "constraint",
+    ],
+    "frontend": [
+        "frontend", "ui", "component", "render", "hydration", "css",
+        "layout", "responsive", "react", "vue", "svelte", "dom", "bundle",
+    ],
+    "backend": [
+        "backend", "service", "handler", "controller", "middleware",
+        "background job", "worker", "queue", "rate limit", "retry",
+    ],
+    "infrastructure": [
+        "infrastructure", "ci", "cd", "pipeline", "deploy", "docker",
+        "kubernetes", "k8s", "terraform", "helm", "env var",
+        "configuration", "observability", "logging", "metrics", "tracing",
+    ],
+    "testing": [
+        "test", "testing", "unit test", "integration test", "e2e",
+        "fixture", "mock", "stub", "coverage", "flaky",
+    ],
+    "design": [
+        "design", "brand", "typography", "spacing", "visual hierarchy",
+        "design system", "token", "palette", "icon", "layout grid",
+    ],
+    "marketing": [
+        "marketing", "campaign", "content", "copy", "seo", "growth",
+        "conversion", "ctr", "engagement", "audience", "channel",
+    ],
+    "mobile": [
+        "ios", "android", "swift", "swiftui", "kotlin", "jetpack",
+        "react native", "flutter", "mobile", "app store", "play store",
+    ],
+}
+
+def detect_domain(criterion, message, matrix=None, logger=None):
     """
-    Detect domain from criterion text and message content.
-    Uses keyword matching against authority matrix domains.
+    Detect domain from criterion + message text.
+
+    Canonical owner: authority-enforcer. Consumers MUST call this function —
+    they must NOT reimplement keyword matching. Keyword source of truth is
+    .planning/config/authority-matrix.yaml (domains.<name>.keywords).
     """
     text = f"{criterion} {message}".lower()
-    
-    # Direct keyword matching
-    domain_keywords = {
-        "security": ["security", "vulnerability", "pentest", "owasp"],
-        "performance": ["performance", "optimization", "latency", "throughput"],
-        "accessibility": ["accessibility", "a11y", "wcag", "screen reader"],
-        "api-design": ["api", "endpoint", "rest", "graphql"],
-        # ... etc
-    }
-    
+
+    # Step 1: Prefer keywords loaded from authority-matrix.yaml
+    if matrix and getattr(matrix, "domains", None):
+        domain_keywords = {
+            d.name: list(d.keywords or []) for d in matrix.domains
+        }
+    else:
+        if logger:
+            logger.warn(
+                "authority-matrix.yaml unavailable or missing domain "
+                "keywords; falling back to built-in domain registry"
+            )
+        domain_keywords = BUILT_IN_DOMAIN_KEYWORDS
+
+    # Step 2: Score domains by keyword hits
     scores = {}
     for domain, keywords in domain_keywords.items():
-        score = sum(1 for kw in keywords if kw in text)
+        score = sum(1 for kw in keywords if kw and kw.lower() in text)
         if score > 0:
             scores[domain] = score
-    
-    # Return highest scoring domain, or "general" if none match
+
+    # Step 3: Return highest-scoring domain; first-declared wins ties
     if scores:
-        return max(scores, key=scores.get)
+        ordered = list(domain_keywords.keys())
+        return max(scores, key=lambda d: (scores[d], -ordered.index(d)))
+
+    # Step 4: No match — observable "general" classification
+    if logger:
+        preview = (criterion or "")[:80]
+        logger.debug(
+            f"domain_detection: no keyword match for finding \"{preview}\"; "
+            f"returning 'general'"
+        )
     return "general"
 ```
+
+**Consumer contract (binding):**
+- `review-panel` MUST call `authority-enforcer.detect_domain(...)`. It MUST NOT define its own keyword list. Any private re-implementation is a P1 regression and must be deleted.
+- `review-evaluators` MUST call `authority-enforcer.detect_domain(...)` before filtering findings.
+- Schema coupling: when adding a new domain, update `authority-matrix.yaml` FIRST, then mirror the keyword list into `BUILT_IN_DOMAIN_KEYWORDS` above in the same commit. CI cross-reference check (see `scripts/audit/`) enforces parity.
 
 ---
 

@@ -1199,3 +1199,23 @@ Step 3: Combine signals
 | Read Legion memory (standard behavior) | Yes | Core functionality of this skill |
 | Store to Legion memory (standard behavior) | Yes | Core functionality of this skill |
 
+## Completion Gate
+
+This skill completes when ALL conditions are met (per invocation type):
+
+**For record operations (storing an outcome / pattern / pitfall / preference):**
+1. Target file exists under `.planning/memory/` (`OUTCOMES.md`, `PATTERNS.md`, `PITFALLS.md`, or `PREFERENCES.md`)
+2. New entry appended with all required fields populated (no `{placeholder}` strings remaining)
+3. File still parses as valid markdown after the append (no malformed tables or broken sections)
+
+**For recall operations (reading memory during planning/status):**
+1. All four memory files checked for existence; missing files treated as empty (never error)
+2. Relevant entries extracted per the caller's filter (task_type, phase, tag) and returned to the caller
+3. Empty-result case returns an empty structured result, not an error
+
+**For all operations:**
+4. Graceful degradation: if any memory file is missing or corrupt, skill returns a structured result with `warning` field populated and never blocks the caller
+5. No writes to external CLI memory stores (Claude Code memory, etc.) — Legion manages only its own `.planning/memory/` files
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.
+

@@ -685,3 +685,35 @@ maintenance:
   - "Update when agents gain new specialties"
   - "Version bump on breaking changes"
   - "Keep human-readable — this is the source of truth"
+
+# ============================================================================
+# COMPLETION GATE (for consumers of this matrix)
+# ============================================================================
+#
+# A consumer (wave-executor, review-loop, cli-dispatch, authority-enforcer)
+# has COMPLETED its "apply authority matrix" step only when ALL hold:
+#
+# 1. This file was loaded and parsed without error; schema version recorded
+#    in the consumer's SUMMARY.md so drift between runs can be audited.
+# 2. Every active agent in the current wave is mapped to at least one
+#    `domain` entry in this matrix; unmapped agents are either (a) rejected
+#    with an explicit error OR (b) assigned `domain: generalist` fallback —
+#    the choice is logged, never silent.
+# 3. Domain ownership map built: for each domain, the set of owning agents
+#    is resolved and non-empty; domains with no owning agent present in the
+#    wave produce a structured warning (not a silent skip).
+# 4. Authority constraints injected into every agent prompt (the matrix
+#    text or its derived summary must appear in the dispatched prompt).
+# 5. Out-of-domain findings filtered during review synthesis per the rules
+#    in this file; the filter decision (kept / dropped) is recorded per
+#    finding with the rule that fired.
+# 6. Any conflict between two agents' domains logged with resolution to
+#    the consumer's SUMMARY.md `## Authority Conflicts` sub-section.
+#
+# If ANY condition is unmet, the consumer step is NOT complete — continue
+# working or escalate via <escalation> block (type: quality).
+#
+# Validators MUST fail closed: if the file cannot be parsed or a required
+# top-level key is missing, agents MUST NOT proceed with implementation
+# tasks — they must escalate. This matrix is load-bearing for authority
+# enforcement; silent fallback is not acceptable.

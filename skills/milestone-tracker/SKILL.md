@@ -435,3 +435,26 @@ How to handle failures and edge cases across all milestone operations.
 - **No phases in range exist in ROADMAP.md**: If the milestone references phases that don't appear in the Phase Details section: "Milestone {N} references Phases {start}-{end}, but only Phases 1-{max} exist in ROADMAP.md. Adjust the milestone range."
 
 - **Empty Progress table**: If the Progress table has no rows or is malformed: "Cannot calculate milestone status — ROADMAP.md Progress table is empty or malformed. Run `/legion:plan` to populate phases first."
+
+## Completion Gate
+
+This skill completes when ALL conditions are met (per operation):
+
+**status**
+1. Milestone table computed with every row populated (name, phase range, completed-count, total-count, percent, state) and displayed to caller
+
+**define**
+2. `## Milestones` section exists in `ROADMAP.md` with at least one entry; no range gaps or overlaps across all phases
+
+**complete**
+3. Every phase in the milestone's range has status `completed` in the ROADMAP.md Progress table
+4. `.planning/milestones/MILESTONE-{N}.md` summary file exists with real metrics (no unreplaced `{placeholder}` tokens)
+
+**archive**
+5. `.planning/archive/milestone-{N}/` exists and contains all phase directories for the milestone range
+6. Source `.planning/phases/{NN-name}/` directories for the archived phases have been moved (not just copied); or the already-archived guard fired and no-op was reported
+
+**always**
+7. On any error (missing sections, permission failures, gaps), an explicit user-facing message was emitted per Section 6 — skill did not silently skip
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

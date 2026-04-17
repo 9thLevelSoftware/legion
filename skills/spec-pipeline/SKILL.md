@@ -10,9 +10,20 @@ summary: "5-stage pre-coding pipeline: gather requirements, research domain, wri
 
 Pre-coding specification pipeline that produces a structured spec document before implementation begins. Adapted from Auto-Claude's multi-stage spec pipeline, adapted for Legion's personality-first agent model and human-readable state conventions.
 
-Can be invoked standalone (before `/legion:plan`) or offered as an optional step during `/legion:plan` (step 3.6). Output is written to `.planning/specs/{NN}-{phase-slug}-spec.md`, where `{NN}` is the zero-padded phase number and `{phase-slug}` follows the phase slug convention from workflow-common.
+Can be invoked standalone (before `/legion:plan`) or offered as an optional step during `/legion:plan` (step 3.6). Output is written to `.planning/specs/{NN}-{phase-slug}-spec.md`, where `{NN}` is the zero-padded phase number and `{phase-slug}` follows the phase slug convention from workflow-common-core.
 
 The 5 stages run sequentially: gather requirements, research domain, write spec, critique spec, assess complexity. Each stage has defined inputs, process, and outputs that feed the next stage.
+
+## Activation trigger (concrete — no "when appropriate")
+
+Run this pipeline ONLY when at least one of the following conditions holds. Spec writing is expensive; never invoke speculatively.
+
+1. The user passed `--spec` to `/legion:plan` or invoked the pipeline directly from `/legion:quick`.
+2. The phase's CONTEXT.md YAML frontmatter declares `spec_required: true`.
+3. The phase has at least 4 requirement IDs AND the phase.complexity field in ROADMAP.md is `high` — automatically offer (user confirmation required before running) but do not auto-run.
+4. The phase touches a new architectural surface (no prior SUMMARY.md under `.planning/phases/` references any file in the phase's `files_modified` list) AND at least one of: requirement count ≥ 3, estimated plans ≥ 3.
+
+If none of the above hold: SKIP this pipeline. Proceed with standard phase decomposition.
 
 ---
 
@@ -784,3 +795,14 @@ Step 4: Generate warning
 | Complexity assessment | phase-decomposer Section 3 (dependency layer analysis) | Section 5 |
 | Graceful degradation | workflow-common conventions (check → use → skip → never block) | Section 6 |
 | Spec document template | Adapted from Auto-Claude's output format for Legion's markdown conventions | Section 3 |
+
+## Completion Gate
+
+This skill completes when ALL conditions are met:
+1. All 5 pipeline stages have been executed in order: gather → research → write → critique → assess (no stage skipped unless explicitly listed as optional in Section 6)
+2. Spec document written to `.planning/phases/{NN}/SPEC.md` (or configured path) with all required sections present: Requirements, Architecture, Deliverables, Key Decisions, Open Questions, Assessment
+3. Section 5 acceptance checklist is machine-checkable: each of the 5 checklist items has produced an observable PASS/FAIL result (not a free-text judgment), written into the Assessment section
+4. `Open Questions` section either lists concrete questions with owner+due-date, or is explicitly written as `None — all decisions resolved`
+5. Critique stage (Stage 4) has emitted a verdict and any REWORK findings have been addressed before SPEC.md is marked final
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

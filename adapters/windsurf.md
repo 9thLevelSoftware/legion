@@ -55,9 +55,11 @@ Read the matching Legion workflow from `.legion/commands/legion/` and write a wa
 
 ### Wave Execution
 
+**Dispatch mode:** sequential single-session execution — no subagent isolation. All plans run inside the same Windsurf session, one at a time.
+
 All plans execute sequentially in the current session (same single-session model as Amazon Q):
 1. For each plan: read plan, adopt personality if assigned, execute tasks, write result
-2. Personality injection is weaker without subagent isolation — the session retains memory
+2. Personality injection is weaker without subagent isolation — the session retains memory. Between plans, explicitly reset context with a separator prompt (`--- End plan {NN}-{PP}. Begin plan {NN}-{PP+1}. ---`) to reduce cross-contamination.
 
 ### Result Collection
 

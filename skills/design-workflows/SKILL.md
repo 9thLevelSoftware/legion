@@ -35,11 +35,20 @@ Core rules governing design workflows and the detection heuristic that determine
 
 ### When Design Workflows Apply
 
-Design-specific decomposition activates when ANY of these signals are present:
+Design-specific decomposition activates when ANY of the canonical triggers below matches — no other triggers. Keyword matches against the phase description are NOT authoritative (they may be used as a non-blocking hint to prompt the user, never as automatic activation).
 
-1. **Requirement IDs**: Phase requirements include DSN-* IDs
-2. **Keywords in phase description**: "design system", "component library", "UX research", "usability testing", "accessibility audit", "brand guidelines", "design tokens", "wireframes", "prototypes", "user testing", "design review", "user persona", "user journey", "information architecture", "visual design"
-3. **Agent signal**: agent-registry recommends majority design-division agents for the phase
+**Canonical triggers (mirror of `workflow-common/SKILL.md` § Design Phase Detection):**
+
+1. At least one phase requirement ID matches the regex `^DSN-\d+` in ROADMAP.md or REQUIREMENTS.md
+2. The phase's CONTEXT.md YAML frontmatter declares `workflow_type: design`
+3. The user passed `--domain=design` to `/legion:plan`
+
+**Single source of truth for keywords:** `.planning/config/intent-teams.yaml` under `teams.design.keywords[]`. Keywords are used only as prompt hints, never for silent activation. When adding a keyword, edit the YAML — do NOT inline keyword lists in this file.
+
+**Marketing/design disambiguation (precedence when both triggers fire):**
+1. If the phase has explicit `workflow_type` frontmatter: that wins over requirement-ID detection.
+2. If `--domain=` was passed: that wins over frontmatter and requirement IDs.
+3. If both `^MKT-\d+` and `^DSN-\d+` requirement IDs are present in the same phase and no frontmatter/flag overrides: run marketing decomposition — phases with both prefixes are marketing-led, with design as a supporting discipline within the marketing wave.
 
 When detected: use design-specific wave patterns (Section 6) and offer design document generation during planning.
 When not detected: standard phase decomposition applies -- no impact.
@@ -1120,3 +1129,15 @@ Plan-stage design review (Section 7) runs during planning when multi-pass evalua
 Design consultation (Section 8) extends the design brief with aesthetic direction and coherence validation.
 Post-implementation audit (Section 9) runs during review when multi-pass evaluators are active.
 All consumers should handle non-design phases silently per Section 6.4 caller contract.
+
+## Completion Gate
+
+This skill completes when ALL conditions are met (for design phases only; non-design phases no-op silently and return immediately):
+1. `.planning/designs/{phase-slug}/` directory exists for the target phase
+2. Design system document written per Section 5 with required fields populated: tokens, components, typography, color, spacing
+3. Three-lens review (brand / accessibility / usability, Section 4) executed and findings recorded to the phase `REVIEW.md` with a verdict per lens
+4. If multi-pass evaluators are active: Post-Implementation Design Audit (Section 9) has appended scores for Categories 1-10 and HIGH findings were routed into the fix cycle
+5. All HIGH-severity findings either resolved in-phase or explicitly deferred with a follow-up entry recorded to `.planning/memory/OUTCOMES.md`
+6. Design artifact paths are referenced from the phase `SUMMARY.md` Files Modified section
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

@@ -25,39 +25,51 @@ skills/codebase-mapper/SKILL.md
 <process>
 1. PRE-FLIGHT CHECK
    - Check if `.planning/PROJECT.md` already exists by attempting to read it
-   - If it exists: use adapter.ask_user to confirm reinitialize
-     - "A project already exists in .planning/. Reinitialize from scratch?"
-     - Option 1: "Yes, start fresh" — continue (will overwrite PROJECT.md, ROADMAP.md, STATE.md)
-     - Option 2: "No, keep existing" — abort and suggest `/legion:status` instead
+   - If it exists: issue AskUserQuestion.
+
+     Question: "A project already exists in .planning/. Choose exactly one of two actions."
+
+     **Select one option:**
+     - **Overwrite existing project with fresh start** — irreversible; PROJECT.md, ROADMAP.md, and STATE.md will be replaced
+     - **Keep existing project and abort /legion:start** — no files modified; run `/legion:status` instead
+
+     Do not propose a third option. Do not merge or archive.
+
+     → Use AskUserQuestion tool with these exact two options.
    - If it doesn't exist: proceed directly
 
 2. EXPLORATION OFFER
    After pre-flight check passes (no existing project OR user confirmed reinitialize):
-   
-   Use adapter.ask_user with structured choice:
-   
-   "Before we create your project plan, would you like to explore and clarify your idea first?"
-   
-   Options:
-   - **"Yes, explore with Polymath"** (Recommended for new ideas)
-     → Display: "Polymath will guide you through structured exploration to crystallize your concept before planning."
-     → Invoke `/legion:explore` workflow
-     → After exploration completes and user selects "Proceed to planning":
-       - Capture the crystallized concept from exploration output
-       - Pre-populate Stage 1 (Vision & Identity) questioning with the crystallized summary
-       - Skip the opening "What are you building?" prompt
-       - Continue to brownfield detection (new step 3)
-     → After exploration completes and user selects "Explore more" or "Park":
-       - Respect the user's decision
-       - If "Explore more": loop back to exploration with narrowed scope
-       - If "Park": exit with summary saved to `.planning/exploration-{timestamp}.md`
-   
-   - **"No, jump straight to planning"** (Best if you already have a clear concept)
-     → Skip exploration
-     → Continue directly to brownfield detection (new step 3)
-     → Proceed with standard questioning flow
-   
-   Default selection: "Yes, explore with Polymath" (first option)
+
+   Issue AskUserQuestion.
+
+   Question: "Choose exactly one of two planning entry paths."
+
+   **Select one option:**
+   - **Yes, explore with Polymath** — invoke `/legion:explore` to crystallize the concept before planning
+   - **No, jump straight to planning** — skip exploration and proceed directly to brownfield detection
+
+   Do not pre-select. Do not propose exploration with a different agent.
+
+   → Use AskUserQuestion tool with these exact two options.
+
+   **If user selects "Yes, explore with Polymath":**
+   - Invoke `/legion:explore` workflow
+   - `/legion:explore` has its own exit states ("Proceed to planning", "Explore more", "Park"); those are handled inside that command, not here
+   - When `/legion:explore` returns with exit state "Proceed to planning":
+     - Capture the crystallized concept from exploration output
+     - Pre-populate Stage 1 (Vision & Identity) questioning with the crystallized summary
+     - Skip the opening "What are you building?" prompt
+     - Continue to brownfield detection (step 3)
+   - When `/legion:explore` returns with exit state "Explore more":
+     - Loop back to `/legion:explore` with narrowed scope
+   - When `/legion:explore` returns with exit state "Park":
+     - Exit with summary saved to `.planning/exploration-{timestamp}.md`
+
+   **If user selects "No, jump straight to planning":**
+   - Skip exploration
+   - Continue directly to brownfield detection (step 3)
+   - Proceed with standard questioning flow
 
 3. BROWNFIELD DETECTION
    Follow codebase-mapper skill Section 1 (Source Code Detection Heuristic):

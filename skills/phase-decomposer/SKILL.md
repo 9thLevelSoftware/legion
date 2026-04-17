@@ -314,7 +314,7 @@ Replace the generic wave mapping with marketing-specific waves:
 
 - **Wave 2: Content Creation**
   Tasks: Core content production, channel-specific content adaptation
-  Agents: marketing-content-creator + channel specialists based on campaign channels
+  Agents: marketing-content-social-strategist + channel specialists based on campaign channels
   Input: Wave 1 strategy brief + core messaging as context
   Output: Content assets per channel, following adaptation guidelines
 
@@ -973,6 +973,18 @@ If a ROADMAP.md phase has no requirement IDs listed, or the IDs do not exist in 
 
 1. Warn the user: "Phase {N} references requirements {IDs} but they were not found in REQUIREMENTS.md."
 2. Ask whether to proceed using the phase Goal and Success Criteria as guidance, or fix REQUIREMENTS.md first.
+
+## Completion Gate
+
+This skill completes when ALL conditions are met:
+1. `.planning/phases/{NN}/` directory exists for the target phase
+2. At least one plan file `NN-PP-{slug}.md` written to that directory, each with valid frontmatter (`phase`, `plan_id`, `agent`, `tasks`, `verification_commands`, `files_modified`)
+3. Every plan has non-placeholder `verification_commands` that exit zero when the plan succeeds
+4. Plans are grouped into waves (`wave: 1`, `wave: 2`, ...); wave-level file-overlap detection has run and no unresolved overlaps remain
+5. User confirmation captured via `AskUserQuestion` (proceed / swap agent / adjust / cancel) with "proceed" recorded before any plan files are written
+6. If cancelled: no partial plan files on disk (clean rollback)
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.
 
 
 

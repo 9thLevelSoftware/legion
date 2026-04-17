@@ -53,12 +53,15 @@ Read the matching Legion workflow file from `.legion/commands/legion/` and write
 
 ### Wave Execution
 
+**Dispatch mode:** sequential in-session execution — Copilot CLI runs one plan at a time inside the current session or via its background delegation queue. No parallel subagent spawning.
+
 Plans execute sequentially within each wave:
 1. Read the matching Legion workflow file from `.legion/commands/legion/`
 2. Load the installed skill or `legion-orchestrator` agent when available
-3. Execute plan tasks within the current session or via Copilot delegation
+3. Execute plan tasks within the current session or via Copilot delegation (one at a time; if delegation is used, poll the delegation status API before advancing to the next plan)
 4. Write result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
 5. Update WAVE-CHECKLIST.md
+6. If a delegated task stalls beyond 30 minutes, mark the plan Failed and surface the stall to the user
 
 ### Result Collection
 

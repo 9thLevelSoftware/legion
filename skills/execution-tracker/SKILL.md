@@ -46,6 +46,41 @@ Step 1: Determine plan result
   - Partial: agent completed some tasks, or verification had warnings
   - Failed: agent encountered errors or verification failed
 
+Step 1.5: Verify or initialize STATE.md structure (precondition for Step 2)
+
+  Before writing to STATE.md, verify the required section structure exists.
+  Missing sections are the canonical failure mode for the first plan of a new phase.
+
+  a) Read `.planning/STATE.md` explicitly via the Read tool. Do NOT assume contents.
+     If STATE.md is absent: **FAIL FAST** — emit:
+     ```
+     <escalation>
+     severity: blocker
+     type: scope
+     decision: Cannot record plan result — STATE.md missing
+     context: .planning/STATE.md not found. Run /legion:start or /legion:validate to initialize.
+     </escalation>
+     ```
+     and STOP. Do NOT create STATE.md from scratch here — that is `/legion:start`'s responsibility.
+     If STATE.md exists but is empty or cannot be read (permission error): emit the same escalation with context describing the read failure and STOP.
+
+  b) Verify required top-level sections exist (in this canonical order):
+     1. `## Status`
+     2. `## Last Activity`
+     3. `## Phase {N} Results` — one per phase seen in ROADMAP.md (load-bearing for progress parse)
+     4. `## Progress`
+
+  c) For any missing section, **append it at the canonical position** with an empty placeholder:
+     - `## Phase {N} Results` — placeholder body: `_No plans completed yet._`
+     - `## Progress` — placeholder body: `[........] 0% — 0/{total} plans complete`
+     - `## Status` / `## Last Activity` — placeholder body: `_Not set._`
+
+  d) Write the updated STATE.md back before proceeding to Step 2.
+
+  **Load-bearing headings for parsing:** `## Phase {N} Results` (exact pattern, integer N).
+  Step 2 progress recalculation relies on this heading to count completed plans. Do not rename
+  or change case.
+
 Step 2: Update STATE.md
   Read current .planning/STATE.md, then update:
   - Status: "Phase {N} executing — Plan {NN}-{PP} {complete|failed}"

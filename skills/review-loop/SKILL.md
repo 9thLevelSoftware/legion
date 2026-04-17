@@ -30,6 +30,33 @@ These rules govern all review decisions. Do not deviate from them.
 >
 > Always follow the adapter protocol. Do not hardcode CLI-specific tool calls.
 
+### Section 1.1: Adapter Resolution Protocol (precondition for all sections)
+
+Before entering Section 2, review-loop MUST fully resolve the active adapter.
+
+1. Run workflow-common CLI Detection Protocol to identify the active adapter.
+2. Load the adapter completely (not just the keys named above).
+3. **Verify required adapter keys are present.** Missing required keys → FAIL FAST with
+   error: `"Adapter {adapter_name} is missing required key(s): {list}. Review cannot proceed."`
+   Do NOT silently default missing keys — that masks adapter drift.
+
+   **Required keys (all must be present):**
+   - `parallel_execution` (boolean)
+   - `structured_messaging` (boolean)
+   - `spawn_agent_personality` (method spec)
+   - `collect_results` (method spec)
+   - `model_execution` (string — model identifier)
+   - `commit_signature` (string)
+
+   **Optional keys (defaults applied silently if absent):**
+   - `shutdown_agents` — default: no-op (skip graceful termination)
+   - `cleanup_coordination` — default: no-op
+   - `coordinate_parallel` — default: no-op if `parallel_execution == false`; required if `parallel_execution == true`
+   - `timeout_ms` — default: 600000 (10 min)
+
+4. Adapter conformance is also validated by the lint_commands declared in the adapter.
+   If available, run those as part of CI before review — catches drift pre-runtime.
+
 1. **Review the output, not the plan** — review agents evaluate files created/modified during `/legion:build`, not the plan documents themselves. The plan is the specification; the output is what gets reviewed.
 2. **Full personality injection** — each review agent receives the ENTIRE contents of its assigned `.md` file as system instructions. No summaries, no excerpts, no paraphrasing.
 3. **Structured feedback only** — review agents must use the exact Finding format defined in Section 3. Vague assessments like "looks good" or letter grades are rejected.
@@ -73,12 +100,17 @@ Step 2: Select review agents based on phase type
 
   | Phase Type     | Primary Reviewer              | Secondary Reviewer                    |
   |----------------|-------------------------------|---------------------------------------|
-  | code           | testing-qa-verification-specialist       | testing-evidence-collector            |
+  | code           | testing-qa-verification-specialist       | testing-test-results-analyzer         |
   | api            | testing-api-tester            | testing-qa-verification-specialist               |
   | design         | design-brand-guardian         | testing-qa-verification-specialist               |
   | marketing      | testing-workflow-optimizer    | testing-qa-verification-specialist               |
   | infrastructure | testing-qa-verification-specialist       | testing-performance-benchmarker       |
   | workflow       | testing-workflow-optimizer    | testing-qa-verification-specialist               |
+
+  **Note:** All agent IDs in this table are verified against the Legion 48-agent roster (see
+  `agents/` and CLAUDE.md Division table). Agent IDs `testing-evidence-collector`,
+  `engineering-devops-automator`, and `marketing-content-creator` do NOT exist in this roster
+  and MUST NOT be referenced from this table.
 
   Rules:
   - Always include testing-qa-verification-specialist as either primary or secondary — they are the
@@ -92,7 +124,7 @@ Step 3: Validate reviewer availability
   - Confirm each selected agent .md file exists at the expected path (using AGENTS_DIR
     resolved via workflow-common Agent Path Resolution Protocol):
     {AGENTS_DIR}/testing-qa-verification-specialist.md
-    {AGENTS_DIR}/testing-evidence-collector.md
+    {AGENTS_DIR}/testing-test-results-analyzer.md
     {AGENTS_DIR}/testing-api-tester.md
     {AGENTS_DIR}/testing-workflow-optimizer.md
     {AGENTS_DIR}/testing-performance-benchmarker.md
@@ -285,11 +317,28 @@ Step 3: Construct the review prompt
   """
 
 Step 4: Spawn the review agent per adapter protocol
-  Use adapter.spawn_agent_personality with:
+
+  **Dispatch Specification (MANDATORY — do not dispatch without satisfying every row):**
+
+  | Field | Value |
+  |-------|-------|
+  | **When** | After Step 3 prompt construction completes for all selected reviewers AND Section 1.1 adapter resolution succeeded. Never before. |
+  | **Why parallel is safe** | Review agents are read-only — they do not modify files. Each agent writes only its own report via adapter.collect_results. Zero write conflict surface. |
+  | **How many** | Exactly count(selected reviewers from Section 2). Typically 2-3 after Section 2 Rules (always include testing-qa-verification-specialist + max 3 total). No fan-out, no fan-in beyond this count. |
+  | **Mechanism** | `adapter.spawn_agent_personality` invoked once per reviewer. All spawn calls issued in a SINGLE LLM response block if `adapter.parallel_execution == true`; otherwise serialized in Section 2 table row order. |
+
+  Per-call parameters:
   - prompt: {constructed prompt from Step 3}
   - model: adapter.model_execution
   - name: "{agent-id}-review-{NN}" (e.g., "testing-qa-verification-specialist-review-05")
   - Additional parameters per adapter (e.g., team_name on Claude Code)
+
+  **Preconditions (verify ALL before issuing any spawn call):**
+  1. Section 1.1 adapter resolution succeeded (required keys present, no FAIL FAST).
+  2. Section 2 Step 3 Read verification succeeded for every reviewer's personality file.
+  3. User confirmed reviewer composition via AskUserQuestion (Reviewer Confirmation Display).
+  4. Coordination context initialized (adapter.coordinate_parallel called OR WAVE-CHECKLIST.md written) — ONCE per phase review, reused across all cycles.
+  5. If any precondition fails: emit `<escalation severity=blocker type=quality>` and STOP — do NOT dispatch.
 
   Initialize coordination before spawning (one context for the entire review lifecycle):
   - Per adapter.coordinate_parallel or write WAVE-CHECKLIST.md
@@ -359,7 +408,7 @@ Step 4: Report findings to user
   | #  | Severity    | Confidence | File                    | Issue (brief)              | Reviewer           |
   |----|-------------|------------|-------------------------|----------------------------|--------------------|
   | 1  | BLOCKER     | HIGH (95%) | path/to/file.md         | Missing error handling     | testing-qa-verification-specialist |
-  | 2  | WARNING     | HIGH (85%) | path/to/other.md        | Inconsistent naming        | testing-evidence-collector |
+  | 2  | WARNING     | HIGH (85%) | path/to/other.md        | Inconsistent naming        | testing-test-results-analyzer |
   | 3  | SUGGESTION  | HIGH (80%) | path/to/third.md        | Could add more examples    | testing-qa-verification-specialist |
 
   **Blockers**: {count} | **Warnings**: {count} | **Suggestions**: {count}
@@ -394,9 +443,9 @@ Step 1: Determine the fix agent
   |                                  |                                    | injected    |
   | .css, .scss, design assets       | design-ux-architect                | personality |
   |                                  |                                    | injected    |
-  | Marketing/content .md            | marketing-content-creator          | personality |
+  | Marketing/content .md            | marketing-content-social-strategist | personality |
   |                                  |                                    | injected    |
-  | CI/CD, infrastructure configs    | engineering-devops-automator       | personality |
+  | CI/CD, infrastructure configs    | engineering-infrastructure-devops  | personality |
   |                                  |                                    | injected    |
   | No clear match                   | Autonomous (direct fix)            | autonomous  |
 
@@ -473,12 +522,43 @@ Step 3: Construct the fix prompt
   """
 
 Step 4: Spawn fix agents (adapter-conditional)
-  **If adapter.parallel_execution is true:**
-  - Issue ALL fix agent spawn calls simultaneously (same pattern as wave-executor Section 4, Step 4)
-  - All fix agents run concurrently — they work on non-overlapping files
 
-  **If adapter.parallel_execution is false:**
-  - Execute fix agents sequentially — one group of findings at a time
+  **Dispatch Specification (MANDATORY — do not dispatch without satisfying every row):**
+
+  | Field | Value |
+  |-------|-------|
+  | **When** | After Step 3 fix prompt constructed for every grouped fix agent AND file-overlap disjointness check (below) passed. Never before. |
+  | **Why parallel is safe** | Each fix agent receives a file set that is disjoint from every other agent's file set after the consolidation/serialization pass below. No two parallel agents write the same file. |
+  | **How many** | count(distinct fix agents after Step 2 grouping + disjointness consolidation). Capped by `adapter.max_parallel` if declared; otherwise unbounded within the disjoint set. |
+  | **Mechanism** | `adapter.spawn_agent_personality` for personality-injected agents OR `adapter.spawn_agent_autonomous` for autonomous rows from the Step 1 table. All spawn calls issued in a SINGLE LLM response block when `adapter.parallel_execution == true`; otherwise serialized in routing-table priority order. |
+
+  **Preconditions (verify ALL before dispatching):**
+  1. Section 1.1 adapter resolution succeeded.
+  2. Step 1 routing assigned a fix agent to every must-fix finding (no unassigned finding).
+  3. For each personality-injected agent: Step 3 Read of `{AGENTS_DIR}/{agent-id}.md` succeeded — if ENOENT, the agent was downgraded to autonomous mode and logged BEFORE this Step.
+  4. Disjointness check (below) completed and every dispatched agent's file set is disjoint from every peer's.
+  5. If any precondition fails: emit `<escalation severity=blocker type=quality>` and STOP — do NOT dispatch.
+
+  **Precondition: file-overlap disjointness check (MANDATORY before parallel dispatch)**
+  - Group findings by file path. Build a map: file → [agent-ids routed to it].
+  - If ANY file has findings routed to 2+ different fix agents (e.g., a `.ts` file in both
+    engineering-frontend-developer and engineering-backend-architect paths):
+    1. **Consolidate**: pick the single agent per the file-routing table's glob priority
+       (see Section 5, Step 2 routing table) and reassign all findings for that file to the
+       winning agent. Log the consolidation.
+    2. If consolidation is ambiguous (two globs match with equal priority): **serialize**
+       those agents — dispatch the overlapping agents sequentially in findings-order while
+       dispatching the rest in parallel.
+  - After consolidation/serialization, each agent's assigned file set is disjoint from every
+    other agent's file set in the same parallel dispatch batch.
+
+  **If adapter.parallel_execution is true AND disjointness verified:**
+  - Issue ALL fix agent spawn calls in a SINGLE LLM response block (same pattern as
+    wave-executor Section 4, Step 4 canonical dispatch spec).
+  - Fan-out = count of fix agents after consolidation. Do not reduce.
+
+  **If adapter.parallel_execution is false OR disjointness check flagged overlap:**
+  - Execute fix agents sequentially — one agent at a time, in routing-table priority order.
 
   Agent parameters per adapter.spawn_agent_personality:
   - model: adapter.model_execution
@@ -1151,7 +1231,6 @@ Agent file paths are resolved using `agent-registry.md` Section 1 (Agent Catalog
 
 ```
 {AGENTS_DIR}/testing-qa-verification-specialist.md
-{AGENTS_DIR}/testing-evidence-collector.md
 {AGENTS_DIR}/testing-api-tester.md
 {AGENTS_DIR}/testing-test-results-analyzer.md
 {AGENTS_DIR}/testing-performance-benchmarker.md

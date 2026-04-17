@@ -244,23 +244,30 @@ Step 1.5: Validate the agent-id against actual files (MANDATORY — DO NOT SKIP)
   - You MUST actually invoke the Read tool here. Do NOT skip this and claim the file
     is missing based on assumption. The files exist for all installed Legion instances.
   - If Read succeeds (returns file content): proceed to Step 2 with this agent-id
-  - If Read returns a file-not-found error: the plan may have a hallucinated or abbreviated agent-id.
-    Run a fuzzy match:
-    a) Extract the suffix after the last hyphen-delimited division prefix
-       (e.g., "dev-senior-developer" → "senior-developer",
-              "backend-architect" → "backend-architect")
-    b) Run: Glob {AGENTS_DIR}/*-{suffix}.md
-    c) If exactly ONE match is returned: use that file's agent-id instead
-       Log: "Agent ID corrected: {original-id} → {matched-id}"
-    d) If MULTIPLE matches: pick the first and log a warning:
-       "Multiple agent matches for {original-id}: {matches}. Using {selected}."
-    e) If ZERO matches: try a broader search:
-       Run: Glob {AGENTS_DIR}/*{last-word-of-id}*.md
-       (e.g., "dev-senior-developer" → *developer*.md)
-       If exactly one match: use it and log correction
-       If multiple matches: use the first and log warning
-       If ZERO matches: fall back to autonomous mode and log:
-       "No agent file found for {original-id}. Executing plan autonomously."
+  - If Read returns a file-not-found error: run fuzzy-match fallback per the
+    single canonical algorithm below.
+
+  **Fuzzy-match fallback (canonical — applies in Sections 2, 3, and 6 identically):**
+
+  Division prefixes are enumerated in agent-registry.md Section 1 (CATALOG). Current set
+  (as of Legion 4.7): `engineering`, `design`, `marketing`, `product`, `testing`,
+  `project-management`, `support`, `specialized`, plus spatial-computing sub-prefixes
+  `macos`, `terminal`, `visionos`, `xr`. Do not hardcode; derive from agent-registry Section 1
+  at runtime. If the original agent-id starts with any division prefix, strip it and use the
+  remainder as `suffix`; otherwise `suffix = original-id`.
+
+  a) Run: Glob `{AGENTS_DIR}/*-{suffix}.md`
+  b) If exactly ONE match: use that file's agent-id instead.
+     Log: `"Agent ID corrected: {original-id} → {matched-id}"` — proceed with matched-id.
+  c) If MULTIPLE matches: **STOP — do NOT pick the first.**
+     Fail with: `"Ambiguous agent-id '{original-id}' matched {N} candidates: {list}. Plan must specify division prefix explicitly."` Escalate to caller; abort this plan.
+  d) If ZERO matches: try broader search: `Glob {AGENTS_DIR}/*{last-word-of-id}*.md`
+     - If exactly one match: use it. Log: `"Agent ID broadened: {original-id} → {matched-id}"`.
+     - If MULTIPLE matches: **STOP** with the same ambiguity error as (c).
+     - If ZERO matches: fall back to autonomous mode and log: `"No agent file found for {original-id}. Executing plan autonomously."`
+
+  This replaces the previous "pick the first" behavior (non-deterministic / filesystem-order
+  dependent). Deterministic "STOP on ambiguity" is safer for dispatch correctness.
 
 Step 2: Read the complete personality file (RETRIEVAL-LED — MANDATORY)
   - IMPORTANT: Use retrieval-led reasoning, not pre-training-led reasoning.
@@ -718,15 +725,68 @@ Sequential Files Pre-Dispatch Check (before Step 4 agent spawning):
   - If no sequential_files declared in any plan: skip this check entirely
   - Log: "Sequential file constraint detected: {files}. Wave {N} executing fully sequentially."
 
+**Dispatch specification — Wave plan agents (canonical)**
+| Field | Value |
+|---|---|
+| When | For each wave in ascending wave-number order, after dependency check (Step 2), prompt construction (Step 3), and sequential-files check (above) complete. Fires once per wave. |
+| Why parallel is safe | `files_modified` lists from plan frontmatter are collected across the wave and checked for pairwise intersection. If any overlap exists (including `sequential_files`-declared files), the wave falls back to sequential dispatch. Under parallel dispatch, no two agents can write the same file — verified by construction. |
+| How many | Exactly the count of plans in the wave (N = `len(wave.plans)`). Do not reduce fan-out. |
+| Mechanism | **Same-response fan-out requirement** — When `adapter.parallel_execution == true` AND no `files_modified` overlap exists: issue all N agent spawn calls in a SINGLE LLM response (same tool-call block). Do NOT split spawns across turns; splitting serializes them. For adapters that spawn via Bash: each spawn uses `run_in_background: true` and all N Bash calls must be in the same response block. For adapters with native agent-spawn tool: issue all N calls in parallel within one response. Sequential path: N calls ordered by plan number, with commit between each. Model: adapter.model_execution (or adapter.model_{tier} per agent frontmatter's `model_tier` field; default: execution). |
+
 Step 4: Execute plans for this wave (adapter-conditional)
 
   **If adapter.parallel_execution is true** (e.g., Claude Code, Cursor):
   - For a SINGLE plan in the wave:
     - Spawn one agent per adapter.spawn_agent_personality
-  - For MULTIPLE plans in the wave:
-    - Issue ALL agent spawn calls simultaneously per adapter.coordinate_parallel
-    - This maximizes parallelism — agents run concurrently
-    - Do NOT spawn agents one at a time for multi-plan waves
+  - For MULTIPLE plans in the wave (N = number of plans in the wave):
+
+    **When to dispatch in parallel:**
+      - Always, unless the Sequential Files Pre-Dispatch Check above forced
+        fully-sequential fallback for this wave
+
+    **Why parallel is safe here:**
+      - Plans in the same wave have NO inter-plan dependencies (enforced by the
+        dependency check in Step 2)
+      - Plans in the same wave have NO shared write targets (enforced by the
+        Sequential Files Pre-Dispatch Check — any file-overlap escalated the
+        wave to sequential before this step)
+      - Therefore N agents CANNOT race on files, state, or ordering
+
+    **How many agents to spawn:**
+      - Exactly N — one agent per plan in the current wave
+      - Do NOT cap, throttle, or fan out across multiple turns
+
+    **Mechanism — Claude Code (adapter.parallel_execution=true, structured_messaging=true):**
+      - Issue N invocations of the Agent tool (subagent_type=<agent-id> from
+        each plan's frontmatter) inside a SINGLE assistant response.
+      - "Single response" means one LLM turn — the tool_use array emitted in
+        your next message MUST contain exactly N Agent calls.
+      - Each Agent invocation passes its own fully-constructed prompt
+        (personality + plan + handoff context) as the prompt parameter.
+      - Do NOT call Agent, wait for its result, then call Agent again for the
+        next plan. That is SERIAL dispatch and violates this specification.
+
+    **Mechanism — other adapters with parallel_execution=true:**
+      - Use adapter.coordinate_parallel as defined in adapters/<cli>.md.
+      - The contract is identical: N spawn invocations issued in one
+        coordinator step, not N sequential calls across N coordinator steps.
+
+    **Counter-example (DO NOT do this):**
+      - ❌ Response 1: spawn agent for plan 01-01. Wait for result.
+        Response 2: spawn agent for plan 01-02. Wait for result.
+        Response 3: spawn agent for plan 01-03.
+      - This serializes a wave that was declared parallelizable, defeats the
+        point of waves, and causes dispatch-time regressions on Claude Code 4.7.
+
+    **Correct example:**
+      - ✓ Response 1: tool_use array contains [Agent(plan 01-01), Agent(plan
+        01-02), Agent(plan 01-03)] — all three emitted together in one turn.
+
+    **Post-dispatch verification (self-check before Step 5):**
+      - Count the Agent calls you just emitted in this single response.
+      - If the count is less than N: STOP — you serialized the wave. Cancel
+        any pending work and re-dispatch all N calls in one response.
+
     - Each agent gets its own fully-constructed prompt (personality + plan)
     - Agents in the same wave are fully independent — they share no state
 
@@ -1487,6 +1547,18 @@ How to handle common failure modes without retrying or hiding problems.
 
 Enhanced execution model with distinct Build/Analysis and Execution waves for maximum parallelism.
 
+### Frontmatter schema — canonical
+
+The plan-frontmatter `wave` field is an **integer** (1, 2, 3, ...). Two-Wave mode uses integer
+waves identically: Wave A = 1, Wave B = 2. The string forms "A" and "B" used below in overview
+diagrams are presentational labels only; plan frontmatter MUST use integers.
+
+Activation of Two-Wave mode is **explicit**, via the `two_wave: true` frontmatter flag on the
+phase CONTEXT.md (or `--two-wave` flag passed to `/legion:build`). Without explicit opt-in,
+the executor uses single-wave dispatch per Section 4, regardless of plan structure.
+
+See `docs/schemas/plan-frontmatter.schema.json` for the canonical frontmatter schema.
+
 ### Wave Pattern Overview
 
 ```
@@ -1516,10 +1588,14 @@ Plans in two-wave mode have extended frontmatter:
 phase: XX-name
 plan: NN
 type: execute
-wave: A | B                    # Wave A or Wave B
+# wave: single letter "A" or "B" (no pipe, no array) — the pipe below is a closed-set enum for docs.
+# Allowed values: A | B. Any other value (e.g., "C", "a", "A|B") fails plan validation.
+wave: A                        # or: wave: B
 depends_on: []                 # Can depend on other wave plans
 wave_a_outputs: []             # For Wave B plans: which Wave A plans produced inputs
-wave_role: build | analysis | execution | remediation
+# wave_role: closed-set enum. Allowed values: build | analysis | execution | remediation.
+# Exactly one value per plan. The pipe is enum notation, not a literal separator.
+wave_role: build               # or: analysis, execution, remediation
 authority_scope: []            # Domains this plan touches
 ---
 ```
@@ -1615,7 +1691,7 @@ Agent file paths are resolved using the `agent-registry.md` Agent Catalog (Secti
 
 Examples:
   {AGENTS_DIR}/engineering-senior-developer.md
-  {AGENTS_DIR}/testing-evidence-collector.md
+  {AGENTS_DIR}/testing-qa-verification-specialist.md
   {AGENTS_DIR}/design-ux-architect.md
   {AGENTS_DIR}/agents-orchestrator.md
 

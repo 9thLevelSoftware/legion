@@ -118,12 +118,15 @@ Follow board-of-directors skill Section 2 for individual assessment dispatch.
       ```
 
 2. **Dispatch in Parallel**
-   Use cli-dispatch skill to dispatch assessments:
-   - If adapter supports parallel execution: issue all agent spawns simultaneously
-   - If not: spawn sequentially
-   - Model: adapter.model_execution
-   - Agent name pattern: `"{agent-id}-board-assessment"`
-   - Collect all results; treat non-response after timeout as ABSTAIN with note
+   Use cli-dispatch skill to dispatch assessments.
+
+   **Dispatch specification — Board member assessments**
+   | Field | Value |
+   |---|---|
+   | When | After board-of-directors skill Section 1 has selected board members and constructed per-member assessment prompts. Fires once per `/legion:board meet` or `/legion:board review` invocation. |
+   | Why parallel is safe | Board members are read-only assessors producing independent written stances (SUPPORT/OPPOSE/CONDITIONAL/ABSTAIN). No member writes files during assessment. No member reads another member's output within the same round — dissent and synthesis happen in Step 3+ after all stances are collected. No shared write targets. |
+   | How many | Exactly the count of board members selected in Section 1 (typically 3–5, capped by `settings.board.max_members` default 5). Do not reduce fan-out — quorum depends on full participation; under-dispatch would bias synthesis. |
+   | Mechanism | adapter.spawn_agent_readonly via cli-dispatch skill. If `adapter.parallel_execution == true`: issue ALL N member spawn calls in a SINGLE tool call. If `adapter.parallel_execution == false`: sequential in member-selection order. Model: adapter.model_execution. Agent name pattern: `"{agent-id}-board-assessment"`. Collect all results; treat non-response after `settings.board.timeout_seconds` (default 120) as ABSTAIN with note. |
 
 3. **Parse Results**
    For each agent response, extract:

@@ -132,7 +132,10 @@ For each dispatched task, assemble a prompt from these parts:
 
 Part 1: Agent personality
   - Identify the assigned agent from the plan or task
-  - Read the ENTIRE agent .md file: agents/{agent-id}.md
+  - **Resolve AGENTS_DIR first** via workflow-common-core Agent Path Resolution Protocol.
+    Do NOT use a bare `agents/{agent-id}.md` path — installations outside the project
+    root (global npm install at `~/.claude/agents/`) will fail with that path.
+  - Read the ENTIRE agent .md file: `{AGENTS_DIR}/{agent-id}.md`
   - Capture as PERSONALITY_CONTENT
   - If no agent-id is assigned (autonomous task): PERSONALITY_CONTENT = ""
 
@@ -153,6 +156,21 @@ Part 4: Control mode scope
   - Capture as CONTROL_SCOPE
 
 Part 5: Handoff context (optional)
+  - If this task depends on prior wave outputs, extract and inject handoff context
+  - Follow the same protocol as wave-executor Section 5.6
+  - Capture as HANDOFF_CONTEXT (empty string if no prior wave)
+
+Part 6: Model tier resolution
+  - Read `model_tier` from the agent's frontmatter (in the .md file opened in Part 1).
+    Valid values: `planning`, `execution`, `check`. Default if absent: `execution`.
+  - Map to adapter model:
+    - `planning`  → adapter.model_planning
+    - `execution` → adapter.model_execution
+    - `check`     → adapter.model_check
+  - Capture as RESOLVED_MODEL.
+  - When constructing the dispatch command in Section 4, substitute `{model}` (not
+    hardcoded `{model_execution}`) with RESOLVED_MODEL. Adapter spawn rows MUST use
+    the generic `{model}` placeholder to honor per-agent tier selection.
   - If this task depends on prior wave outputs, extract and inject handoff context
   - Follow the same protocol as wave-executor Section 5.6
   - Capture as HANDOFF_CONTEXT (empty string if no prior wave)
@@ -204,6 +222,20 @@ Do not write anything to stdout — write the full result to the file above.
 
 How to invoke the external CLI after building the prompt.
 
+**Preconditions (verify before Step 1):**
+1. Read the active adapter file at `adapters/{adapter-id}/ADAPTER.md`. Resolve `{adapter-id}` from `settings.json` key `cli_adapter`.
+2. If the adapter file is missing or cannot be parsed → emit `<escalation>severity: blocker, type: infrastructure, decision: Cannot dispatch without adapter metadata, context: adapter file missing or malformed at adapters/{adapter-id}/ADAPTER.md</escalation>` and STOP.
+3. If `settings.json` does not declare `cli_adapter` → emit `<escalation>severity: blocker, type: infrastructure, decision: No CLI adapter selected, context: settings.json missing cli_adapter key</escalation>` and STOP.
+4. Verify the resolved `{AGENTS_DIR}` from workflow-common-core exists and contains the target `{agent-id}.md`. If missing → emit `<escalation>severity: blocker, type: scope, decision: Cannot inject personality, context: agent file {agent-id}.md not found under {AGENTS_DIR}</escalation>` and STOP.
+
+**Dispatch specification — External CLI invocation (canonical)**
+| Field | Value |
+|---|---|
+| When | After Section 3 prompt assembly completes AND all Section 4 preconditions pass. Fires once per dispatched task (single-task path) OR once per task in the wave (parallel fan-out path). |
+| Why parallel is safe | Each dispatch writes to a distinct `{task-id}-PROMPT.md` + `{task-id}-RESULT.md` file pair under `.planning/dispatch/`. Task IDs include `{phase}-{plan}-{timestamp}` which is unique per dispatch. No two concurrent dispatches share prompt or result paths; the external CLI process is the only writer to `{result_path}` during its lifetime. |
+| How many | Single-task path: exactly 1 Bash call. Parallel fan-out path: exactly N Bash calls where N = count of tasks in the current wave (from wave-executor Section 4). Do not batch multiple tasks into a single CLI call. |
+| Mechanism | Bash tool invocation constructed per adapter `prompt_delivery` (`file_path`/`stdin_pipe`/`content_flag`). Parallel fan-out: all N Bash calls in the SAME LLM response block, each with `run_in_background: true`. Single-task: `run_in_background: false` is also valid. Timeout: `adapter.timeout_ms`. Model substitution: `{model}` placeholder from Section 3 Part 6 (RESOLVED_MODEL). |
+
 ```
 Step 1: Write the prompt to disk (audit trail)
   - Resolve the task ID for this dispatch. If not provided, generate one:
@@ -238,9 +270,17 @@ Step 3: Build the invocation command
 Step 4: Execute the command
   - Run the command via the Bash tool
   - Set timeout to the adapter's timeout_ms value
-  - For parallel dispatches (multiple tasks in the same wave):
-    Use run_in_background: true on the Bash tool call
-    Do NOT use run_in_background for single-task dispatches
+
+  **Parallel dispatch fan-out contract (CRITICAL for correctness):**
+  - For N parallel dispatches: issue N Bash tool calls in the SAME LLM response block.
+    Each Bash call uses `run_in_background: true`.
+  - Same-response Bash calls run concurrently. Splitting N spawns across multiple
+    responses **serializes** them — do NOT split spawns across turns.
+  - In the next response, issue a single wait call (or poll result files with bounded
+    timeout per adapter.timeout_ms). Do not interleave new spawns with wait calls.
+  - For single-task dispatches: `run_in_background: false` (default) is also valid;
+    the rule above is about parallel fan-out specifically.
+
   - Capture stdout and stderr for fallback use
 
 Step 5: Wait for completion

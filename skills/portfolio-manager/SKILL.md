@@ -294,19 +294,33 @@ From the agent usage map, derive:
 - **Underutilized divisions**: divisions with 0 projects using their agents
   - Suggests potential untapped capabilities
 
-### Division Reference (from workflow-common.md)
+### Division Reference (canonical: CLAUDE.md § Agent Divisions)
+
+Division counts MUST match the canonical Division Index in `CLAUDE.md`. Do NOT hardcode counts from any other source — re-derive them at runtime from the agents/ directory so schema drift is impossible.
+
+**Canonical counts (mirror of CLAUDE.md — update both in the same commit if either changes):**
 
 ```
-engineering        — 8 agents
+engineering        — 9 agents
 design             — 6 agents
-marketing          — 8 agents
-product            — 3 agents
+marketing          — 4 agents
+product            — 4 agents
 project-management — 5 agents
-testing            — 7 agents
-support            — 6 agents
-spatial-computing  — 6 agents
-specialized        — 3 agents
+testing            — 6 agents
+support            — 4 agents
+spatial            — 6 agents   (aka "Spatial Computing")
+specialized        — 4 agents
+─────────────────────────────
+TOTAL              — 48 agents
 ```
+
+**Runtime derivation (preferred — use this for any Section 5 computation):**
+
+```bash
+grep -h '^division:' agents/*.md | sort | uniq -c
+```
+
+**Integrity check:** `scripts/audit/validate-agent-divisions.sh` MUST pass before Section 5 displays Agent Allocation metrics. If the runtime count disagrees with the table above, treat the runtime count as truth and flag the discrepancy — CLAUDE.md and this table are stale.
 
 ---
 

@@ -210,7 +210,7 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
 
    b. Map phase type to primary + secondary review agents using the selection table from
       review-loop Section 2:
-      - code:           testing-qa-verification-specialist (primary) + testing-evidence-collector (secondary)
+      - code:           testing-qa-verification-specialist (primary) + testing-test-results-analyzer (secondary)
       - api:            testing-api-tester (primary) + testing-qa-verification-specialist (secondary)
       - design:         design-brand-guardian (primary) + testing-qa-verification-specialist (secondary)
       - marketing:      testing-workflow-optimizer (primary) + testing-qa-verification-specialist (secondary)
@@ -227,7 +227,7 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
       - If Read returns file-not-found: fall back to testing-qa-verification-specialist
       - Log any fallback: "Warning: {agent-id}.md not found after Read. Using testing-qa-verification-specialist."
 
-   d. Present selected reviewers to user via adapter.ask_user:
+   d. Present selected reviewers to user via AskUserQuestion:
       Show the reviewer confirmation display from review-loop Section 2:
       "## Phase {N}: {phase_name} — Review Setup
        Phase Type(s): {detected types}
@@ -237,14 +237,23 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
        |------|-----------------------------|-----------------------------|----------------|
        | 1    | {primary-agent-id}          | {role description}          | {why selected} |
        | 2    | {secondary-agent-id}        | {role description}          | {why selected} |"
-      Options:
-      - "{primary_agent_name} + {secondary_agent_name}" (Recommended)
-      - "{primary_agent_name} only" — single reviewer, faster but less thorough
-      - "{alternative_agent_name} + {primary_agent_name}" — different reviewer pair
-      - "Other" — enter custom agent IDs
 
-   e. If user selects "Other": accept custom agent IDs from user input and validate each one
-      exists in agent-registry
+      Question: "Which reviewer pairing should run this review?"
+
+      **Select one option:**
+      - **{primary_agent_name} + {secondary_agent_name}** (Recommended) — default pairing for this phase type
+      - **{primary_agent_name} only** — single reviewer, faster but less thorough
+      - **{alternative_agent_name} + {primary_agent_name}** — different reviewer pair (only if alternative_agent_name resolved; drop this option otherwise)
+      - **Pick different reviewers** — open a follow-up question to select from the full review-capable roster
+
+      Choose one of the options above. Do not propose alternatives.
+
+      → Use AskUserQuestion tool with these exact options. If {alternative_agent_name} is null, omit the third option.
+
+   e. If user selects "Pick different reviewers": issue a second AskUserQuestion enumerating
+      review-capable agent IDs from agent-registry Section 1 (paginated by division if >10).
+      Issue it twice to select primary and secondary reviewers. Do not accept free-text input.
+      Validate each selection exists in agent-registry.
 
    DESIGN REVIEW ENHANCEMENT (optional — follows design-workflows Section 4):
    - If phase type includes "design" AND design documents exist at .planning/designs/:
@@ -357,8 +366,14 @@ If `"single"`:
            (e.g., "testing-qa-verification-specialist-review-05-c1")
          - prompt: {constructed prompt from step 2}
          - Additional parameters per adapter
-      If adapter.parallel_execution: issue ALL reviewer spawn calls simultaneously
-      If not: spawn reviewers sequentially
+
+      **Dispatch specification — Review agents**
+      | Field | Value |
+      |---|---|
+      | When | Always, after reviewer selection completes (Step 4.0.d) and before findings collection (Step 5.c). Fires once per review cycle. |
+      | Why parallel is safe | All reviewers read the same artifacts and produce independent findings reports. No reviewer writes files; no reviewer reads another reviewer's output within the same cycle. No shared write targets. |
+      | How many | Exactly the count of selected reviewers from Step 4.0 (typically 1–3; capped by review-panel Section 2 at 3). Do not reduce fan-out. |
+      | Mechanism | adapter.spawn_agent_personality. If `adapter.parallel_execution == true`: issue all N reviewer spawn calls in a SINGLE tool call. If `adapter.parallel_execution == false`: issue N sequential spawn calls in reviewer-slot order. |
 
    c. Collect review results (follow review-loop Section 4):
       - Wait for all review agents to report findings per adapter.collect_results
@@ -396,24 +411,39 @@ If `"single"`:
 
    f. If verdict is NEEDS WORK or FAIL and cycle_count < {max_cycles}:
       Route fixes per review-loop Section 5 (Fix Cycle):
-      - For each must-fix finding, determine the fix agent by file type:
-        .md skill/command/agent/planning files → autonomous (no personality)
-        .ts/.js/.jsx/.tsx → engineering-frontend-developer or engineering-backend-architect
-        .py/.rb/.go/.rs → engineering-backend-architect
-        .css/.scss/design assets → design-ux-architect
-        marketing/content .md → marketing-content-creator
-        CI/CD/infrastructure configs → engineering-devops-automator
-        No clear match → autonomous
-      - Group findings by fix agent to minimize spawns
+      - For each must-fix finding, determine the fix agent by path glob (first match wins):
+        skills/**/*.md              → autonomous (no personality)
+        commands/**/*.md            → autonomous (no personality)
+        agents/**/*.md              → autonomous (no personality)
+        .planning/**/*.md           → autonomous (no personality)
+        **/*.tsx, **/*.jsx          → engineering-frontend-developer
+        src/components/**/*.{ts,js} → engineering-frontend-developer
+        src/pages/**/*.{ts,js}      → engineering-frontend-developer
+        **/*.ts, **/*.js            → engineering-backend-architect (default for .ts/.js)
+        **/*.py, **/*.rb, **/*.go, **/*.rs → engineering-backend-architect
+        **/*.css, **/*.scss, **/*.sass → design-ux-architect
+        content/**/*.md             → marketing-content-social-strategist
+        campaigns/**/*.md           → marketing-content-social-strategist
+        marketing/**/*.md           → marketing-content-social-strategist
+        .github/**                  → engineering-infrastructure-devops
+        Dockerfile*, docker-compose*.yml, *.Dockerfile → engineering-infrastructure-devops
+        .gitlab-ci.yml, .circleci/**, azure-pipelines.yml → engineering-infrastructure-devops
+        No glob match               → autonomous (no personality)
+      - Group findings by fix agent to minimize spawns (one spawn per unique fix agent per cycle)
       - Construct fix prompts per review-loop Section 5, Step 3:
         For personality-injected agents:
           1. Load personality from {AGENTS_DIR}/{agent-id}.md (AGENTS_DIR resolved in Step 2)
           2. Full personality content + "# Fix Task" with findings list
           If personality file is missing: fall back to autonomous mode, log the warning
         For autonomous agents: "# Fix Task" with findings list only
-      - Spawn fix agents per adapter (parallel if supported, sequential if not):
-        model: adapter.model_execution
-        name: "{agent-id}-fix-{NN}-cycle{cycle_count}"
+
+      **Dispatch specification — Fix agents**
+      | Field | Value |
+      |---|---|
+      | When | After review findings collection (Step 5.c) AND aggregate verdict is NEEDS_WORK or FAIL AND cycle_count < max_cycles. Fires once per fix cycle. |
+      | Why parallel is safe | Findings are grouped by fix agent (one spawn per unique agent). Each fix agent's findings list is disjoint by glob-routed file scope (see dispatch table above: e.g., frontend .tsx/.jsx vs. backend .ts/.js vs. design .css). No two fix agents are routed to overlapping files in the same cycle. Enforce: before spawning, verify the union of each agent's finding-file-paths is pairwise disjoint; if any overlap exists, serialize those two agents. |
+      | How many | Exactly the count of unique fix agents produced by the path-glob routing table above (typically 1–4). Do not reduce fan-out. |
+      | Mechanism | adapter.spawn_agent_personality (for .md-personality agents) or adapter.spawn_agent_autonomous (for "autonomous" route). If `adapter.parallel_execution == true` AND file-scope disjointness verified: issue all N spawn calls in a SINGLE tool call. Otherwise: sequential in routing-table order. Model: adapter.model_execution. Name: "{agent-id}-fix-{NN}-cycle{cycle_count}". |
       - Wait for all fix agents to report per adapter.collect_results
       - Track per finding: fixed (by which agent) vs. not-fixed (with reason)
       - Create fix commit:
@@ -556,7 +586,7 @@ If REVIEW_MODE === "security-only":
    c2. RECORD REVIEW OUTCOME (optional — follows memory-manager Section 6):
        If .planning/memory/OUTCOMES.md exists or .planning/memory/ directory can be created:
          Follow memory-manager Section 3 (Store Outcome):
-         - Agent: comma-separated list of reviewer agent IDs (e.g., "testing-qa-verification-specialist, testing-evidence-collector")
+         - Agent: comma-separated list of reviewer agent IDs (e.g., "testing-qa-verification-specialist, testing-test-results-analyzer")
          - Task Type: "quality-review"
          - Outcome: "success"
          - Importance: 2 if passed in cycle 1, 3 if passed in cycle 2+

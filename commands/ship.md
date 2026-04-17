@@ -182,20 +182,34 @@ skills/execution-tracker/SKILL.md
      d. PR title: "Phase {N}: {phase_name}"
 
 6. ASK USER
-   Present via adapter.ask_user:
-   "Ship readiness confirmed. All gates passed. Proceed?"
 
-   **If github_available=true**:
-   Options:
-   - "Create PR" — "Create pull request with ship report body on GitHub"
-   - "Push without PR" — "Push branch to remote without creating a PR"
-   - "Abort — review needed" — "Go back and review before shipping"
+   Branch on `github_available`, then issue AskUserQuestion with the matching exhaustive option set.
 
-   **If github_available=false**:
-   Options:
-   - "Push to remote" — "Push current branch to remote"
-   - "Mark as shipped" — "Update state without pushing (manual deploy)"
-   - "Abort — review needed" — "Go back and review before shipping"
+   **If github_available=true**: issue AskUserQuestion.
+
+   Question: "How do you want to publish Phase {N}?"
+
+   **Select one option:**
+   - **Create PR** — push branch and create pull request with ship report body on GitHub
+   - **Push without PR** — push branch to remote without creating a pull request
+   - **Abort — review needed** — stop; do not push or publish
+
+   Choose exactly one. Do not propose alternatives. Do not combine options.
+
+   → Use AskUserQuestion tool with these exact three options.
+
+   **If github_available=false**: issue AskUserQuestion.
+
+   Question: "How do you want to publish Phase {N}?"
+
+   **Select one option:**
+   - **Push to remote** — push current branch to remote (no PR; no GitHub integration available)
+   - **Mark as shipped** — update state without pushing (manual deploy handled elsewhere)
+   - **Abort — review needed** — stop; do not push or update state
+
+   Choose exactly one. Do not propose alternatives. Do not combine options.
+
+   → Use AskUserQuestion tool with these exact three options.
 
    If DRY_RUN=true: skip this step, display "DRY RUN — skipping ship actions" and exit
 

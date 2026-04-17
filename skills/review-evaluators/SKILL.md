@@ -46,12 +46,20 @@ Step 1: Determine base evaluator set from phase_type
   (default)           → [Code Quality Evaluator]
 
 Step 2: Augment from files_modified signals
+
+  **Matching rules — path-anchored globs with word-boundary tokens:**
+  - Substring globs (`*api*`) are replaced with path-anchored globs (`**/api/**`) so `rapi-tools.ts` no longer triggers Integration.
+  - Extensions (`.ts`, `.js`, `.jsx`, `.tsx`, `.svelte`, `.vue`, `.astro`, `.swift`, `.kt`, `.java`, `.cs`, `.cpp`, `.sql`, `.yaml`, `.yml`, `.json`, `.toml`) anchor on the filename suffix only.
+  - Canonical source: `.planning/config/intent-teams.yaml` → `evaluator_file_patterns` (add this key per LEGION-47-169). The rules below are a mirror; when patterns drift, edit the YAML first.
+
   For each file in files_modified:
-    If file matches *.ts | *.js | *.py | *.go | *.rs → add Code Quality Evaluator (if absent)
-    If file matches *.css | *.scss | *.vue | *.jsx | *.tsx → add UI/UX Evaluator (if absent)
-    If file matches *api* | *route* | *controller* | *endpoint* → add Integration Evaluator (if absent)
-    If file matches *service* | *domain* | *use-case* | *business* → add Business Logic Evaluator (if absent)
-    If file matches *auth* | *security* | *permission* | *token* | *session* | *middleware* → add Security Evaluator (if absent)
+    If file matches **/*.ts | **/*.js | **/*.jsx | **/*.tsx | **/*.py | **/*.go | **/*.rs | **/*.java | **/*.kt | **/*.cs | **/*.cpp | **/*.swift → add Code Quality Evaluator (if absent)
+    If file matches **/*.css | **/*.scss | **/*.vue | **/*.svelte | **/*.astro | **/*.jsx | **/*.tsx → add UI/UX Evaluator (if absent)
+    If file path matches **/api/** | **/routes/** | **/controllers/** | **/endpoints/** | **/handlers/** → add Integration Evaluator (if absent)
+    If file path matches **/services/** | **/domain/** | **/use-cases/** | **/business/** | **/core/** → add Business Logic Evaluator (if absent)
+    If file path matches **/auth/** | **/security/** | **/permissions/** | **/session/** | **/middleware/** OR filename contains token `auth|token|jwt|password|credential|secret|encrypt|crypto|rbac|acl` separated by `[._/\-]` boundaries → add Security Evaluator (if absent)
+
+  **Overlap resolution:** When a file triggers multiple evaluators, keep all. Cap at 3 evaluators per phase; if more than 3 trigger, keep Security (if present) + top-2 by file count and log cost warning.
 
 Step 2b: Always add Completeness Evaluator
   The Completeness Evaluator runs for ALL phase types. It evaluates whether error handling,
@@ -71,7 +79,7 @@ When more than one evaluator is selected:
 ```
 - Run evaluators in order: Code Quality → UI/UX → Integration → Business Logic → Security → Completeness
 - Each evaluator produces its own structured result (one result per evaluator)
-- Deduplication runs across all evaluator results (Section 7)
+- Deduplication runs across all evaluator results (Section 9)
 - Each evaluator's findings are tagged with its evaluator type for traceability
 - Cost warning: N evaluators ≈ N × single-pass review cost (still one invocation each)
 ```
@@ -1032,7 +1040,7 @@ Completeness Score: {score}/100
 
 How evaluators run and how cost is managed.
 
-### 6.1 Single Invocation Per Evaluator
+### 8.1 Single Invocation Per Evaluator
 
 Each evaluator type runs as ONE agent invocation — not one invocation per pass.
 
@@ -1050,9 +1058,9 @@ Correct model:
   Invocation 4: Business Logic (all 6 passes in one rubric prompt) [if selected]
 ```
 
-### 6.2 How Passes Work Within One Invocation
+### 8.2 How Passes Work Within One Invocation
 
-The full rubric prompt (Sections 2-5) is injected as the agent's evaluation instructions. The agent works through each pass section in order, producing a structured block of findings per pass. This is identical in structure to how review-panel uses per-criterion evaluation — the difference is that all criteria are delivered in one prompt rather than assigned across multiple agents.
+The full rubric prompt (Sections 2-7) is injected as the agent's evaluation instructions. The agent works through each pass section in order, producing a structured block of findings per pass. This is identical in structure to how review-panel uses per-criterion evaluation — the difference is that all criteria are delivered in one prompt rather than assigned across multiple agents.
 
 ```
 Agent receives:
@@ -1067,7 +1075,7 @@ Agent produces:
   3. Aggregate verdict with rationale
 ```
 
-### 6.3 Cost Profile
+### 8.3 Cost Profile
 
 | Scenario | Invocations | Relative Cost |
 |----------|-------------|---------------|
@@ -1079,7 +1087,7 @@ Agent produces:
 
 Multi-pass evaluators are comparable in cost to standard panel reviews — the multi-pass depth comes from the rubric structure, not additional invocations.
 
-### 6.4 Personality Assignment
+### 8.4 Personality Assignment
 
 Each evaluator type maps to a specific agent personality that has the deepest alignment with its domain:
 
@@ -1092,9 +1100,9 @@ Each evaluator type maps to a specific agent personality that has the deepest al
 
 When dispatching externally (Code Quality → Codex, UI/UX → Gemini), the personality is injected into the dispatch prompt prefix rather than relying on the external CLI's default persona.
 
-### 6.5 Result Structure
+### 8.5 Result Structure
 
-Each evaluator produces a structured markdown result. Results are collected and passed to Section 7 (Finding Deduplication) before being merged into the final review report.
+Each evaluator produces a structured markdown result. Results are collected and passed to Section 9 (Finding Deduplication) before being merged into the final review report.
 
 ```
 Evaluator Result Structure:
@@ -1122,7 +1130,7 @@ Cross-pass and cross-evaluator deduplication to eliminate redundant findings bef
 
 This section extends the deduplication logic defined in `skills/review-panel/SKILL.md` Section 3, Step 2. Use the same deduplication algorithm as a base — the extensions below handle the multi-pass and multi-evaluator dimensions.
 
-### 7.1 Cross-Pass Deduplication (Within One Evaluator)
+### 9.1 Cross-Pass Deduplication (Within One Evaluator)
 
 When the same issue appears in multiple passes of the same evaluator:
 
@@ -1148,7 +1156,7 @@ Step 4: Log cross-pass merges
   "Cross-pass dedup: {N} findings merged into {M} unique findings within {evaluator_type}"
 ```
 
-### 7.2 Cross-Evaluator Deduplication (Across Multiple Evaluators)
+### 9.2 Cross-Evaluator Deduplication (Across Multiple Evaluators)
 
 When Code Quality and Integration (or any two evaluators) both flag the same issue:
 
@@ -1172,7 +1180,7 @@ Step 4: Log cross-evaluator merges
   "Cross-evaluator dedup: {N} findings merged (e.g., Code Quality + Integration both found src/auth.ts:45 type error)"
 ```
 
-### 7.3 Severity Escalation
+### 9.3 Severity Escalation
 
 Consistent with review-panel dedup (SKILL.md Section 3, Step 2):
 
@@ -1182,7 +1190,7 @@ Rationale: If any evaluator considers it blocking, treat as blocking.
 Log escalations for the deduplication report.
 ```
 
-### 7.4 Deduplication Report
+### 9.4 Deduplication Report
 
 After all deduplication passes complete, produce a summary consistent with review-panel's deduplication report format (SKILL.md Section 3, Step 2.5):
 
@@ -1204,7 +1212,7 @@ After all deduplication passes complete, produce a summary consistent with revie
 | src/x.ts:45 | WARNING → BLOCKER | BLOCKER | Code Quality Pass 2, Integration Pass 1 |
 ```
 
-### 7.5 Dedup Key Collision Handling
+### 9.5 Dedup Key Collision Handling
 
 ```
 If two findings share the same file_path and line_number but different issue_category:
@@ -1224,43 +1232,57 @@ If line_number is absent from a finding:
 
 How evaluators use `cli-dispatch` (from the wave-executor and review-loop dispatch patterns) for external CLI routing.
 
-### 8.1 Dispatch Targets
+> **Section numbering note:** Subsections below were historically numbered 8.1-8.5 and are retained here as 10.1-10.5 to match the parent Section 10 heading. Cross-references in this file to "Section 8.2" / "Section 8.4" etc. point to these renumbered subsections. When editing, keep the 10.x numbering stable.
+
+### 10.1 Dispatch Targets
 
 | Evaluator | Dispatch Target | Capability Required | Fallback |
-|-----------|-----------------|--------------------|---------|
+|-----------|-----------------|---------------------|----------|
 | Code Quality | Codex | `code_review` | Internal (engineering-senior-developer) |
 | UI/UX | Gemini | `ui_design` | Internal (design-ux-architect) |
 | Integration | Internal | N/A | N/A (always internal) |
 | Business Logic | Internal | N/A | N/A (always internal) |
 
-### 8.2 Dispatch Protocol
+### 10.2 Dispatch Protocol
 
 For evaluators with an external dispatch target:
 
-```
-Step 1: Check adapter availability
-  Load adapter for target CLI (e.g., codex-cli.md, gemini-cli.md)
-  Check adapter.capabilities list for required capability
+**Dispatch Specification (MANDATORY — do not dispatch without satisfying every row):**
 
-  If capability present AND CLI configured:
-    Proceed with external dispatch (Step 2)
-  Else:
-    Log: "Dispatch target {CLI} not available for {capability} — running internally"
-    Use fallback personality (Section 6.4) and run internally
+| Field | Value |
+|-------|-------|
+| **When** | After Section 1 evaluator selection produces ≥1 evaluator whose Dispatch Target column is not `Internal` AND Step 1 availability preconditions succeed for that target. Never before. |
+| **Why parallel is safe** | Each evaluator reads the same `files_modified` set but writes only its own result record (scoped by evaluator type). No two evaluators share a write target. Deduplication (Section 9) runs post-collection, so parallel evaluators cannot corrupt each other. |
+| **How many** | One dispatch call per externally-targeted evaluator selected in Section 1. Internally-run evaluators (Integration, Business Logic) invoke in-process, not via dispatch. |
+| **Mechanism** | `cli-dispatch` skill using the adapter named in the `Dispatch Target` column (e.g., `adapters/codex-cli.md` for Code Quality). On precondition failure: fall through to Section 10.3 using the Section 10.4 personality table. |
+
+**Preconditions (verify ALL before dispatching — failure is a normal fallback path, not an error):**
+1. `adapters/{target}.md` exists — read via `workflow-common` Adapter Resolution Protocol.
+2. Adapter frontmatter `capabilities` array includes the required capability string.
+3. Target CLI is configured: `settings.json` adapter section has non-null `binary_path` AND authentication check returns success.
+4. Section 10.4 personality table has an entry for this evaluator type (the fallback path must be reachable before attempting external dispatch).
+5. If any precondition fails: log `"Dispatch target {CLI} not available for {capability} — running internally"` and switch to Section 10.3.
+
+```
+Step 1: Check adapter availability (preconditions above)
+  If all preconditions pass: proceed to Step 2.
+  Else: switch to Section 10.3 fallback — do NOT attempt external dispatch.
 
 Step 2: Build dispatch prompt
-  Prefix: Agent personality (full content of agents/{personality}.md)
-  Body: Evaluator rubric prompt (Sections 2-5, appropriate for evaluator type)
+  Prefix: Agent personality (full content of agents/{personality}.md from Section 10.4 table)
+  Body: Evaluator rubric prompt (Sections 2-7, appropriate for evaluator type)
   Suffix: Files to review (content of files_modified)
   Context: Phase CONTEXT.md and SUMMARY.md summaries
 
 Step 3: Dispatch to target CLI
-  Use wave-executor dispatch pattern for the active adapter
-  model_tier: "execution" (this is a substantive review, not a planning call)
+  Use cli-dispatch skill with the active adapter.
+  Model: adapter.model_execution (see Cost Profile Convention in workflow-common.md).
+  (Legacy `model_tier: "execution"` key removed — it had no downstream consumer.
+   Execution model is governed solely by adapter.model_execution.)
 
 Step 4: Collect result
   Wait for completion per adapter.collect_results
-  Parse structured output — expect the evaluator result format from Sections 2-5
+  Parse structured output — expect the evaluator result format from Sections 2-7
 
 Step 5: Validate result structure
   Confirm result contains: Pass Results table, All Findings section, Aggregate Verdict
@@ -1269,7 +1291,7 @@ Step 5: Validate result structure
     Flag result as PARTIAL and include raw output for manual review
 ```
 
-### 8.3 Fallback Behavior
+### 10.3 Fallback Behavior
 
 ```
 Conditions that trigger fallback to internal execution:
@@ -1280,18 +1302,18 @@ Conditions that trigger fallback to internal execution:
 
 Fallback procedure:
   1. Log reason for fallback at INFO level
-  2. Assign internal agent from Section 6.4 personality table
+  2. Assign internal agent from Section 8.4 personality table
   3. Run evaluator rubric prompt as internal agent invocation
   4. Proceed with result as normal — fallback is transparent to the synthesis step
 
 Important: Fallback results must use the SAME output format as external dispatch results.
-  The deduplication (Section 7) and synthesis steps do not distinguish between
+  The deduplication (Section 9) and synthesis steps do not distinguish between
   externally-dispatched and internally-run evaluator results.
 ```
 
-### 8.4 Result Format Consistency
+### 10.4 Result Format Consistency
 
-Regardless of whether the evaluator ran externally or internally, the collected result must conform to the structured format defined in each evaluator section (Sections 2-5). This ensures Section 7 deduplication and the final review-loop synthesis step can process all results uniformly.
+Regardless of whether the evaluator ran externally or internally, the collected result must conform to the structured format defined in each evaluator section (Sections 2-7). This ensures Section 9 deduplication and the final review-loop synthesis step can process all results uniformly.
 
 ```
 Required sections in every evaluator result:
@@ -1308,7 +1330,7 @@ If an external CLI returns output in a different format:
   → Do not block synthesis — partial results proceed with a warning
 ```
 
-### 8.5 Integration with Review Loop
+### 10.5 Integration with Review Loop
 
 Evaluator results feed into the existing review-loop cycle:
 
@@ -1334,9 +1356,21 @@ review-loop aggregate verdict:
 
 | Pattern | Source | Used In |
 |---------|--------|---------|
-| Domain Rubric Registry (evaluation criteria structure) | skills/review-panel/SKILL.md Section 2 | Sections 2-5 (pass rubric format) |
-| Deduplication Algorithm (location-based dedup, severity escalation) | skills/review-panel/SKILL.md Section 3, Step 2 | Section 7 (cross-pass and cross-evaluator dedup) |
-| Deduplication Report Format | skills/review-panel/SKILL.md Section 3, Step 2.5 | Section 7.4 (dedup summary table) |
-| CLI Dispatch Pattern | skills/wave-executor/SKILL.md | Section 8.2 (dispatch protocol) |
-| Feedback Collection | skills/review-loop/SKILL.md Section 4 | Section 8.5 (review-loop integration) |
-| Fix Cycle | skills/review-loop/SKILL.md Section 5 | Section 8.5 (review-loop integration) |
+| Domain Rubric Registry (evaluation criteria structure) | skills/review-panel/SKILL.md Section 2 | Sections 2-7 (pass rubric format) |
+| Deduplication Algorithm (location-based dedup, severity escalation) | skills/review-panel/SKILL.md Section 3, Step 2 | Section 9 (cross-pass and cross-evaluator dedup) |
+| Deduplication Report Format | skills/review-panel/SKILL.md Section 3, Step 2.5 | Section 9.4 (dedup summary table) |
+| CLI Dispatch Pattern | skills/wave-executor/SKILL.md | Section 10.2 (dispatch protocol) |
+| Feedback Collection | skills/review-loop/SKILL.md Section 4 | Section 10.5 (review-loop integration) |
+| Fix Cycle | skills/review-loop/SKILL.md Section 5 | Section 10.5 (review-loop integration) |
+
+## Completion Gate
+
+This skill completes when ALL conditions are met:
+1. Every configured evaluator type (e.g., correctness, performance, security, design, testability) has been invoked for the phase and returned a structured verdict (PASS / NEEDS WORK / FAIL)
+2. Each evaluator finding is tagged with `source: "evaluator:{type}:pass:{N}"` so the tag survives deduplication in `review-loop` Section 4
+3. Aggregate verdict computed per Section 10.5: `PASS` iff ALL evaluator verdicts PASS AND panel verdict PASS; `FAIL` if any evaluator/panel verdict FAIL OR 3+ BLOCKERs across sources; otherwise `NEEDS WORK`
+4. Must-fix list produced and passed to `review-loop` Section 5 fix cycle; BLOCKERs and WARNINGs from evaluators treated identically to panel findings
+5. If an evaluator errored or timed out: a structured `warning` entry recorded in the evaluator result (never a silent skip) and the aggregate verdict degrades to at least `NEEDS WORK`
+6. Evaluator results persisted to `.planning/phases/{NN}/REVIEW.md` under a `## Evaluator Findings` section for downstream cross-reference
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

@@ -776,3 +776,18 @@ This skill integrates with the following Legion components:
 Memory integration:
   .planning/memory/OUTCOMES.md  — Decision recorded with task_type: "board_decision"
 ```
+
+## Completion Gate
+
+This skill completes when ALL conditions are met:
+1. `.planning/board/{YYYY-MM-DD}-{slug}/` directory exists for the convened session
+2. All four phase artifacts are written and non-empty:
+   - `briefing.md` (Phase 1) — topic framing and options listed
+   - `discussion.md` (Phase 2) — per-director position captured (one named section per seated director)
+   - `votes.md` (Phase 3) — explicit vote per director (Approve / Reject / Abstain) with stated rationale
+   - `resolution.md` (Phase 4) — binding decision, action items with owners, and a follow-up trigger
+3. Vote tally in `votes.md` matches the decision recorded in `resolution.md` (quorum rule satisfied per configured board policy)
+4. A memory entry recorded to `.planning/memory/OUTCOMES.md` with `task_type: "board_decision"` and a back-link to the session directory
+5. For `/legion:board review` (quick mode): a review summary file exists even if full 4-phase session was skipped — the mode is documented in the file header
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

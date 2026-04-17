@@ -35,11 +35,15 @@ Core rules governing marketing workflows and the detection heuristic that determ
 
 ### When Marketing Workflows Apply
 
-Marketing-specific decomposition activates when ANY of these signals are present:
+Marketing-specific decomposition activates when ANY of the canonical triggers below matches — no other triggers. Keyword matches against the phase description are NOT authoritative (they may be used as a non-blocking hint to prompt the user, never as automatic activation).
 
-1. **Requirement IDs**: Phase requirements include MKT-* IDs
-2. **Keywords in phase description**: "campaign", "content calendar", "social media", "cross-channel", "marketing", "brand awareness", "audience", "engagement strategy", "content strategy", "channel strategy"
-3. **Agent signal**: agent-registry recommends majority marketing-division agents for the phase
+**Canonical triggers (mirror of `workflow-common/SKILL.md` § Marketing Phase Detection):**
+
+1. At least one phase requirement ID matches the regex `^MKT-\d+` in ROADMAP.md or REQUIREMENTS.md
+2. The phase's CONTEXT.md YAML frontmatter declares `workflow_type: marketing`
+3. The user passed `--domain=marketing` to `/legion:plan`
+
+**Single source of truth for keywords:** `.planning/config/intent-teams.yaml` under `teams.marketing.keywords[]`. Keywords are used only as prompt hints, never for silent activation. When adding a keyword, edit the YAML — do NOT inline keyword lists in this file.
 
 When detected: use marketing-specific wave patterns (Section 6) and offer campaign document generation during planning.
 When not detected: standard phase decomposition applies -- no impact.
@@ -59,11 +63,11 @@ CONTENT_TYPES = ['social-post', 'thread', 'reel', 'story', 'blog-post', 'email',
 | Channel | Primary Agent | Backup Agent |
 |---------|--------------|--------------|
 | Twitter | marketing-twitter-engager | marketing-social-media-strategist |
-| Instagram | marketing-instagram-curator | marketing-content-creator |
+| Instagram | marketing-instagram-curator | marketing-content-social-strategist |
 | TikTok | marketing-tiktok-strategist | marketing-instagram-curator |
-| Reddit | marketing-reddit-community-builder | marketing-content-creator |
-| Blog/Web | marketing-content-creator | marketing-social-media-strategist |
-| Email | marketing-content-creator | marketing-growth-hacker |
+| Reddit | marketing-reddit-community-builder | marketing-content-social-strategist |
+| Blog/Web | marketing-content-social-strategist | marketing-social-media-strategist |
+| Email | marketing-content-social-strategist | marketing-growth-hacker |
 | App Store | marketing-app-store-optimizer | marketing-growth-hacker |
 | Growth/Funnel | marketing-growth-hacker | marketing-social-media-strategist |
 
@@ -139,7 +143,7 @@ For marketing campaigns, use the agent-registry Section 4 Marketing Campaign tea
 | Role | Agent | Responsibilities |
 |------|-------|-----------------|
 | Strategy Lead | marketing-social-media-strategist | Overall strategy, cross-channel alignment, campaign brief ownership, Wave 1 leadership |
-| Content Lead | marketing-content-creator | Core content production, editorial calendar, brand voice consistency, long-form assets |
+| Content Lead | marketing-content-social-strategist | Core content production, editorial calendar, brand voice consistency, long-form assets |
 
 **Channel-specific roles (1 per selected channel):**
 - Map each selected channel to its primary agent using the Channel-Agent Mapping table (Section 1)
@@ -199,8 +203,8 @@ Each content item maps to a type, channel, and responsible agent:
 | Thread/Carousel | Twitter, LinkedIn | marketing-twitter-engager | 2-3x/week |
 | Short-form Video | TikTok, Instagram Reels | marketing-tiktok-strategist | 2-3x/week |
 | Stories | Instagram | marketing-instagram-curator | Daily during active phase |
-| Long-form Post | Blog, Medium | marketing-content-creator | 1-2x/week |
-| Email Newsletter | Email list | marketing-content-creator | Weekly |
+| Long-form Post | Blog, Medium | marketing-content-social-strategist | 1-2x/week |
+| Email Newsletter | Email list | marketing-content-social-strategist | Weekly |
 | Community Post | Reddit | marketing-reddit-community-builder | 2-3x/week |
 | Poll/Interactive | Twitter, Instagram | Platform-specific agent | Weekly |
 | AMA/Q&A | Reddit | marketing-reddit-community-builder | 1x per campaign |
@@ -238,7 +242,7 @@ Three standard patterns based on campaign timeline (from Q4 in brief questioning
 1. Each content item has exactly ONE responsible agent (no shared ownership)
 2. Agent assignment follows the Channel-Agent Mapping (Section 1)
 3. Strategy Lead (marketing-social-media-strategist) reviews all content for brand consistency -- review role, not creation
-4. Content Creator (marketing-content-creator) handles all long-form content regardless of distribution channel
+4. Content Creator (marketing-content-social-strategist) handles all long-form content regardless of distribution channel
 5. Channel specialists own platform-native formats (Reels, TikToks, Threads, Reddit posts)
 6. Cross-division agents (design-visual-storyteller, data-analytics-engineer) support but do not own content slots
 7. When a channel has no specialist assigned, Content Creator is the fallback
@@ -317,7 +321,7 @@ The handoff between waves ensures all agents work from shared context:
   - Content calendar assignments for their channel only
   - Campaign document reference for full context
 
-**Content Creator (marketing-content-creator) produces in Wave 2:**
+**Content Creator (marketing-content-social-strategist) produces in Wave 2:**
   - Long-form content (blog posts, email copy, landing page copy)
   - Content that channel agents can excerpt or reference for shorter formats
 
@@ -457,7 +461,7 @@ In phase-decomposer, after reading ROADMAP phase details:
         Produces: campaign strategy brief, success metrics, audience analysis
 
       Wave 2: Content Creation
-        Agents: marketing-content-creator + channel specialists (in parallel)
+        Agents: marketing-content-social-strategist + channel specialists (in parallel)
         Produces: content assets per channel, adapted from core messaging
 
       Wave 3 (optional, if phase scope includes execution):
@@ -539,3 +543,18 @@ This skill is consumed by:
 Campaign document format is defined in Section 5.
 Marketing domain detection is defined in Section 1 and must be checked before applying marketing patterns.
 All consumers should handle non-marketing phases silently per Section 6.4 caller contract.
+
+## Completion Gate
+
+This skill completes when ALL conditions are met (for marketing phases only; non-marketing phases no-op silently and return immediately):
+1. `.planning/campaigns/{phase-slug}/` directory exists for the target phase
+2. Campaign document written per Section 5 with the four required sections: core message, channel plan, content calendar, success metrics
+3. Content calendar is fully assigned — every slot has an owner agent and a dated entry (no unfilled rows)
+4. Campaign lifecycle state (Draft / Active / Measuring / Complete) is set per Section 3 and transition criteria met before advancing:
+   - Draft → Active: all Wave 1 SUMMARY.md files status `completed`
+   - Active → Measuring: all Wave 2 SUMMARY.md files status `completed`
+   - Measuring → Complete: final report written to `.planning/campaigns/{phase-slug}/REPORT.md` AND measuring window elapsed per `settings.marketing.measuring_duration_days` (default 14)
+5. Consistency checklist (Section 4.3) executed against produced content; all items satisfied or explicit waiver recorded with rationale
+6. Campaign artifact paths referenced from the phase `SUMMARY.md` Files Modified section
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

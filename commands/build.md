@@ -66,9 +66,19 @@ Step 3: Decide execution mode
 4. Collect analysis findings
 5. Gate: Architecture Review
    - Show analysis findings to user
-   - Ask: "Proceed to Wave B, or revise Wave A outputs?"
+   - Ask via AskUserQuestion: "How should we proceed with Wave A outputs?"
+
+     **Select one option:**
+     - **Proceed to Wave B** — accept Wave A outputs and continue
+     - **Revise Wave A outputs** — pause so user can fix, then re-run Wave A
+     - **Abort phase** — stop execution without producing Wave B artifacts
+
+     Choose one of the three options above. Do not propose alternatives.
+
+     → Use AskUserQuestion tool with these exact three options.
 6. If proceed: Generate Wave A manifest
    If revise: Pause, user fixes, re-run Wave A
+   If abort: Stop execution, mark phase incomplete
 ```
 
 **Wave B: Execution + Remediation**
@@ -85,6 +95,30 @@ Step 3: Decide execution mode
    - FAIL blocks phase completion
    - NEEDS_WORK offers fix cycle
 ```
+
+**Dispatch specification — Wave A build agents (two-wave mode)**
+| Field | Value |
+|---|---|
+| When | Two-wave mode active (auto-detected by --two-wave flag or service-group signal) AND service groups have been identified from plan `files_modified`. Fires once per service group. |
+| Why parallel is safe | Service groups are defined as disjoint sets of `files_modified` — by construction, no two build agents within a group (or across groups) write the same file. Verify disjointness before dispatch; if violated, serialize the overlapping groups. |
+| How many | Exactly the count of build-role plans in the identified service groups for this phase. Do not reduce fan-out unless file-disjointness check fails. |
+| Mechanism | adapter.spawn_agent_personality (autonomous: false). Parallel path: issue all N build-agent spawns in a SINGLE tool call if `adapter.parallel_execution == true` AND service groups are file-disjoint. Sequential path otherwise. Model: adapter.model_execution. |
+
+**Dispatch specification — Wave A analysis agents (two-wave mode)**
+| Field | Value |
+|---|---|
+| When | After all Wave A build agents complete AND before Architecture Review gate. Fires once. |
+| Why parallel is safe | Analysis agents are read-only (architecture + security). Both read the same Wave A build outputs but produce independent findings reports. No writes; no cross-agent reads within the same batch. |
+| How many | Typically 2 (architecture + security). Extensible: add more analysis roles per two-wave config. Do not reduce below 2 unless `--skip-security` or `--skip-architecture` flag is set. |
+| Mechanism | adapter.spawn_agent_readonly. Parallel path: issue all N analysis spawns in a SINGLE tool call. Sequential path only if `adapter.parallel_execution == false`. Model: adapter.model_execution. |
+
+**Dispatch specification — Wave B agents (two-wave mode)**
+| Field | Value |
+|---|---|
+| When | After Architecture Review gate returns "Proceed to Wave B" AND Wave A manifest is loaded. Fires once. |
+| Why parallel is safe | Wave B agents split into two disjoint streams: execution (tests/benchmarks/validation — read Wave A outputs, write only to test result files) and remediation (SRE chaos, data scientist — read-only analysis). Execution stream writes are scoped to `tests/`, `benchmarks/`, and validation report paths declared in agent spec; these do not overlap with each other or with remediation-stream reads. Enforce write-scope disjointness before parallel dispatch. |
+| How many | Execution agents: exactly the count defined in phase's Wave B execution list. Remediation agents: optional (0 if not configured; typically 1–2 when used). Total Wave B count = execution + remediation. Do not reduce fan-out. |
+| Mechanism | adapter.spawn_agent_personality for execution stream; adapter.spawn_agent_readonly for remediation stream. Parallel path: issue ALL Wave B spawns (both streams) in a SINGLE tool call. Sequential path only if `adapter.parallel_execution == false`. Model: adapter.model_execution. |
 
 ### Single-Wave Fallback
 
@@ -162,10 +196,18 @@ If $ARGUMENTS contains intent flags (--just-* or --skip-*):
      - "filter_plans" → Filter existing plans, then execute (see Step 3.5)
    - Multiple intents: combine filter predicates with AND logic
 
-4. **User Confirmation (yolo mode skip)**
+4. **User Confirmation**
    - Display: "Detected intents: harden, skip-frontend"
    - Display: "Execution mode: ad_hoc" or "Execution mode: filter_plans"
-   - Prompt: "Proceed? [Y/n]"
+   - Ask via AskUserQuestion: "Proceed with the detected intents?"
+
+     **Select one option:**
+     - **Proceed with these intents** — continue execution with detected intents and mode
+     - **Cancel and adjust flags** — abort so user can re-run with different flags
+
+     Choose one of the two options above. Do not propose alternatives.
+
+     → Use AskUserQuestion tool with these exact two options.
 
 ## Step 0.7: NATURAL LANGUAGE INTENT DETECTION
 
@@ -305,10 +347,29 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
         3. Agent name: "executor-{NN}-{PP}" (e.g., "executor-04-01")
 
    d. Execute plans for this wave (wave-executor Section 4, Step 4):
+
+      **Dispatch specification — Wave plan agents**
+      | Field | Value |
+      |---|---|
+      | When | For each wave in the dependency-ordered wave list, after all prior waves completed successfully AND after per-wave plan prompts (personality-injected or autonomous) are constructed in Step 6.c. Fires once per wave. |
+      | Why parallel is safe | File-overlap safety check (below) enforces that no two plans in the same wave share any `files_modified` entry before parallel dispatch. If overlap is detected, dispatch falls back to sequential in plan order. No two parallel plans can write the same file. |
+      | How many | Exactly the count of plans in the current wave (N = wave's plan count). Do not reduce fan-out if parallel path is taken. |
+      | Mechanism | adapter.spawn_agent_personality (for personality-injected plans) or adapter.spawn_agent_autonomous (for autonomous plans). Parallel path: all N spawn calls in a SINGLE tool call. Sequential path: N calls in plan order with commit between. Model: adapter.model_execution. Name: "{agent-id}-{NN}-{PP}" or "executor-{NN}-{PP}". |
+
       Follow the adapter-conditional execution from wave-executor:
-      - If adapter.parallel_execution: spawn all agents simultaneously
-      - If not: execute plans sequentially
-      - Each agent uses adapter.model_execution
+      - **File-overlap safety check (MANDATORY before dispatch)**:
+        1. Collect `files_modified` from each plan's frontmatter in this wave.
+        2. Compute pairwise intersections across all plans.
+        3. If ANY two plans share one or more `files_modified` entries: dispatch sequentially in plan order, commit between each plan, regardless of `adapter.parallel_execution`.
+        4. Also consult each plan's optional `sequential_files` list; if any listed file appears in another plan's `files_modified`, serialize those plans.
+      - **Parallel dispatch path**: If `adapter.parallel_execution == true` AND no two plans in this wave share any `files_modified` entry (per the safety check above):
+        - Issue all plan spawns in a SINGLE tool call with fan-out equal to the plan count.
+        - Do NOT reduce fan-out. Do NOT batch into smaller groups. Do NOT serialize.
+      - **Sequential dispatch path**: If `adapter.parallel_execution == false` OR the file-overlap check flagged this wave:
+        - Execute plans sequentially in the order listed in the wave.
+        - Commit after each plan before spawning the next.
+      - Each agent uses `adapter.model_execution` regardless of dispatch path.
+      - Cross-reference: wave-executor Section 4, Step 4 is the canonical specification.
 
    e. Collect results (wave-executor Section 4, Step 5):
       Per adapter.collect_results — wait for all plans in the wave to complete.
@@ -386,7 +447,7 @@ For intents with mode: "ad_hoc" (e.g., --just-harden):
 
 2. **Resolve Team**
    - Primary agents: testing-qa-verification-specialist, engineering-security-engineer
-   - Secondary agents: testing-api-tester, testing-evidence-collector
+   - Secondary agents: testing-api-tester, testing-test-results-analyzer
    - Read personalities: agents/{agent}.md
 
 3. **Spawn Agents**

@@ -54,12 +54,16 @@ Read the installed Legion command bundle from `.legion/commands/legion/` and wri
 
 ### Wave Execution
 
+**Dispatch mode:** parallel subagents when wave has multiple plans with non-overlapping `files_modified`; sequential otherwise. Coordination is filesystem-based via `.planning/` artifacts — no runtime mailboxes.
+
 Kiro supports custom agents and subagents. Legion should:
 1. Read the matching workflow file from `.legion/commands/legion/`
-2. Spawn Kiro subagents when the workflow benefits from parallel execution
-3. Pass context through `.planning/` artifacts, not runtime mailboxes
-4. Write each plan result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
-5. Re-read the result files before advancing to the next wave
+2. For multi-plan waves, validate that plans have non-overlapping `files_modified` (via wave-executor). If overlaps exist, run those plans sequentially.
+3. Spawn Kiro subagents in a single dispatch batch for plans eligible for parallel execution
+4. Pass context through `.planning/` artifacts, not runtime mailboxes
+5. Write each plan result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
+6. Poll result files every 5s; timeout at 30 min per wave. Missing results are marked Failed.
+7. Re-read the result files before advancing to the next wave
 
 ### Result Collection
 

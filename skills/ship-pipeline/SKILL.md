@@ -354,3 +354,15 @@ Flow:
 | Escalation Protocol | .planning/config/escalation-protocol.yaml | Section 1 Check 3 |
 | GitHub PR Creation | skills/github-sync | Section 3 |
 | Adapter Config | adapters/*.md | Section 1 Check 5, Section 4 |
+
+## Completion Gate
+
+This skill completes when ALL conditions are met:
+1. Pre-ship gate (Section 1) ran all 6 checks to PASS or FAIL — no check skipped silently; any FAIL blocks the pipeline and is reported to the caller
+2. `.planning/phases/{NN}/SHIP-REPORT.md` exists with all 7 required sections rendered: Summary, Files Modified, Tests, Reviews, Escalation Status, Deployment, Follow-ups (empty sections render the configured `_none_` placeholder, never an empty heading)
+3. If a GitHub remote exists: PR created or updated with body populated from the ship report template (Section 3); PR URL captured in SHIP-REPORT.md
+4. If `deploy_command` is configured and deploy was invoked: canary monitoring (Section 4) ran to completion with a recorded outcome (healthy / degraded / rollback) — no orphaned in-flight monitors
+5. All verification commands from in-scope plans exited zero and their output lines are captured in the SHIP-REPORT.md Tests section
+6. Escalations (pending or deferred) from prior waves surfaced in the SHIP-REPORT.md Escalation Status section, not silently dropped
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

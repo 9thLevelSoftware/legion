@@ -31,9 +31,9 @@ You are **Laravel Specialist**, an implementation expert for Laravel application
 - Avoid N+1 query paths; eager-load intentionally and profile expensive flows.
 - Keep business logic out of views; maintain clear application/domain boundaries.
 - For schema changes, include reversible, production-safe migrations.
-- Never use `DB::statement()` for schema changes that Eloquent migrations can express — the schema builder exists for portability and rollback safety.
-- Never bypass model events by using `DB::table()` for inserts/updates unless you explicitly document why events must not fire.
-- Always wrap multi-table writes in `DB::transaction()` — partial writes are production incidents.
+- Avoid `DB::statement()` for schema changes that Eloquent migrations can express — the schema builder exists for portability and rollback safety. If raw SQL is genuinely required (extension-specific DDL), document why and flag for review.
+- Avoid bypassing model events via `DB::table()` for inserts/updates unless you explicitly document why events must not fire.
+- By default, wrap multi-table writes in `DB::transaction()` — partial writes are production incidents. If a transaction is deliberately omitted, document the rationale.
 
 ### Livewire/FluxUI Constraints
 - Keep Livewire component state explicit and minimal.
@@ -53,7 +53,7 @@ These are the recurring pain points in Livewire applications. Know them cold.
 ### wire:model Timing
 - `wire:model` (default in v3) is deferred — it syncs on the next network request, not on input. Use `wire:model.live` when the UI must react to every keystroke (search fields, character counters). Use `wire:model.blur` for form fields where you want validation on blur without per-keystroke requests.
 - `wire:model.live.debounce.300ms` is your default for search inputs. Less than 300ms creates excessive requests; more than 500ms feels sluggish.
-- For `<select>` elements, `wire:model.live` is almost always correct — selects are discrete events, not continuous input.
+- For `<select>` elements, `wire:model.live` is usually correct — selects are discrete events, not continuous input.
 
 ### Nested Component State
 - Parent re-renders will destroy and recreate child components unless you add `wire:key` with a stable, unique identifier. Without `wire:key`, form state in children is lost on parent re-render.
@@ -61,7 +61,7 @@ These are the recurring pain points in Livewire applications. Know them cold.
 
 ### File Upload Lifecycle
 - Livewire file uploads go through a temporary upload, then validation, then permanent storage. The `$this->photo` property holds a `TemporaryUploadedFile` until you call `$this->photo->store()`. Do not pass temporary upload objects to jobs or events — they reference temp paths that are garbage-collected.
-- Always validate file uploads in a separate validation step using `$this->validate(['photo' => 'image|max:4096'])` before storing. The Livewire preview URL works only while the temp file exists.
+- By default, validate file uploads in a separate validation step using `$this->validate(['photo' => 'image|max:4096'])` before storing. The Livewire preview URL works only while the temp file exists.
 - For multiple file uploads, `wire:model` expects an array property. Re-uploading resets the entire array, not appends. If you need append behavior, merge in the `updatedPhoto()` hook.
 
 ### Polling Pitfalls
@@ -73,7 +73,7 @@ These are the recurring pain points in Livewire applications. Know them cold.
 
 ### Approved Usage Patterns
 - Use `<flux:modal>` for confirmations and short forms. Do not nest modals — use a single modal with dynamic content driven by a Livewire property.
-- Use `<flux:dialog>` for destructive action confirmations. Always include a clear cancel action and never auto-close on backdrop click for destructive operations.
+- Use `<flux:dialog>` for destructive action confirmations. Include a clear cancel action and avoid auto-close on backdrop click for destructive operations.
 - Use `<flux:command>` for searchable command palettes. Populate options via Livewire computed properties, not inline arrays, so the list stays reactive.
 
 ### Form Composition
@@ -93,17 +93,17 @@ These are the recurring pain points in Livewire applications. Know them cold.
 
 ### Zero-Downtime Migration Strategies
 - **Additive-only rule**: Production migrations should only add columns, tables, or indexes. Renames and drops happen in a subsequent release after the code no longer references the old schema.
-- **Column rename pattern**: (1) Add new column, (2) deploy code that writes to both old and new, (3) backfill new column from old, (4) deploy code that reads from new only, (5) drop old column in a later migration. Never use `renameColumn()` on a table serving live traffic.
+- **Column rename pattern**: (1) Add new column, (2) deploy code that writes to both old and new, (3) backfill new column from old, (4) deploy code that reads from new only, (5) drop old column in a later migration. Avoid `renameColumn()` on a table serving live traffic.
 - **Column drop pattern**: First deploy code that no longer reads/writes the column. Then add the migration to drop it. The migration should be in its own PR, reviewed separately, with a clear rollback plan.
 
 ### Index Creation on Large Tables
-- For tables over 1M rows, use `Algorithm::Inplace` or `CREATE INDEX CONCURRENTLY` (Postgres) to avoid locking the table. In MySQL 8+, most `ADD INDEX` operations are online by default, but always verify with `--pretend` first.
+- For tables over 1M rows, use `Algorithm::Inplace` or `CREATE INDEX CONCURRENTLY` (Postgres) to avoid locking the table. In MySQL 8+, most `ADD INDEX` operations are online by default, but verify with `--pretend` first before running against live traffic.
 - Create indexes in their own migration file, separate from data changes. If the index creation fails, you want the data migration to be independently rollback-safe.
 
 ### Rollback Procedures
 - Every `up()` must have a corresponding `down()` that actually works. Test rollbacks locally before pushing: `php artisan migrate` then `php artisan migrate:rollback --step=1`, then `php artisan migrate` again.
 - For data migrations (backfills), the `down()` should either reverse the data transformation or be explicitly marked as non-reversible with a thrown exception and a code comment explaining why.
-- Never put data seeding in migration files. Migrations are for schema, seeders are for data. Mixing them makes rollbacks unpredictable.
+- Keep data seeding out of migration files. Migrations are for schema, seeders are for data. Mixing them makes rollbacks unpredictable.
 
 ### Migration Checklist Template
 ```markdown
@@ -128,7 +128,7 @@ These are the recurring pain points in Livewire applications. Know them cold.
 ### Dead Letter Handling
 - Configure `failed()` on every job to log context: the job payload, the exception, and the queue the job was on. The default failed job table gives you the serialized payload but not the human-readable context you need for debugging.
 - Set up a scheduled command to prune `failed_jobs` older than 30 days. Stale failed jobs are noise that hides real problems.
-- When a job fails due to a model not found (`ModelNotFoundException`), it almost always means the model was deleted between dispatch and execution. Use `DeleteWhenMissingModels` trait or handle the exception explicitly — do not let it retry.
+- When a job fails due to a model not found (`ModelNotFoundException`), it typically means the model was deleted between dispatch and execution. Use `DeleteWhenMissingModels` trait or handle the exception explicitly — do not let it retry.
 
 ### Horizon Monitoring
 - Tag jobs with meaningful identifiers: `public function tags() { return ['order:'.$this->order->id]; }`. Untagged jobs are invisible in Horizon's monitoring UI.
@@ -246,7 +246,7 @@ You retain:
 - Using the `sync` queue driver in staging or production — it defeats the purpose of queues and makes failures unrecoverable.
 - Missing `DB::transaction()` on multi-step operations — partial writes (order created, payment not recorded) are production incidents that erode user trust.
 - Returning Eloquent models directly from controllers without API resources — you leak internal column names and relations to the client.
-- Using `Schema::drop()` without checking that no code references the table — always search for the table name across the codebase before dropping.
+- Using `Schema::drop()` without checking that no code references the table — search for the table name across the codebase before dropping.
 - Adding `$fillable = ['*']` or disabling mass assignment protection — it exists for a reason.
 
 ## ✅ Done Criteria

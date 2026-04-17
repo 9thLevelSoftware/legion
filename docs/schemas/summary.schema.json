@@ -2,7 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Legion Plan Summary",
   "description": "Schema for SUMMARY.md structured content",
+  "$comment": "Completion Gate: a SUMMARY is complete when (1) it validates against this schema (all required fields present); (2) outcome is exactly one of success|partial|failed — never missing or null; (3) every completed_tasks entry has a terminal status (done|partial|failed|skipped); (4) if any completed_tasks.status == done, its verification_passed field is true; (5) if outcome == success, NO completed_tasks entry has status failed; (6) verification_results array is non-empty when the plan declared verification_commands. Validators MUST fail closed — additional top-level keys are rejected.",
   "type": "object",
+  "additionalProperties": false,
   "required": ["plan_id", "agent", "outcome", "completed_tasks", "files_modified"],
   "properties": {
     "plan_id": {

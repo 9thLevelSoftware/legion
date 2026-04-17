@@ -55,12 +55,14 @@ Manual setup only. If the user chooses to run Legion conventions in Aider, write
 
 ### Wave Execution
 
+**Dispatch mode:** sequential single-session execution — Aider has no subagent or parallel spawn capability. Every plan runs inside one Aider session, one at a time, with the user issuing `/code`, `/architect`, and `/add` commands manually.
+
 All plans execute sequentially in the current session:
 1. For each plan in the wave:
    a. Read the plan file
    b. If assigned agent: read personality file, adopt as behavioral context
    c. Use `/code` mode to execute the plan's implementation tasks
-   d. After each task, verify using the plan's verification commands
+   d. After each task, verify using the plan's verification commands (user runs these — Aider cannot)
    e. Write result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
 2. Update WAVE-CHECKLIST.md
 

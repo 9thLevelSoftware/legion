@@ -82,10 +82,15 @@ Prose description of how the user is prompted and how responses are parsed. Must
 
 Prose description of how waves are executed given this CLI's capabilities. Must cover:
 - How personality injection works (separate agent vs. prompt prefix)
-- How parallel execution works (or why it doesn't)
+- **Dispatch mode declaration (REQUIRED)**: The `### Wave Execution` subsection MUST begin with a single-line `**Dispatch mode:** ...` statement that specifies:
+  1. Whether dispatch is `parallel` or `sequential`
+  2. The concrete mechanism (e.g., "single-message batched Agent calls", "blocking Task tool", "asynchronous spawn + filesystem polling")
+  3. Any opt-in conditions and the sequential fallback behavior when opt-in is absent
+- How parallel execution works (or why it doesn't), including timeout handling and failure modes for missing/stalled results
 - How results are collected after each plan
 - How wave dependencies are checked
 - How cleanup happens after phase completion
+- **Cost tier mapping (REQUIRED)**: The adapter MUST map Legion's `planning`, `execution`, and `check` cost tiers to CLI-specific model names — either via the `model_planning` / `model_execution` / `model_check` Tool Mappings entries or an explicit `model_tiers:` block. If the CLI supports only one model, all three tiers map to that model and the adapter MUST state so explicitly. If tiers are fully user-configured (no defaults), the adapter MUST document the configuration surface and supply a recommended default set.
 
 ## Adapter File Location
 

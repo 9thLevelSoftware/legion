@@ -76,37 +76,66 @@ If `models.planning_reasoning` is `false`: use `adapter.model_execution` as norm
 
 ## Section 2: Structured Choice Protocol
 
-**Purpose:** Every user interaction is a selection, not composition.
+**Purpose:** Every user interaction is a selection, not composition. Every prompt MUST be an `adapter.ask_user` invocation (AskUserQuestion on Claude Code) — never free prose, never a decorative arrow-prefixed menu rendered as text.
 
-**Choice format:**
-```markdown
-[Brief context — 1-2 sentences]
+**Choice format — REQUIRED schema:**
 
-Which describes your situation?
-→ [Option A]: [Clear description]
-  [Option B]: [Clear description]
-  [Option C]: [Clear description]
-  [Option D]: Not sure / None of these
+Every user-facing question is issued via `adapter.ask_user` with an options array. Each option is a structured object — not a line of free text.
+
+```yaml
+adapter.ask_user:
+  question: "[One concrete question derived from research — no filler]"
+  context: "[Optional: 1-2 sentence research grounding, rendered above the options]"
+  multiple: false                # true only when the primitive supports multi-select
+  options:
+    - id: "option-a"             # kebab-case, stable, unique per question
+      label: "[Short label — ≤60 chars]"
+      description: "[Clear description — what choosing this means, ≤140 chars]"
+    - id: "option-b"
+      label: "[Short label]"
+      description: "[Clear description]"
+    - id: "option-c"
+      label: "[Short label]"
+      description: "[Clear description]"
+    # Bounded space (greenfield/brownfield detection, binary decisions): stop here.
+    # Unbounded space (concept exploration, approach comparison): include exactly one
+    # escape option — id MUST be "other":
+    - id: "other"
+      label: "None of these / Not sure"
+      description: "Opens adapter.prompt_free_text for an alternative description"
 ```
 
-**Choice design principles:**
+**Formatting rules (binding):**
 
-1. **Mutually exclusive** — Options shouldn't overlap
-2. **Collectively exhaustive** — Include "Other/Not sure" for gaps
-3. **Concrete** — Avoid vague options like "It depends"
-4. **Actionable** — Each choice should lead to a clear next step
-5. **Research-informed** — Reference findings: "Based on [research result], which applies?"
+- Do NOT prefix any option with `→`, `*`, `-`, `•`, or any other decorative character. The adapter primitive handles rendering — typing arrows into labels causes them to render as literal characters inside the option text.
+- Do NOT indent options under the question. `adapter.ask_user` is a structured call, not a bullet list.
+- Do NOT use placeholders like `[Option A]` or `[Option X]` in the final emitted call — these are template markers only. Every option MUST have a concrete label and description derived from research findings before the call is issued.
+- Do NOT append free-text capture to the question itself. If the concept space is unbounded, add an `id: "other"` option whose description notes it opens `adapter.prompt_free_text` — do NOT print a prose "or describe your own" prompt alongside the options.
 
-**Arrow keys + Enter implementation:**
-- Use adapter.ask_user with choice list
-- Each choice has explicit ID for tracking
-- Capture selection in exploration state
+**Principles (resolved — no internal conflict):**
 
-**Anti-patterns to reject:**
-- Open text fields
-- "Tell me more" prompts
-- Vague options like "Something else"
-- Questions requiring user research (that's Polymath's job)
+1. **Mutually exclusive** — Options MUST NOT overlap in meaning. If two options could both describe the same situation, merge or re-scope them.
+2. **Collectively exhaustive** — Guaranteed by construction:
+   - For BOUNDED concept spaces (e.g., greenfield vs brownfield, yes/no/defer): enumerate every case; do NOT include `id: "other"`.
+   - For UNBOUNDED concept spaces (e.g., approach selection, architecture choice): include exactly one `id: "other"` option.
+   - Rule 1 and Rule 2 do not conflict: exhaustiveness is achieved either by total enumeration (bounded) or by the `other` escape (unbounded).
+3. **Concrete** — Every label and description references a specific situation. Reject vague filler like "It depends" or "Something else."
+4. **Actionable** — Each choice MUST map to a clear next step Polymath takes after selection — no dead-end options.
+5. **Research-informed** — Use the `context` field to reference the research finding that shaped the options (e.g., "Your repo uses Next.js App Router, which rules out Pages-Router patterns.").
+
+**Adapter primitive registration:**
+
+- `adapter.ask_user` MUST be registered in every adapter's conformance metadata under `primitives.ask_user`. On Claude Code this maps to the `AskUserQuestion` tool. Adapters without a structured question surface (e.g., certain CLI adapters) MUST emit a deterministic numbered-list fallback — Polymath never emits raw prose.
+- `adapter.prompt_free_text` is a SEPARATE primitive invoked ONLY when the user selects an `id: "other"` option. Polymath never invokes it as the default entry point for a question.
+
+**Anti-patterns — reject on sight:**
+
+- Decorative arrow prefixes (`→ Option A:`) or bullet menus printed as literal text
+- Free-text capture as the default prompt (violates CLAUDE.md AskUserQuestion mandate)
+- Template placeholders (`[Option A]`) emitted in final calls
+- "Tell me more" prompts or unbounded "What do you think?" questions
+- Vague options like "Something else" without an `id: "other"` escape primitive
+- Questions requiring user research (that's Polymath's job — research before asking)
 
 ---
 

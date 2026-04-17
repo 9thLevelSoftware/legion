@@ -71,17 +71,23 @@ skills/agent-registry/CATALOG.md
       - Select top 2 candidates for recommendation
       - Do NOT apply mandatory roles enforcement (advisors don't need testing/coordination)
 
-   d. Present recommendation to user via adapter.ask_user:
-      "Which agent should advise on this topic?"
-      Options:
-      - "{top_agent_id} — {specialty}" (Recommended)
-        Description: "{brief rationale based on topic match}"
-      - "{second_agent_id} — {specialty}"
-        Description: "{brief rationale for alternative}"
+   d. Present recommendation to user via AskUserQuestion:
+      Question: "Which agent should advise on this topic?"
 
-   e. If user selects "Other": accept a custom agent ID from user input
+      **Select one option:**
+      - **{top_agent_id} — {specialty}** (Recommended) — {brief rationale based on topic match}
+      - **{second_agent_id} — {specialty}** — {brief rationale for alternative}
+      - **Other (specify agent ID)** — pick a different agent from the registry
+
+      Choose one of the three options above. Do not propose alternatives.
+
+      → Use AskUserQuestion tool with these exact three options.
+
+   e. If user selects "Other (specify agent ID)": issue a second AskUserQuestion listing
+      valid agent IDs from agent-registry Section 1, paginated by division if the list
+      exceeds 10 entries. Do not accept free-text input.
       - Validate the ID exists in agent-registry Section 1
-      - If invalid: display available agent IDs for the closest division and re-prompt
+      - If invalid: re-issue the AskUserQuestion with the correct division's agent IDs
 
 4. CONSTRUCT ADVISORY PROMPT
    a. RESOLVE AGENT PATH: Follow workflow-common Agent Path Resolution Protocol to resolve AGENTS_DIR
@@ -130,6 +136,14 @@ skills/agent-registry/CATALOG.md
    - On CLIs with read_only_agents (e.g., Claude Code Explore agents): platform enforces read-only
    - On CLIs without read_only_agents: the prompt's "READ-ONLY" instruction is the only guard
    - Wait for the agent to complete and capture the response
+
+   **Dispatch specification — Advisory agent**
+   | Field | Value |
+   |---|---|
+   | When | After agent selection (Step 3.d) and advisory prompt construction (Step 4) complete. Fires once per advisory topic. Re-fires if user asks a follow-up question under Step 6 (each follow-up = one new spawn with accumulated context). |
+   | Why parallel is safe | Not parallel — `/legion:advise` is defined as a single-agent consultation by design. |
+   | How many | Exactly 1 agent per advisory turn (initial consultation or follow-up). |
+   | Mechanism | adapter.spawn_agent_readonly (CRITICAL: must be read-only — advisory agents MUST NOT modify files). On CLIs with platform-enforced read-only (Claude Code Explore): platform guarantees the invariant. On CLIs without: the prompt's "READ-ONLY" instruction is the only guard — verify no file-modifying tool calls in the agent's output before accepting results. Single tool call. Model: adapter.model_execution. |
 
 6. DISPLAY ADVISORY RESULTS
    Output to the user:

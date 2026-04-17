@@ -53,14 +53,18 @@ Write a wave checklist to `.planning/phases/{NN}/WAVE-CHECKLIST.md`.
 
 ### Wave Execution
 
+**Dispatch mode:** parallel via Gemini's greedy scheduler + filesystem polling when opt-in enabled; sequential fallback otherwise.
+
 Gemini CLI supports parallel subagent spawning (v1, shipped Jan 2026). For waves with multiple plans:
-1. For each plan in the wave, read the matching Legion workflow file from `.legion/commands/legion/`
-2. If assigned agent: load personality via `Read {AGENTS_DIR}/{agent-id}.md`, spawn subagent with personality prefix + plan task
-3. If autonomous: spawn subagent with plan task only
-4. Spawn all subagents for the wave — Gemini's greedy scheduler handles concurrent execution
-5. Each subagent writes result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
-6. Read result files after all plans in the wave complete
-7. Update WAVE-CHECKLIST.md
+1. **Detect opt-in:** Read `~/.gemini/settings.json`. If `experimental.enableAgents !== true`, degrade to sequential dispatch and surface a one-line notice to the user.
+2. For each plan in the wave, read the matching Legion workflow file from `.legion/commands/legion/`
+3. If assigned agent: load personality via `Read ./agents/{agent-id}.md` (see root resolution rule in CLAUDE.md), spawn subagent with personality prefix + plan task
+4. If autonomous: spawn subagent with plan task only
+5. Spawn all subagents for the wave in a single dispatch batch — Gemini's greedy scheduler handles concurrent execution
+6. **File conflict guard:** Before spawn, validate that plans in the same wave have non-overlapping `files_modified` (via wave-executor). Abort dispatch with a named error if overlap is detected.
+7. Each subagent writes result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
+8. Poll result files every 5s; timeout at 30 min per wave. Missing results are marked Failed.
+9. Update WAVE-CHECKLIST.md
 
 For single-plan waves, spawn one subagent and wait for completion.
 

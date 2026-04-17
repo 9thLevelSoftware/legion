@@ -1,14 +1,24 @@
 ---
 name: legion:workflow-common
-description: Compatibility shim for workflow-common; delegates always-load behavior to workflow-common-core and optional extensions
+description: DEPRECATED compatibility shim; workflow-common-core is canonical for all conventions referenced here
 triggers: [common, shared, paths, conventions, state, config]
 token_cost: medium
-summary: "Compatibility shim. New command execution should load workflow-common-core first, then optional workflow-common extensions as needed."
+status: deprecated
+canonical_source: skills/workflow-common-core/SKILL.md
+summary: "DEPRECATED compatibility shim. workflow-common-core is canonical. New command execution MUST load workflow-common-core first; this file exists only to resolve legacy pointer references and will be removed."
 ---
 
-# Legion Workflow Common
+# Legion Workflow Common (DEPRECATED)
 
-Compatibility shim for legacy references. New commands should always load `workflow-common-core` and only load optional `workflow-common-*` extensions when needed.
+> **DEPRECATED — DO NOT USE FOR NEW COMMANDS.**
+>
+> **Canonical source:** `skills/workflow-common-core/SKILL.md` for CLI detection, adapter reference, user interaction, settings resolution, agent path resolution, and state file locations.
+>
+> **Migration path:** Legacy references to `workflow-common.md` in commands, skills, or agent files MUST be updated to point at `workflow-common-core/SKILL.md` (always-load) plus the specific `workflow-common-{domain}` extension (github, memory, domains) needed. When every reference has migrated, this file SHOULD be deleted.
+>
+> **Precedence rule:** Any content in this file that diverges from `workflow-common-core/SKILL.md` (agent counts, division lists, settings keys, protocol steps) is STALE. Trust `workflow-common-core/SKILL.md` — not this file.
+>
+> The sections below are retained verbatim for legacy pointer compatibility only. They are NOT the source of truth.
 
 ## CLI Detection and Adapter Loading
 
@@ -749,13 +759,23 @@ Unplanned --> Planning (campaign document created) --> Active (content in produc
 ### Marketing Integration Points
 | Workflow | Operation | When |
 |----------|-----------|------|
-| `/legion:plan` | Detect marketing phase, campaign questioning, generate campaign doc | During phase decomposition (if MKT-* requirements or marketing keywords) |
+| `/legion:plan` | Detect marketing phase, campaign questioning, generate campaign doc | During phase decomposition (if marketing phase detected per canonical trigger below) |
 | `/legion:build` | Marketing wave execution, core messaging handoff | During plan execution (if campaign document exists) |
 | `/legion:review` | Cross-channel consistency check | During quality review (if campaign document exists) |
 
+### Marketing Phase Detection (canonical trigger)
+
+A phase is a marketing phase if ANY of the following is true — no other triggers. Keyword-based detection is NOT authoritative (use it only as a non-blocking hint to prompt the user):
+
+1. At least one requirement ID matches the regex `^MKT-\d+` in ROADMAP.md or REQUIREMENTS.md
+2. The phase's CONTEXT.md YAML frontmatter declares `workflow_type: marketing`
+3. The user passed `--domain=marketing` to `/legion:plan`
+
+If none match: the phase is NOT a marketing phase. Do not activate marketing-specific decomposition based on prose keywords alone.
+
 ### Graceful Degradation Rule
 All marketing workflow integration follows this pattern:
-1. Check if phase is marketing (MKT-* requirements or keyword detection)
+1. Evaluate the canonical trigger above
 2. If yes: use marketing-specific decomposition, wave patterns, and campaign templates
 3. If no: standard decomposition -- no impact whatsoever
 4. Never error, never block, never require marketing workflows for non-marketing phases
@@ -791,9 +811,19 @@ Unplanned --> Research (user insights, brand audit) --> Designing (tokens, compo
 ### Design Integration Points
 | Workflow | Operation | When |
 |----------|-----------|------|
-| `/legion:plan` | Detect design phase, design questioning, generate design docs | During phase decomposition (if DSN-* requirements or design keywords) |
+| `/legion:plan` | Detect design phase, design questioning, generate design docs | During phase decomposition (if design phase detected per canonical trigger below) |
 | `/legion:build` | Design wave execution, research-to-design handoff | During plan execution (if design documents exist) |
 | `/legion:review` | Three-lens review (brand + accessibility + usability) | During quality review (if design documents exist) |
+
+### Design Phase Detection (canonical trigger)
+
+A phase is a design phase if ANY of the following is true — no other triggers. Keyword-based detection is NOT authoritative (use it only as a non-blocking hint to prompt the user):
+
+1. At least one requirement ID matches the regex `^DSN-\d+` in ROADMAP.md or REQUIREMENTS.md
+2. The phase's CONTEXT.md YAML frontmatter declares `workflow_type: design`
+3. The user passed `--domain=design` to `/legion:plan`
+
+If none match: the phase is NOT a design phase. Do not activate design-specific decomposition based on prose keywords alone.
 
 ### Graceful Degradation Rule
 All design workflow integration follows this pattern:

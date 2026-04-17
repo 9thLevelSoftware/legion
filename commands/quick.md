@@ -78,19 +78,24 @@ skills/workflow-common-github/SKILL.md
       - For quick tasks: select top 1-2 candidates (not full team assembly)
       - Cap at 1 agent for execution (quick = single agent)
 
-   d. Present recommendation to user via adapter.ask_user:
-      "Which agent should handle this task?"
-      Options:
-      - "{top_agent_id} — {specialty}" (Recommended)
-        Description: "{brief rationale based on task match}"
-      - "{second_agent_id} — {specialty}"
-        Description: "{brief rationale for alternative}"
-      - "No agent — run autonomously"
-        Description: "Execute without personality injection (faster, generic)"
+   d. Present recommendation to user via AskUserQuestion:
+      Question: "Which agent should handle this task?"
 
-   e. If user selects "Other": accept a custom agent ID from user input
+      **Select one option:**
+      - **{top_agent_id} — {specialty}** (Recommended) — {brief rationale based on task match}
+      - **{second_agent_id} — {specialty}** — {brief rationale for alternative}
+      - **No agent — run autonomously** — execute without personality injection (faster, generic)
+      - **Other — pick a different agent** — choose from the full agent registry
+
+      Choose one of the four options above. Do not propose alternatives.
+
+      → Use AskUserQuestion tool with these exact four options.
+
+   e. If user selects "Other — pick a different agent": issue a second AskUserQuestion
+      enumerating valid agent IDs from agent-registry Section 1, paginated by division
+      if the list exceeds 10 entries. Do not accept free-text input.
       - Validate the ID exists in agent-registry Section 1
-      - If invalid: display available agent IDs for the closest division and re-prompt
+      - If invalid: re-issue the AskUserQuestion with the correct division's agent IDs
 
 4. CONSTRUCT TASK PROMPT
    Based on selection from Step 3:
@@ -148,6 +153,14 @@ skills/workflow-common-github/SKILL.md
      - name: "{agent-id}-quick" or "quick-task" if autonomous
    - On CLIs without agent spawning: execute the task inline with personality as context prefix
    - Wait for completion and capture results
+
+   **Dispatch specification — Quick task agent**
+   | Field | Value |
+   |---|---|
+   | When | After agent selection (Step 3.d) and prompt construction (Step 4) complete. Fires exactly once per `/legion:quick` invocation. |
+   | Why parallel is safe | Not parallel — `/legion:quick` is defined as a single-agent workflow (see Step 3.c: "Cap at 1 agent for execution"). No parallel dispatch applies here. |
+   | How many | Exactly 1 agent (single-agent contract by design). |
+   | Mechanism | adapter.spawn_agent_personality for Path A (personality-injected); adapter.spawn_agent_autonomous for Path B (no-agent / autonomous). Single tool call. Model: adapter.model_execution. CLIs without agent-spawning support: inline execution with personality as context prefix — document this fallback in SUMMARY.md. |
 
 6. DISPLAY RESULTS
    Output the results to the user:
@@ -247,6 +260,14 @@ skills/workflow-common-github/SKILL.md
    c. Spawn reviewer agent:
       - model: adapter.model_check (lightweight — this is a quick review)
       - Wait for completion
+
+      **Dispatch specification — Quick review agent**
+      | Field | Value |
+      |---|---|
+      | When | After the original quick-task agent completes (Step 5) AND --review or `/legion:quick --fix` flag is set. Fires at most once per review attempt; max 1 retry permitted per Step 7.d. |
+      | Why parallel is safe | Not parallel — quick review uses a single reviewer by design (lightweight verification, not full review panel). |
+      | How many | Exactly 1 reviewer agent per review attempt. |
+      | Mechanism | adapter.spawn_agent_personality with the reviewer personality loaded in Step 7.b. Single tool call. Model: adapter.model_check (intentionally lighter than model_execution for cost efficiency on quick verification). |
 
    d. Process review result:
       - If verdict is PASS: continue to Step 9

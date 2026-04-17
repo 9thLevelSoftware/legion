@@ -63,11 +63,14 @@ Read the matching Legion workflow from `.legion/commands/legion/` and write a wa
 
 ### Wave Execution
 
+**Dispatch mode:** parallel via asynchronous subagent spawn + filesystem polling.
+
 Cursor supports parallel subagent spawning. For waves with multiple plans:
-1. Spawn all subagents for the wave asynchronously
+1. Spawn all subagents for the wave asynchronously in a single dispatch step (do not await between spawns)
 2. Each subagent writes its result to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
-3. Poll for result files until all plans in the wave have written results
-4. Parse results and build wave summary
+3. Poll `.planning/phases/{NN}/` for result files every 5 seconds; timeout after 30 minutes per wave
+4. If timeout exceeded, mark missing plans as Failed in WAVE-CHECKLIST.md and surface to user
+5. Parse results and build wave summary
 
 For single-plan waves, spawn one subagent and wait for completion.
 

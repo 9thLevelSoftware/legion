@@ -83,7 +83,7 @@ Human characteristics that define brand character:
 - [Trait 3]: [Description and expression]
 
 ## Brand Promise
-Commitment to customers and stakeholders - what they can always expect
+Commitment to customers and stakeholders - what they can consistently expect
 ```
 
 ### Visual Identity System

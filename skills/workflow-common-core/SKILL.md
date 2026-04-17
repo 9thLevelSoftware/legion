@@ -69,13 +69,23 @@ Defaults:
 
 After resolving `control_mode` from settings (default: `"guarded"`), load the corresponding profile:
 
-1. Read `.planning/config/control-modes.yaml`
-2. Look up `profiles[control_mode]` to get the flag set
-3. If file missing or mode not found: fall back to `guarded` profile hardcoded as:
-   - `authority_enforcement: true`, `domain_filtering: true`, `human_approval_required: true`, `file_scope_restriction: false`, `read_only: false`
-4. Pass resolved profile to authority-enforcer and wave-executor integration points
+**Preconditions (MUST be verified before use):**
+1. `control_mode` key lookup is CASE-SENSITIVE. Valid values: exactly `"autonomous"`, `"guarded"`, `"advisory"`, `"surgical"`. Case variants (`"Guarded"`, `"GUARDED"`) are invalid — if detected, log warning and fall back to `"guarded"`.
+2. The 5-flag schema is a strict contract with downstream consumers (authority-enforcer, wave-executor). All 5 keys MUST be present in the resolved profile.
+3. Partial profiles (missing 1+ flags) trigger: log WARNING `"control-mode profile '{name}' missing flags: {list}. Falling back to guarded defaults for missing flags."` and merge with hardcoded guarded defaults for only the missing flags. Do NOT fall back to guarded entirely — use the profile's provided flags where set.
 
-The resolved profile is a set of 5 boolean flags: `authority_enforcement`, `domain_filtering`, `human_approval_required`, `file_scope_restriction`, `read_only`.
+**Resolution steps:**
+1. Read `.planning/config/control-modes.yaml` explicitly via the Read tool. Capture raw bytes; do NOT assume content.
+2. If the file does not exist at that path: do NOT silently fall back. Emit `<escalation>severity: warning, type: infrastructure, decision: control-modes.yaml missing — falling back to hardcoded guarded defaults, context: .planning/config/control-modes.yaml not found; downstream gates will use hardcoded guarded flags</escalation>` and continue with the hardcoded guarded fallback below.
+3. If the file exists but cannot be parsed as YAML: emit `<escalation>severity: blocker, type: infrastructure, decision: Cannot resolve control mode, context: control-modes.yaml present but YAML parse failed</escalation>` and STOP.
+4. Look up `profiles[control_mode]` to get the flag set (exact key match, case-sensitive).
+5. If the mode key is not found: emit `<escalation>severity: warning, type: infrastructure, decision: control_mode '{name}' not defined in control-modes.yaml — using hardcoded guarded defaults, context: settings.json declared control_mode that is absent from profiles</escalation>` and fall back to hardcoded guarded.
+6. Hardcoded guarded fallback flags:
+   - `authority_enforcement: true`, `domain_filtering: true`, `human_approval_required: true`, `file_scope_restriction: false`, `read_only: false`
+7. **Assert** the resolved profile contains all 5 flags before passing downstream. If assertion fails (partial profile), merge with guarded defaults for missing flags and log the merge.
+8. Pass resolved profile to authority-enforcer and wave-executor integration points.
+
+The resolved profile is a set of 5 boolean flags: `authority_enforcement`, `domain_filtering`, `human_approval_required`, `file_scope_restriction`, `read_only`. This schema is the contract with downstream skills — adding or removing flags is a breaking change.
 
 ## Agent Path Resolution (Core)
 

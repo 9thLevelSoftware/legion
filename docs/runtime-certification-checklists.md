@@ -64,3 +64,18 @@ Use these checklists for manual verification when CI cannot prove runtime-native
 - If you choose the manual path, verify `AGENTS.md`, `CONVENTIONS.md`, or `.aider.conf.yml` contains the intended Legion guidance.
 - Use `/ask` for read-only Legion advisory sessions.
 - Use `/architect` and `/code` manually after loading the relevant Legion workflow file by hand.
+
+## Scope and Operator
+
+This checklist is for human operators only. Each item uses verbs like "verify", "confirm", and "trigger" without a machine-checkable pass predicate. Programmatic validation of Legion adapter installations lives in a separate harness (see `/legion:validate` and adapter conformance tests). Do not dispatch an agent to "run the checklist" — use `/legion:validate` instead.
+
+## Completion Gate (for human operators)
+
+The certification run is complete when ALL of the following hold for the CLI under test:
+1. Every `/legion:*` command listed in `CLAUDE.md` Dynamic Knowledge Index appears in the CLI's command listing (exact string match, no renames)
+2. Invoking a representative command (e.g., `/legion:start`) loads the installed file at the path documented for that CLI in `adapters/{cli}.md`
+3. A plain-language prompt containing the phrase "use Legion start" causes the CLI to load the same installed file as the slash-command path
+4. No command prints an error or "not found" message for any Legion command on the canonical list
+5. The operator has recorded PASS/FAIL per item for the CLI under test; partial runs are marked `incomplete` and are NOT certifications
+
+If ANY condition is unmet, the CLI is NOT certified — file the failing item(s) as an issue and re-run after fix.

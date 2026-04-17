@@ -55,7 +55,15 @@ Extract and normalize intent flags from command arguments.
 1. **Equals syntax supported**: `--just-harden=true` or `--just-harden`
 2. **Multiple --just-* flags detected**: Flag as conflict (only one primary intent allowed)
 3. **Case insensitive**: `--JUST-HARDEN` normalizes to `--just-harden`
-4. **Unknown flags**: Log warning but don't fail (forward compatibility)
+4. **Unknown flags fail fast (strict validation — no silent warning):**
+   - The authoritative set of valid flags is `.planning/config/intent-teams.yaml` under `intents.*` keys (plus the global flags listed in this section's Supported Flags table).
+   - If an arg begins with `--` and is not in that set:
+     - Emit a VALIDATION error, halt the command.
+     - Suggest the closest valid flag using a Levenshtein distance ≤ 2 against the union of declared intent flag names. Format: `Unknown flag: --just-hardne. Did you mean --just-harden?`
+     - If no candidate is within distance 2: list the full valid-flag set and exit.
+   - Escape hatch: `--unsafe-unknown-flags` opts into permissive mode (emit an INFO log for each unknown flag and continue). This flag MUST be passed explicitly — it is never the default.
+   - Rationale: silent-drop of a typo flag (e.g., `--just-hardne` → build proceeds without hardening) has been the observed failure mode. Fail fast unless the user has explicitly asked for forward-compat behavior.
+   - Cross-reference: `validateFlagCombination` in Section 2 follows the same fail-fast contract.
 5. **Duplicate flags**: Deduplicate, use first occurrence
 
 **Implementation:**
@@ -238,9 +246,64 @@ Load and resolve team templates from `intent-teams.yaml`.
  * @returns {Object} Parsed configuration with intents and validation rules
  */
 function loadIntentTeams() {
+  // Preconditions (verified in order):
+  // 1. Read .planning/config/intent-teams.yaml explicitly via fs.readFileSync.
+  // 2. ENOENT → graceful degradation (empty config, routing disabled). Intent routing is optional.
+  // 3. Other read error (EACCES, EISDIR, permission) → emit <escalation severity="blocker" type="infrastructure"> and degrade.
+  // 4. YAML parse failure → emit <escalation severity="warning" type="infrastructure"> and degrade.
+  // 5. Schema validation failure → log warning; do NOT block (partial config is acceptable).
   const configPath = '.planning/config/intent-teams.yaml';
-  const content = fs.readFileSync(configPath, 'utf8');
-  return parseYaml(content);
+  const emptyConfig = {
+    intents: {},
+    nl_patterns: {},
+    command_routes: {},
+    context_rules: {}
+  };
+
+  let content;
+  try {
+    content = fs.readFileSync(configPath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      // Graceful degradation: no intent config → return empty structure
+      console.warn(`intent-router: ${configPath} not found. Intent routing disabled.`);
+      return emptyConfig;
+    }
+    // Unexpected I/O error — log and degrade
+    console.warn(`intent-router: failed to read ${configPath}: ${err.message}. Intent routing disabled.`);
+    return emptyConfig;
+  }
+
+  let parsed;
+  try {
+    parsed = parseYaml(content);
+  } catch (err) {
+    console.warn(`intent-router: failed to parse ${configPath}: ${err.message}. Intent routing disabled.`);
+    return emptyConfig;
+  }
+
+  // Schema validation (if schema file present)
+  const schemaPath = '.planning/config/intent-teams.schema.json';
+  try {
+    if (fs.existsSync(schemaPath)) {
+      const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+      const validation = validateAgainstSchema(parsed, schema);
+      if (!validation.valid) {
+        console.warn(`intent-router: ${configPath} failed schema validation: ${validation.errors.join('; ')}. Using subset that passed.`);
+        // Return what we have, preserving top-level keys; downstream code must handle gaps.
+      }
+    }
+  } catch (err) {
+    console.warn(`intent-router: schema validation error: ${err.message}. Continuing with unvalidated config.`);
+  }
+
+  // Ensure top-level keys exist even if YAML omitted them
+  return {
+    intents: parsed.intents || {},
+    nl_patterns: parsed.nl_patterns || {},
+    command_routes: parsed.command_routes || {},
+    context_rules: parsed.context_rules || {}
+  };
 }
 ```
 
@@ -259,7 +322,7 @@ function loadIntentTeams() {
  *   mode: 'ad_hoc',
  *   agents: {
  *     primary: ['testing-qa-verification-specialist', 'engineering-security-engineer'],
- *     secondary: ['testing-api-tester', 'testing-evidence-collector']
+ *     secondary: ['testing-api-tester', 'testing-qa-verification-specialist']
  *   },
  *   domains: ['security', 'owasp', 'stride', 'vulnerability-assessment']
  * }
@@ -387,14 +450,17 @@ function getExecutionInstructions(mode) {
       steps: [
         'Resolve team template from intent-teams.yaml',
         'Load primary and secondary agent personalities',
-        'Spawn agents in parallel with intent context',
+        'Phase 1: construct prompts for all team members',
+        'Phase 2: dispatch via wave-executor Section 4 (honors adapter.parallel_execution)',
         'Collect results and synthesize output',
         'Generate intent-specific summary report'
       ],
-      parallel: true,
+      manages_own_fanout: true,
+      // ad_hoc manages its own fan-out by passing team members as a single wave to wave-executor.
+      // wave-executor decides parallel vs sequential based on adapter.parallel_execution.
       agentCount: 'from template'
     },
-    
+
     filter_plans: {
       description: 'Filter phase plans by intent criteria',
       steps: [
@@ -404,7 +470,10 @@ function getExecutionInstructions(mode) {
         'Remove plans matching exclude criteria',
         'Execute remaining plans with standard wave executor'
       ],
-      parallel: false,  // Uses wave executor
+      manages_own_fanout: false,
+      // filter_plans does NOT disable wave-executor parallelism — it only filters the
+      // input plan set. Downstream dispatch parallel/sequential behavior is determined
+      // by wave-executor per adapter.parallel_execution, identically to unfiltered runs.
       agentCount: 'from filtered plans'
     },
     
@@ -425,6 +494,21 @@ function getExecutionInstructions(mode) {
   return instructions[mode] || instructions.ad_hoc;
 }
 ```
+
+**Dispatch specification — Intent-routed execution (canonical)**
+
+Intent-router does NOT spawn agents directly. It computes the plan/team input set and delegates all agent spawning to `wave-executor` (for `ad_hoc` and `filter_plans`) or `review-loop` (for `filter_review`). The specification below documents the downstream dispatch for each mode.
+
+| Mode | When | Why parallel is safe | How many | Mechanism |
+|---|---|---|---|---|
+| `ad_hoc` | After `resolveTeamTemplate()` returns a team and `loadIntentTeams()` precondition check passes. Fires once per `/legion:build` or `/legion:quick` invocation with a matched intent. | Team members from `intent-teams.yaml` are given distinct task descriptions with non-overlapping `files_modified`. Wave-executor's `sequential_files` check still runs; any overlap forces sequential fallback. | `len(team.primary) + len(team.secondary)` — exact count from resolved template; no rounding or deduplication beyond agent ID uniqueness. | Delegate to wave-executor Section 4. Pass team members as a single wave. Parallel vs sequential decided by `adapter.parallel_execution` AND `sequential_files` overlap check. |
+| `filter_plans` | After `loadPhasePlans()` and `applyFilterPredicates(intent.filter)` complete. Fires once per `/legion:build` or `/legion:review` invocation with a `filter_plans` intent. | Filter is subtractive only — it removes plans from the phase set but never duplicates or mutates them. Remaining plans have their original `files_modified` declarations; wave-executor applies the same overlap detection and sequential fallback. | Count of plans remaining after filter = `len(phase_plans) - len(excluded_plans)`. Zero is valid — log and exit cleanly. | Delegate filtered plan set to wave-executor Section 4. Wave-executor owns the agent spawn decision; intent-router does not call the Agent/Bash tool directly. |
+| `filter_review` | After `review-loop` completes and emits findings. Fires once per `/legion:review` invocation with a `filter_review` intent. | No parallel dispatch — filter is applied to already-collected findings. Sequential by construction. | 0 — no additional agent spawns; only findings are pruned. | Pure data transform on review output JSON. No Agent or Bash tool invocation. |
+
+**Preconditions (before entering any mode):**
+1. `loadIntentTeams()` must return a config (possibly empty).
+2. If the resolved intent specifies `mode: filter_plans`, verify `.planning/phases/{NN}/` exists. If missing → emit `<escalation>severity: blocker, type: scope, decision: Cannot filter plans — phase directory missing, context: .planning/phases/{NN}/ not found</escalation>` and STOP.
+3. If the resolved intent specifies `mode: filter_review`, verify a prior review cycle artifact exists at `.planning/phases/{NN}/REVIEW.md`. If missing → emit `<escalation>severity: blocker, type: scope, decision: Cannot filter review — no prior review cycle, context: REVIEW.md missing</escalation>` and STOP.
 
 ---
 
@@ -795,14 +879,40 @@ Two-tier matching system for balancing speed and accuracy:
 - Template match provides a confidence bonus
 
 **Scoring Formula:**
+
 ```
-final_score = keyword_score * 0.6 + template_match_bonus + exact_name_bonus
+final_score = max(normalized_keyword_score, template_match) + exact_name_bonus
 
 Where:
-  keyword_score  = (sum of matched keyword weights) / (sum of all keyword weights)  [0-1]
-  template_match = 0.3 if any phrase template matches, 0 otherwise
-  exact_name     = 0.1 if input contains the exact command name (e.g., "build", "review"), 0 otherwise
+  normalized_keyword_score = (sum of matched keyword weights) / (sum of TOP-K weights)   [0-1]
+  K                        = min(3, count(keywords in cluster))
+  template_match           = 0.8 if any phrase template matches, 0 otherwise
+  exact_name_bonus         = 0.2 if input contains the exact command name (word-boundary match), 0 otherwise
+final_score is capped at 1.0.
 ```
+
+**Why top-K normalization:**
+Dividing by the sum of ALL keyword weights penalized clusters with broad keyword lists (a 10-keyword cluster with 2 matches scored ~0.2 even for an unambiguous match). Normalizing against the sum of the top-K (K=3) heaviest weights maps realistic 2-3 keyword matches into the HIGH tier without requiring keyword-exhaustive user input.
+
+**Tie-break rules (applied in order — no ambiguity):**
+
+1. If two candidates score within 0.1 of each other AND one is an `nl_patterns` match while the other is a `command_routes` match: prefer the `nl_patterns` (intent flag) match — it is more specific than a generic command route.
+2. If a tie remains: prefer the candidate whose exact command name appears in the input (word-boundary match).
+3. If a tie remains: prefer the candidate listed earlier in `intent-teams.yaml`.
+
+**Calibration examples (validate any edit to the formula against these):**
+
+| Input                          | Expected tier | Expected command                        |
+|--------------------------------|---------------|-----------------------------------------|
+| `start`                        | HIGH          | `/legion:start` (exact-name dominates)  |
+| `start a new project`          | HIGH          | `/legion:start`                          |
+| `build`                        | HIGH          | `/legion:build`                          |
+| `run the build`                | HIGH          | `/legion:build`                          |
+| `harden the auth code`         | HIGH          | `/legion:build --just-harden`            |
+| `review the code for security` | HIGH          | `/legion:review --just-security`         |
+| `what's the status`            | HIGH          | `/legion:status`                         |
+| `help me figure out what next` | MEDIUM        | `/legion:status` (suggested)             |
+| `do the thing`                 | LOW           | none — top-3 suggestions                 |
 
 ```javascript
 /**
@@ -814,47 +924,60 @@ Where:
 function scoreCandidate(input, patterns) {
   const inputTokens = input.split(/\s+/);
 
-  // Tier 1: Keyword cluster score
+  // Tier 1: Keyword cluster score — normalized against TOP-K weights
+  // K = min(3, cluster size). Rationale: broad keyword lists no longer
+  // penalize realistic 2-3 keyword matches; HIGH tier is reachable without
+  // keyword-exhaustive input.
+  const keywordEntries = Object.entries(patterns.keywords);
   let matchedWeight = 0;
-  let totalWeight = 0;
 
-  for (const [keyword, weight] of Object.entries(patterns.keywords)) {
-    totalWeight += weight;
-    // Check if keyword appears as a whole word in input (supports multi-word keywords)
-    // Word boundaries prevent substring false positives (e.g., "start" matching "restart")
-    const keywordRegex = new RegExp('\\b' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+  for (const [keyword, weight] of keywordEntries) {
+    const keywordRegex = new RegExp(
+      '\\b' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
     if (keywordRegex.test(input)) {
       matchedWeight += weight;
     }
   }
 
-  const keywordScore = totalWeight > 0 ? matchedWeight / totalWeight : 0;
+  const K = Math.min(3, keywordEntries.length);
+  const topKWeightSum = keywordEntries
+    .map(([, w]) => w)
+    .sort((a, b) => b - a)
+    .slice(0, K)
+    .reduce((s, w) => s + w, 0);
 
-  // Tier 2: Phrase template matching
-  let templateBonus = 0;
+  const normalizedKeywordScore =
+    topKWeightSum > 0 ? Math.min(1.0, matchedWeight / topKWeightSum) : 0;
 
+  // Tier 2: Phrase template match (0.8 if any template matches, else 0)
+  let templateScore = 0;
   if (patterns.phrases && patterns.phrases.length > 0) {
     for (const phrase of patterns.phrases) {
       const regex = phraseToRegex(phrase);
       if (regex.test(input)) {
-        templateBonus = 0.3;
-        break;  // One match is enough for the bonus
+        templateScore = 0.8;
+        break;
       }
     }
   }
 
-  // Exact command name bonus
+  // Exact command-name bonus (word-boundary match, weight 1.0 keyword)
   let exactNameBonus = 0;
-  // Extract command name from pattern context (first keyword with weight 1.0)
-  const primaryKeyword = Object.entries(patterns.keywords)
-    .find(([_, weight]) => weight >= 1.0);
-
-  if (primaryKeyword && inputTokens.includes(primaryKeyword[0])) {
-    exactNameBonus = 0.1;
+  const primaryKeyword = keywordEntries.find(([, weight]) => weight >= 1.0);
+  if (primaryKeyword) {
+    const nameRegex = new RegExp(
+      '\\b' + primaryKeyword[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b',
+      'i');
+    if (nameRegex.test(input)) {
+      exactNameBonus = 0.2;
+    }
   }
 
-  // Final score (capped at 1.0)
-  return Math.min(1.0, keywordScore * 0.6 + templateBonus + exactNameBonus);
+  // final_score = max(normalized_keyword_score, template_score) + exact_name
+  return Math.min(
+    1.0,
+    Math.max(normalizedKeywordScore, templateScore) + exactNameBonus
+  );
 }
 
 /**

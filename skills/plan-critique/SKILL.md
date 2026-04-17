@@ -359,7 +359,7 @@ Preferred agents (in priority order):
    data-driven decision making, experience with delivery risk analysis.
    Best for: Assumption hunting (Section 2)
 
-3. testing-evidence-collector
+3. testing-qa-verification-specialist
    Why: Skeptical, requires proof for everything, hates fantasy reporting,
    checks for reproducibility and coverage gaps.
    Best for: Either pass (validates evidence strength ratings)
@@ -535,3 +535,14 @@ This skill draws from:
 | Pre-mortem Technique | Klein (1998), adapted for plan files | Section 1 |
 | Assumption Mapping | Risk management, adapted for plan tasks | Section 2 |
 | Brownfield Risk Cross-Reference | codebase-mapper Section 4, Section 5 | Section 1, Section 2 |
+
+## Completion Gate
+
+This skill completes when ALL conditions are met:
+1. Every plan in the target phase has a critique result written to `.planning/phases/{NN}/CRITIQUE.md`
+2. A verdict has been assigned per plan: exactly one of `OK`, `CAUTION`, `REWORK` (follow Section 3 first-match rule chain)
+3. Gate routing reached a concrete outcome: when `AUTO_REFINE=false`, the CAUTION and REWORK gates were resolved via `AskUserQuestion` (apply mitigations / revise / proceed-anyway / cancel); when `AUTO_REFINE=true`, the Section 3 automatic rule fired
+4. If any plan verdict was REWORK and the user chose to revise, revised plan files exist on disk before this skill returns
+5. `CRITIQUE.md` includes the rule-chain trace (which rule fired) per plan for auditability
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

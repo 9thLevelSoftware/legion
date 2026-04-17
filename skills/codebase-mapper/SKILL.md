@@ -1897,3 +1897,15 @@ autoUpdate:
     keepCount: 5             # Number of backups to retain
 ```
 ```
+
+## Completion Gate
+
+This skill completes when ALL conditions are met:
+1. `.planning/CODEBASE.md` exists and is non-empty
+2. All eight required analysis sections are present in the file: Architecture, Frameworks, Risks, Dependency Graph, Test Coverage, API Surface, Config/Environment, Code Patterns (missing sections render an explicit `_No data available_` line rather than being omitted)
+3. Dependency risk analysis populates at least these sub-fields: outdated packages, heavy dependencies, unmaintained packages (or an explicit `_None detected_` line if clean)
+4. Test coverage correlation identifies critical untested files ranked by fan-in and complexity, or states `_No untested critical files detected_`
+5. A `generated_at` timestamp and analyzed commit SHA are written at the top of the file so downstream staleness detection can work
+6. For brownfield invocation from `/legion:start`, the file was written before the start command returns control to the user
+
+If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

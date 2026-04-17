@@ -78,6 +78,8 @@ No TeamCreate or TaskCreate — file-based tracking replaces native task tools.
 
 ### Wave Execution
 
+**Dispatch mode:** sequential — one subagent spawned at a time, awaited to completion before the next. Codex CLI does not support parallel subagents.
+
 Plans in a wave execute sequentially (no parallelism):
 
 For each plan in the wave (ascending plan number):

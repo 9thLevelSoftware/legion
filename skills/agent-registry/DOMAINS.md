@@ -17,7 +17,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 | Agent | Exclusive Domains | When Active |
 |-------|-------------------|-------------|
 | engineering-security-engineer | security, OWASP, STRIDE, vulnerability-assessment, pentest, threat-modeling, secure-coding | All security findings routed here |
-| engineering-devops-automator | CI/CD, deployment, infrastructure-as-code, containers, orchestration, Docker, Kubernetes | Infrastructure decisions deferred |
+| engineering-infrastructure-devops | CI/CD, deployment, infrastructure-as-code, containers, orchestration, Docker, Kubernetes | Infrastructure decisions deferred |
 | engineering-backend-architect | backend-architecture, database-design, API-design, microservices, system-design | Backend design authority |
 | engineering-frontend-developer | frontend-architecture, UI-components, state-management, client-side-routing, React, Vue, Angular | Frontend implementation authority |
 | engineering-ai-engineer | AI-integration, LLM-prompts, model-selection, AI-testing, ML-ops, data-pipelines | AI-related decisions |
@@ -31,7 +31,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 | Agent | Exclusive Domains | When Active |
 |-------|-------------------|-------------|
 | testing-qa-verification-specialist | production-readiness, edge-cases, failure-modes, risk-assessment | Reality-checks all outputs |
-| testing-evidence-collector | verification, test-coverage, proof-artifacts, evidence-gathering | Validates test coverage |
+| testing-qa-verification-specialist | verification, test-coverage, proof-artifacts, evidence-gathering | Validates test coverage |
 | testing-api-tester | API-testing, contract-testing, endpoint-validation | API contract validation |
 | testing-performance-benchmarker | performance, load-testing, benchmarking, optimization | Performance decisions |
 | testing-workflow-optimizer | workflow-efficiency, process-automation, execution-optimization | Process improvements |
@@ -54,7 +54,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 | Agent | Exclusive Domains | When Active |
 |-------|-------------------|-------------|
 | marketing-social-media-strategist | cross-platform-strategy, platform-selection, content-mix, channel-allocation | Cross-platform strategy decisions |
-| marketing-content-creator | content-strategy, copywriting, editorial-calendar, brand-storytelling | Content strategy and calendar |
+| marketing-content-social-strategist | content-strategy, copywriting, editorial-calendar, brand-storytelling | Content strategy and calendar |
 | marketing-growth-hacker | growth-hacking, user-acquisition, viral-loops, conversion-funnels, experimentation | Growth and acquisition |
 | marketing-twitter-engager | Twitter, real-time-engagement, thought-leadership, social-listening | Twitter-specific strategy |
 | marketing-instagram-curator | Instagram, visual-content, community-building, reels, aesthetic-curation | Instagram visual content |
@@ -148,7 +148,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 ### Brand Domain
 - **Owner**: design-brand-guardian
 - **Scope**: Visual identity, brand consistency, tone and voice
-- **Deferred by**: design-ui-designer, marketing-content-creator, marketing-social-media-strategist
+- **Deferred by**: design-ui-designer, marketing-content-social-strategist, marketing-social-media-strategist
 
 ### UI Design Domain
 - **Owner**: design-ui-designer
@@ -156,7 +156,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 - **Deferred by**: engineering-frontend-developer
 
 ### Content Strategy Domain
-- **Owner**: marketing-content-creator
+- **Owner**: marketing-content-social-strategist
 - **Scope**: Editorial calendar, copywriting, brand storytelling
 - **Deferred by**: marketing-social-media-strategist, design-brand-guardian
 
@@ -176,7 +176,7 @@ This document provides a quick-reference mapping of agents to their exclusive do
 - **Deferred by**: project-manager-senior
 
 ### Infrastructure Domain
-- **Owner**: engineering-devops-automator (primary), support-infrastructure-maintainer (secondary)
+- **Owner**: engineering-infrastructure-devops (primary), support-infrastructure-maintainer (secondary)
 - **Scope**: CI/CD, deployment, orchestration, system reliability
 - **Deferred by**: All other agents
 - **Note**: DevOps owns implementation; Infrastructure Maintainer owns operations

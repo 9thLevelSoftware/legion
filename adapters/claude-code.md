@@ -80,6 +80,8 @@ For plans with cross-wave dependencies:
 
 ### Wave Execution
 
+**Dispatch mode:** parallel via single-message batched Agent tool calls + SendMessage coordination.
+
 Issue ALL Agent tool calls for the wave in a SINGLE response message — this triggers parallel execution. Each Agent call MUST include `team_name`.
 
 ```
