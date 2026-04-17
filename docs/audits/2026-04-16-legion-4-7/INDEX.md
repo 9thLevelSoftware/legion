@@ -3,30 +3,30 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (54 / 125 files audited)
+**Status:** in_progress (60 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
 - P1: 15 findings
-- P2: 154 findings
+- P2: 185 findings
 - P3: 9 findings
-- **Total:** 178 findings
+- **Total:** 209 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
-| CAT-1 | 44 | P1 |
-| CAT-2 | 33 | P1 |
-| CAT-3 | 17 | P1 |
-| CAT-4 | 7 | P2 |
-| CAT-5 | 6 | P2 |
-| CAT-6 | 26 | P1 |
-| CAT-7 | 5 | P2 |
-| CAT-8 | 24 | P2 |
+| CAT-1 | 46 | P1 |
+| CAT-2 | 37 | P1 |
+| CAT-3 | 23 | P1 |
+| CAT-4 | 8 | P2 |
+| CAT-5 | 8 | P2 |
+| CAT-6 | 32 | P1 |
+| CAT-7 | 6 | P2 |
+| CAT-8 | 30 | P2 |
 | CAT-9 | 9 | P2 |
-| CAT-10 | 7 | P2 |
+| CAT-10 | 10 | P2 |
 
 ## Files
 
@@ -70,15 +70,21 @@
 | `docs/settings.schema.json` | S02d | 0 | — |
 | `docs/schemas/summary.schema.json` | S02d | 1 | P2 |
 | `skills/authority-enforcer/SKILL.md` | S08 | 7 | P1 |
+| `skills/board-of-directors/SKILL.md` | S09 | 7 | P2 |
 | `skills/cli-dispatch/SKILL.md` | S06 | 5 | P2 |
+| `skills/codebase-mapper/SKILL.md` | S09 | 6 | P2 |
+| `skills/design-workflows/SKILL.md` | S09 | 5 | P2 |
 | `skills/execution-tracker/SKILL.md` | S08 | 4 | P2 |
 | `skills/intent-router/SKILL.md` | S07 | 7 | P2 |
+| `skills/marketing-workflows/SKILL.md` | S09 | 4 | P2 |
 | `skills/phase-decomposer/SKILL.md` | S07 | 7 | P2 |
 | `skills/plan-critique/SKILL.md` | S07 | 5 | P2 |
 | `skills/questioning-flow/SKILL.md` | S07 | 6 | P1 |
 | `skills/review-evaluators/SKILL.md` | S08 | 7 | P2 |
 | `skills/review-loop/SKILL.md` | S08 | 10 | P1 |
 | `skills/review-panel/SKILL.md` | S08 | 8 | P2 |
+| `skills/security-review/SKILL.md` | S09 | 5 | P2 |
+| `skills/ship-pipeline/SKILL.md` | S09 | 4 | P2 |
 | `skills/spec-pipeline/SKILL.md` | S07 | 5 | P2 |
 | `skills/wave-executor/SKILL.md` | S06 | 9 | P1 |
 | `skills/workflow-common/SKILL.md` | S06 | 4 | P1 |
