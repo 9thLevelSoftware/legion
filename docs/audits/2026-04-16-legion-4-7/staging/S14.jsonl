@@ -1,0 +1,29 @@
+{"id":"LEGION-47-370","session":"S14","file":"agents/project-management-experiment-tracker.md","category":"CAT-7","severity":"P2","title":"Absolutist statistical confidence requirements","location":"Line 29, Line 52"}
+{"id":"LEGION-47-371","session":"S14","file":"agents/project-management-experiment-tracker.md","category":"CAT-4","severity":"P2","title":"Unrealistic zero-incident success metric","location":"Lines 173-177"}
+{"id":"LEGION-47-372","session":"S14","file":"agents/project-management-experiment-tracker.md","category":"CAT-3","severity":"P2","title":"No escape valve for non-statistical experiments","location":"Lines 46-52"}
+{"id":"LEGION-47-373","session":"S14","file":"agents/project-management-project-shepherd.md","category":"CAT-7","severity":"P2","title":"Absolutist delivery and timeline language","location":"Line 29, Line 54"}
+{"id":"LEGION-47-374","session":"S14","file":"agents/project-management-project-shepherd.md","category":"CAT-4","severity":"P2","title":"Prescriptive success metrics without flexibility","location":"Lines 168-174"}
+{"id":"LEGION-47-375","session":"S14","file":"agents/project-management-project-shepherd.md","category":"CAT-10","severity":"P3","title":"Executive authority claims without approval gates","location":"Lines 178-193"}
+{"id":"LEGION-47-376","session":"S14","file":"agents/project-management-studio-operations.md","category":"CAT-7","severity":"P2","title":"Absolutist efficiency and uptime targets","location":"Line 29, Lines 173-179"}
+{"id":"LEGION-47-377","session":"S14","file":"agents/project-management-studio-operations.md","category":"CAT-3","severity":"P2","title":"No prioritization escape valve for documentation","location":"Lines 46-51"}
+{"id":"LEGION-47-378","session":"S14","file":"agents/project-management-studio-operations.md","category":"CAT-4","severity":"P3","title":"Scope creep into international/compliance domains","location":"Lines 183-199"}
+{"id":"LEGION-47-379","session":"S14","file":"agents/project-management-studio-producer.md","category":"CAT-10","severity":"P1","title":"M&A/investment authority without human gates","location":"Lines 186-202"}
+{"id":"LEGION-47-380","session":"S14","file":"agents/project-management-studio-producer.md","category":"CAT-7","severity":"P2","title":"Prescriptive ROI targets without context","location":"Line 29, Lines 177-182"}
+{"id":"LEGION-47-381","session":"S14","file":"agents/project-management-studio-producer.md","category":"CAT-4","severity":"P2","title":"Scope creep into corporate strategic functions","location":"Lines 186-202"}
+{"id":"LEGION-47-382","session":"S14","file":"agents/project-manager-senior.md","category":"CAT-7","severity":"P2","title":"Absolutist spec-referencing language","location":"Lines 33-34"}
+{"id":"LEGION-47-383","session":"S14","file":"agents/project-manager-senior.md","category":"CAT-4","severity":"P3","title":"Rigid task sizing without context","location":"Lines 37-39"}
+{"id":"LEGION-47-384","session":"S14","file":"agents/project-manager-senior.md","category":"CAT-3","severity":"P2","title":"No escape valve for critical blockers","location":"Lines 42-44"}
+{"id":"LEGION-47-385","session":"S14","file":"agents/support-executive-summary-generator.md","category":"CAT-7","severity":"P2","title":"Absolutist quantification requirements","location":"Lines 37-40, Lines 46-51"}
+{"id":"LEGION-47-386","session":"S14","file":"agents/support-executive-summary-generator.md","category":"CAT-3","severity":"P2","title":"Rigid word count without flexibility","location":"Lines 46-51"}
+{"id":"LEGION-47-387","session":"S14","file":"agents/support-executive-summary-generator.md","category":"CAT-4","severity":"P3","title":"Unrealistic zero-assumption standard","location":"Lines 183-191"}
+{"id":"LEGION-47-388","session":"S14","file":"agents/support-finance-tracker.md","category":"CAT-10","severity":"P2","title":"M&A/tax authority without approval gates","location":"Lines 145-148"}
+{"id":"LEGION-47-389","session":"S14","file":"agents/support-finance-tracker.md","category":"CAT-7","severity":"P2","title":"Absolutist accuracy metrics","location":"Lines 129-135"}
+{"id":"LEGION-47-390","session":"S14","file":"agents/support-finance-tracker.md","category":"CAT-3","severity":"P2","title":"No escape valve for urgent decisions","location":"Lines 46-49"}
+{"id":"LEGION-47-391","session":"S14","file":"agents/support-legal-compliance-checker.md","category":"CAT-10","severity":"P1","title":"Legal decision authority without counsel","location":"Lines 289-307"}
+{"id":"LEGION-47-392","session":"S14","file":"agents/support-legal-compliance-checker.md","category":"CAT-7","severity":"P2","title":"Absolutist compliance metrics","location":"Lines 281-287"}
+{"id":"LEGION-47-393","session":"S14","file":"agents/support-legal-compliance-checker.md","category":"CAT-3","severity":"P2","title":"No escape valve for urgent operations","location":"Lines 46-49"}
+{"id":"LEGION-47-394","session":"S14","file":"agents/support-legal-compliance-checker.md","category":"CAT-4","severity":"P2","title":"Overstated compliance authority","location":"Lines 13-14"}
+{"id":"LEGION-47-395","session":"S14","file":"agents/support-support-responder.md","category":"CAT-7","severity":"P2","title":"Absolutist SLA requirements","location":"Lines 26-27"}
+{"id":"LEGION-47-396","session":"S14","file":"agents/support-support-responder.md","category":"CAT-3","severity":"P2","title":"No escape valve for resource conflicts","location":"Lines 46-49"}
+{"id":"LEGION-47-397","session":"S14","file":"agents/support-support-responder.md","category":"CAT-4","severity":"P2","title":"Competing metrics without prioritization","location":"Lines 273-278"}
+{"id":"LEGION-47-398","session":"S14","file":"agents/support-support-responder.md","category":"CAT-10","severity":"P3","title":"Sales authority beyond support scope","location":"Line 208"}

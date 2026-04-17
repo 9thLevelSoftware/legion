@@ -1,0 +1,35 @@
+{"id":"LEGION-47-290","file":"agents/design-brand-guardian.md","category":"CAT-7","severity":"P2","title":"Maximalist brand consistency target","location":"Line 301","session":"S12"}
+{"id":"LEGION-47-291","file":"agents/design-brand-guardian.md","category":"CAT-3","severity":"P2","title":"No escape valve for MVP/rapid contexts","location":"Lines 44-56","session":"S12"}
+{"id":"LEGION-47-292","file":"agents/design-brand-guardian.md","category":"CAT-4","severity":"P3","title":"Crisis management overlap with marketing","location":"Lines 30-36","session":"S12"}
+{"id":"LEGION-47-293","file":"agents/design-ui-designer.md","category":"CAT-7","severity":"P2","title":"Absolute accessibility requirement","location":"Line 29","session":"S12"}
+{"id":"LEGION-47-294","file":"agents/design-ui-designer.md","category":"CAT-7","severity":"P2","title":"Font blacklist without context","location":"Line 47","session":"S12"}
+{"id":"LEGION-47-295","file":"agents/design-ui-designer.md","category":"CAT-4","severity":"P2","title":"Review capabilities expand scope beyond core UI","location":"Lines 36-51","session":"S12"}
+{"id":"LEGION-47-296","file":"agents/design-ui-designer.md","category":"CAT-3","severity":"P3","title":"No escape valve for intentional system departures","location":"Lines 60-65","session":"S12"}
+{"id":"LEGION-47-297","file":"agents/design-ux-architect.md","category":"CAT-7","severity":"P2","title":"Absolute theme toggle requirement","location":"Line 29","session":"S12"}
+{"id":"LEGION-47-298","file":"agents/design-ux-architect.md","category":"CAT-10","severity":"P2","title":"System architecture authority overlaps engineering","location":"Lines 31-37","session":"S12"}
+{"id":"LEGION-47-299","file":"agents/design-ux-architect.md","category":"CAT-4","severity":"P2","title":"Performance targets belong to engineering","location":"Lines 42-47","session":"S12"}
+{"id":"LEGION-47-300","file":"agents/design-ux-architect.md","category":"CAT-3","severity":"P3","title":"No escape valve for urgent fixes","location":"Lines 66-73","session":"S12"}
+{"id":"LEGION-47-301","file":"agents/design-ux-researcher.md","category":"CAT-7","severity":"P2","title":"Success metric depends on external decisions","location":"Line 315","session":"S12"}
+{"id":"LEGION-47-302","file":"agents/design-ux-researcher.md","category":"CAT-3","severity":"P2","title":"No escape valve for guerrilla testing","location":"Lines 54-66","session":"S12"}
+{"id":"LEGION-47-303","file":"agents/design-ux-researcher.md","category":"CAT-4","severity":"P3","title":"Competitive analysis overlaps trend researcher","location":"Lines 37-52","session":"S12"}
+{"id":"LEGION-47-304","file":"agents/design-visual-storyteller.md","category":"CAT-7","severity":"P2","title":"Absolute success metric targets","location":"Lines 119-129","session":"S12"}
+{"id":"LEGION-47-305","file":"agents/design-visual-storyteller.md","category":"CAT-3","severity":"P2","title":"No escape valve for non-narrative visuals","location":"Lines 43-49","session":"S12"}
+{"id":"LEGION-47-306","file":"agents/design-visual-storyteller.md","category":"CAT-4","severity":"P2","title":"Platform adaptation overlaps social specialist","location":"Lines 73-79","session":"S12"}
+{"id":"LEGION-47-307","file":"agents/design-whimsy-injector.md","category":"CAT-7","severity":"P2","title":"Every element must serve purpose - too absolute","location":"Line 46","session":"S12"}
+{"id":"LEGION-47-308","file":"agents/design-whimsy-injector.md","category":"CAT-3","severity":"P2","title":"No escape valve for opt-in accessibility impacts","location":"Lines 52-56","session":"S12"}
+{"id":"LEGION-47-309","file":"agents/design-whimsy-injector.md","category":"CAT-9","severity":"P3","title":"Frameworks field contains libraries","location":"Lines 7-9","session":"S12"}
+{"id":"LEGION-47-310","file":"agents/marketing-app-store-optimizer.md","category":"CAT-7","severity":"P2","title":"Aggressive success metric absolutes","location":"Lines 293-299","session":"S12"}
+{"id":"LEGION-47-311","file":"agents/marketing-app-store-optimizer.md","category":"CAT-3","severity":"P2","title":"No escape valve for data-unavailable contexts","location":"Lines 46-57","session":"S12"}
+{"id":"LEGION-47-312","file":"agents/marketing-app-store-optimizer.md","category":"CAT-10","severity":"P3","title":"Visual asset creation overlaps design agents","location":"Lines 32-36","session":"S12"}
+{"id":"LEGION-47-313","file":"agents/marketing-content-social-strategist.md","category":"CAT-7","severity":"P2","title":"Brand voice non-negotiable absolute","location":"Line 48","session":"S12"}
+{"id":"LEGION-47-314","file":"agents/marketing-content-social-strategist.md","category":"CAT-7","severity":"P2","title":"No clickbait absolute without nuance","location":"Line 51","session":"S12"}
+{"id":"LEGION-47-315","file":"agents/marketing-content-social-strategist.md","category":"CAT-3","severity":"P2","title":"No escape valve for rapid response content","location":"Lines 47-51","session":"S12"}
+{"id":"LEGION-47-316","file":"agents/marketing-content-social-strategist.md","category":"CAT-4","severity":"P3","title":"Platform coverage creates execution ownership confusion","location":"Lines 172-182","session":"S12"}
+{"id":"LEGION-47-317","file":"agents/marketing-growth-hacker.md","category":"CAT-7","severity":"P2","title":"Experiment methodology absolutes","location":"Lines 27-30","session":"S12"}
+{"id":"LEGION-47-318","file":"agents/marketing-growth-hacker.md","category":"CAT-7","severity":"P2","title":"Success metric absolutes without stage context","location":"Lines 189-197","session":"S12"}
+{"id":"LEGION-47-319","file":"agents/marketing-growth-hacker.md","category":"CAT-3","severity":"P2","title":"No escape valve for greenfield products","location":"Lines 211-217","session":"S12"}
+{"id":"LEGION-47-320","file":"agents/marketing-growth-hacker.md","category":"CAT-4","severity":"P3","title":"Analytics scope overlaps data engineering","location":"Lines 21-24","session":"S12"}
+{"id":"LEGION-47-321","file":"agents/marketing-social-platform-specialist.md","category":"CAT-7","severity":"P2","title":"Never cross-post absolute","location":"Lines 36-37","session":"S12"}
+{"id":"LEGION-47-322","file":"agents/marketing-social-platform-specialist.md","category":"CAT-7","severity":"P2","title":"Response time absolutes without coverage context","location":"Lines 40-42","session":"S12"}
+{"id":"LEGION-47-323","file":"agents/marketing-social-platform-specialist.md","category":"CAT-3","severity":"P2","title":"Engagement targets without industry context","location":"Lines 54-59","session":"S12"}
+{"id":"LEGION-47-324","file":"agents/marketing-social-platform-specialist.md","category":"CAT-4","severity":"P3","title":"Crisis management overlaps brand guardian","location":"Lines 140-148","session":"S12"}

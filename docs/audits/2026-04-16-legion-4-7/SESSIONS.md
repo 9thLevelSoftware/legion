@@ -42,7 +42,127 @@
 - **Findings so far:** 246 (0 P0, 19 P1, 202 P2, 25 P3)
 
 ### Next session
-S11-S16 — Agent personalities (48 files), CLI adapters (10 files). Parallel execution via team dispatch.
+S17+ — Remaining scope TBD.
+
+---
+
+## Session S16 — CLI Adapters
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** adapters/{ADAPTER,aider,claude-code,codex-cli,copilot-cli,cursor,gemini-cli,kiro-cli,opencode,windsurf}.md
+**Files audited:** 10
+**Findings:** 31 total — 0 P0, 1 P1, 27 P2, 3 P3
+**IDs assigned:** LEGION-47-450 .. LEGION-47-480
+**Status:** completed
+
+### Per-file summary
+| File | Findings | Max severity |
+|------|----------|--------------|
+| adapters/ADAPTER.md | 2 | P2 |
+| adapters/aider.md | 3 | P2 |
+| adapters/claude-code.md | 1 | P3 |
+| adapters/codex-cli.md | 2 | P2 |
+| adapters/copilot-cli.md | 3 | P2 |
+| adapters/cursor.md | 3 | P2 |
+| adapters/gemini-cli.md | 4 | P1 |
+| adapters/kiro-cli.md | 4 | P2 |
+| adapters/opencode.md | 4 | P2 |
+| adapters/windsurf.md | 5 | P2 |
+
+### Key themes
+- **lint_commands missing** (8 adapters): Conformance metadata gap
+- **Read-only enforcement gaps**: Instruction-based only, no platform enforcement
+- **Model tier defaults undefined**: Runtime behavior unclear when unconfigured
+- **P1 LEGION-47-464**: Gemini CLI parallel execution file conflicts
+
+---
+
+## Session S15 — Spatial Computing + Specialized Agents
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** agents/{macos-spatial-metal-engineer,terminal-integration-specialist,visionos-spatial-engineer,xr-*,agents-orchestrator,data-analytics-engineer,lsp-index-engineer,polymath}.md
+**Files audited:** 10
+**Findings:** 38 total — 0 P0, 0 P1, 30 P2, 8 P3
+**IDs assigned:** LEGION-47-410 .. LEGION-47-447
+**Status:** completed
+
+### Key themes
+- **CAT-7 Maximalist Language dominant** (22 findings): Spatial agents use rigid safety language
+- **Missing escape valves** (10 findings): Performance constraints as absolutes
+- **Schema compliance excellent**: All 10 agents have proper frontmatter
+
+---
+
+## Session S14 — Project Management + Support Agents
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** agents/{project-management-*,project-manager-senior,support-*}.md
+**Files audited:** 9
+**Findings:** 29 total — 0 P0, 2 P1, 22 P2, 5 P3
+**IDs assigned:** LEGION-47-370 .. LEGION-47-398
+**Status:** completed
+
+### P1 Issues
+- **LEGION-47-379** (studio-producer): M&A/investment authority without human gates
+- **LEGION-47-391** (legal-compliance-checker): Legal decision authority without counsel escalation
+
+### Key themes
+- **Authority overreach** (5 findings): Claims over regulated domains
+- **Absolutist metrics** (9 findings): Rigid thresholds without context
+
+---
+
+## Session S13 — Product + Testing Agents
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** agents/{product-*,testing-*}.md
+**Files audited:** 10
+**Findings:** 20 total — 0 P0, 0 P1, 13 P2, 7 P3
+**IDs assigned:** LEGION-47-330 .. LEGION-47-349
+**Status:** completed
+
+### Key themes
+- **Rigid performance thresholds** (testing agents): 200ms, 10x load, 2% flake without overrides
+- **Absolute language in Critical Rules**: "Never" statements without exception paths
+- **Positive pattern**: testing-workflow-optimizer differentiation section worth replicating
+
+---
+
+## Session S12 — Design + Marketing Agents
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** agents/{design-*,marketing-*}.md
+**Files audited:** 10
+**Findings:** 35 total — 0 P0, 0 P1, 26 P2, 9 P3
+**IDs assigned:** LEGION-47-290 .. LEGION-47-324
+**Status:** completed
+
+### Key themes
+- **Maximalist success metrics** (14 findings): Absolutes without market/stage context
+- **Missing escape valves** (11 findings): No paths for rapid response, MVP, greenfield
+- **Cross-agent authority overlap**: Design/marketing boundaries unclear
+
+---
+
+## Session S11 — Engineering Division Agents
+
+**Started:** 2026-04-16
+**Closed:** 2026-04-16
+**Target:** agents/engineering-*.md
+**Files audited:** 9
+**Findings:** 22 total — 0 P0, 0 P1, 17 P2, 5 P3
+**IDs assigned:** LEGION-47-250 .. LEGION-47-271
+**Status:** completed
+
+### Key themes
+- **Maximalist language pervasive** (11 findings): Best practices stated as hard rules
+- **Authority boundaries need clarification** (4 findings): Deployment approval, PR blocking
+- **One schema violation**: Security Engineer includes non-standard `tools` field
 
 ---
 

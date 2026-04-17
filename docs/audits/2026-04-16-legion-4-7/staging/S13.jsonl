@@ -1,0 +1,20 @@
+{"id":"LEGION-47-330","file":"agents/product-feedback-synthesizer.md","severity":"P2","category":"CAT-7","title":"Maximalist 'Never' language without escape valves","line":"37-44"}
+{"id":"LEGION-47-331","file":"agents/product-feedback-synthesizer.md","severity":"P3","category":"CAT-4","title":"Success metrics include unrealistic precision","line":"165-173"}
+{"id":"LEGION-47-332","file":"agents/product-sprint-prioritizer.md","severity":"P2","category":"CAT-3","title":"Missing escape valve for 4 Scope Modes","line":"37-42"}
+{"id":"LEGION-47-333","file":"agents/product-sprint-prioritizer.md","severity":"P2","category":"CAT-7","title":"10-Star Product Thinking implies perfectionism","line":"36"}
+{"id":"LEGION-47-334","file":"agents/product-technical-writer.md","severity":"P2","category":"CAT-9","title":"Schema contains non-standard tools field","line":"6"}
+{"id":"LEGION-47-335","file":"agents/product-technical-writer.md","severity":"P2","category":"CAT-7","title":"Absolute verification requirements","line":"254-256"}
+{"id":"LEGION-47-336","file":"agents/product-trend-researcher.md","severity":"P2","category":"CAT-7","title":"Unrealistic accuracy claims in success metrics","line":"48"}
+{"id":"LEGION-47-337","file":"agents/product-trend-researcher.md","severity":"P3","category":"CAT-4","title":"Generic deliverables section","line":"162-176"}
+{"id":"LEGION-47-338","file":"agents/testing-api-tester.md","severity":"P2","category":"CAT-7","title":"Rigid performance thresholds without context","line":"56-59"}
+{"id":"LEGION-47-339","file":"agents/testing-api-tester.md","severity":"P3","category":"CAT-3","title":"No escape valve for non-production APIs","line":"45-53"}
+{"id":"LEGION-47-340","file":"agents/testing-performance-benchmarker.md","severity":"P2","category":"CAT-7","title":"Absolute SLA compliance requirement","line":"29"}
+{"id":"LEGION-47-341","file":"agents/testing-performance-benchmarker.md","severity":"P2","category":"CAT-3","title":"No escape valve for non-web systems","line":"31-36"}
+{"id":"LEGION-47-342","file":"agents/testing-qa-verification-specialist.md","severity":"P2","category":"CAT-7","title":"Maximalist language in core beliefs","line":"35-38"}
+{"id":"LEGION-47-343","file":"agents/testing-qa-verification-specialist.md","severity":"P3","category":"CAT-4","title":"Persona calibration risk - excessive skepticism","line":"150-160"}
+{"id":"LEGION-47-344","file":"agents/testing-test-results-analyzer.md","severity":"P2","category":"CAT-7","title":"Absolute analysis requirement","line":"29"}
+{"id":"LEGION-47-345","file":"agents/testing-test-results-analyzer.md","severity":"P3","category":"CAT-4","title":"Code example assumes specific data structure","line":"64-191"}
+{"id":"LEGION-47-346","file":"agents/testing-tool-evaluator.md","severity":"P2","category":"CAT-7","title":"Absolute evaluation requirements","line":"29"}
+{"id":"LEGION-47-347","file":"agents/testing-tool-evaluator.md","severity":"P3","category":"CAT-4","title":"Condensed code example lacks utility","line":"64-66"}
+{"id":"LEGION-47-348","file":"agents/testing-workflow-optimizer.md","severity":"P3","category":"CAT-4","title":"Excellent persona calibration - positive reference","line":"140-144"}
+{"id":"LEGION-47-349","file":"agents/testing-workflow-optimizer.md","severity":"P2","category":"CAT-7","title":"Absolute success metric for flaky test rate","line":"135"}

@@ -1,0 +1,31 @@
+{"id":"LEGION-47-450","file":"adapters/ADAPTER.md","severity":"P2","category":"CAT-6","title":"Placeholder resolution instruction lacks cross-platform guidance","status":"open"}
+{"id":"LEGION-47-451","file":"adapters/ADAPTER.md","severity":"P3","category":"CAT-9","title":"No lint_commands field in conformance metadata spec","status":"open"}
+{"id":"LEGION-47-452","file":"adapters/aider.md","severity":"P2","category":"CAT-3","title":"No escape valve for shell verification commands","status":"open"}
+{"id":"LEGION-47-453","file":"adapters/aider.md","severity":"P2","category":"CAT-3","title":"Weak personality isolation warning lacks mitigation","status":"open"}
+{"id":"LEGION-47-454","file":"adapters/aider.md","severity":"P2","category":"CAT-6","title":"Model tier mappings are underspecified","status":"open"}
+{"id":"LEGION-47-455","file":"adapters/claude-code.md","severity":"P3","category":"CAT-9","title":"Empty known_quirks array undocumented as intentional","status":"open"}
+{"id":"LEGION-47-456","file":"adapters/codex-cli.md","severity":"P2","category":"CAT-6","title":"Read-only agent enforcement is instruction-only","status":"open"}
+{"id":"LEGION-47-457","file":"adapters/codex-cli.md","severity":"P2","category":"CAT-9","title":"Missing lint_commands in conformance metadata","status":"open"}
+{"id":"LEGION-47-458","file":"adapters/copilot-cli.md","severity":"P2","category":"CAT-3","title":"No fallback for background delegation coordination","status":"open"}
+{"id":"LEGION-47-459","file":"adapters/copilot-cli.md","severity":"P2","category":"CAT-9","title":"Missing lint_commands in conformance metadata","status":"open"}
+{"id":"LEGION-47-460","file":"adapters/copilot-cli.md","severity":"P3","category":"CAT-9","title":"Inconsistent model tier naming across adapters","status":"open"}
+{"id":"LEGION-47-461","file":"adapters/cursor.md","severity":"P2","category":"CAT-6","title":"Read-only mode depends on Review mode without verification","status":"open"}
+{"id":"LEGION-47-462","file":"adapters/cursor.md","severity":"P2","category":"CAT-3","title":"Polling for result files lacks timeout or failure handling","status":"open"}
+{"id":"LEGION-47-463","file":"adapters/cursor.md","severity":"P2","category":"CAT-9","title":"Missing lint_commands in conformance metadata","status":"open"}
+{"id":"LEGION-47-464","file":"adapters/gemini-cli.md","severity":"P1","category":"CAT-3","title":"Parallel execution file conflict warning lacks enforcement","status":"open"}
+{"id":"LEGION-47-465","file":"adapters/gemini-cli.md","severity":"P2","category":"CAT-6","title":"Agent spawning opt-in detection not documented","status":"open"}
+{"id":"LEGION-47-466","file":"adapters/gemini-cli.md","severity":"P2","category":"CAT-6","title":"Read-only agents not enforced at platform level","status":"open"}
+{"id":"LEGION-47-467","file":"adapters/gemini-cli.md","severity":"P2","category":"CAT-9","title":"Missing lint_commands in conformance metadata","status":"open"}
+{"id":"LEGION-47-468","file":"adapters/kiro-cli.md","severity":"P2","category":"CAT-3","title":"Subagent tool limitations degrade silently","status":"open"}
+{"id":"LEGION-47-469","file":"adapters/kiro-cli.md","severity":"P2","category":"CAT-6","title":"Model tiers completely user-configured with no defaults","status":"open"}
+{"id":"LEGION-47-470","file":"adapters/kiro-cli.md","severity":"P2","category":"CAT-6","title":"Read-only mode enforcement is instruction-based only","status":"open"}
+{"id":"LEGION-47-471","file":"adapters/kiro-cli.md","severity":"P2","category":"CAT-9","title":"Missing lint_commands in conformance metadata","status":"open"}
+{"id":"LEGION-47-472","file":"adapters/opencode.md","severity":"P2","category":"CAT-3","title":"Model availability fallback is vague","status":"open"}
+{"id":"LEGION-47-473","file":"adapters/opencode.md","severity":"P2","category":"CAT-3","title":"Timeout handling lacks specific guidance","status":"open"}
+{"id":"LEGION-47-474","file":"adapters/opencode.md","severity":"P2","category":"CAT-6","title":"Model tiers fully user-configured","status":"open"}
+{"id":"LEGION-47-475","file":"adapters/opencode.md","severity":"P2","category":"CAT-9","title":"Missing lint_commands in conformance metadata","status":"open"}
+{"id":"LEGION-47-476","file":"adapters/windsurf.md","severity":"P2","category":"CAT-3","title":"Turbo Mode auto-proceed lacks detection or mitigation","status":"open"}
+{"id":"LEGION-47-477","file":"adapters/windsurf.md","severity":"P2","category":"CAT-6","title":"Weak personality isolation warning lacks mitigation","status":"open"}
+{"id":"LEGION-47-478","file":"adapters/windsurf.md","severity":"P2","category":"CAT-6","title":"Model tiers fully user-configured","status":"open"}
+{"id":"LEGION-47-479","file":"adapters/windsurf.md","severity":"P2","category":"CAT-6","title":"Global config limited to workspace installs only","status":"open"}
+{"id":"LEGION-47-480","file":"adapters/windsurf.md","severity":"P2","category":"CAT-9","title":"Missing lint_commands in conformance metadata","status":"open"}
