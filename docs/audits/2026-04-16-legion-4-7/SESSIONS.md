@@ -394,3 +394,13 @@ Three of the five S07 skills are consumed by `/legion:plan` (phase-decomposer, p
 ### Next session
 S08 — Execution & Review Skills (5 files): candidate scope includes `wave-executor`-adjacent flow (execution-tracker), the review subsystem (review-evaluators, review-loop, review-panel, security-review). Expect (a) the dispatch-specification cluster to grow further as execution-tracker interacts with wave-executor's fan-out mechanism (LEGION-47-101/102/112/125/128/141); (b) the CAT-1 reviewer-selection gate (LEGION-47-040 in commands/review.md) to resurface in review-panel or review-loop if these files restate it; (c) the S05 dual-ground-truth agent-ID pattern inversion check on review fix-agent routing (continuing LEGION-47-052 pre-existing-bug investigation); (d) the `adapter.prompt_free_text` primitive decision remains outstanding and blocks remediation of LEGION-47-093, 117, 120, 122, 127, 132, 133, 138 plus inherited S03/S04/S05/S06 findings.
 
+---
+
+## Session S08 — Execution & Review Skills
+
+**Started:** 2026-04-16 19:59
+**Target:** skills/{execution-tracker,review-loop,review-panel,review-evaluators,authority-enforcer}/SKILL.md
+**Files audited:** (in progress)
+**Findings:** (in progress)
+**Status:** in_progress
+
