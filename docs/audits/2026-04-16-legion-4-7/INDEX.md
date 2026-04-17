@@ -3,30 +3,30 @@
 **Audit started:** 2026-04-16
 **Rubric version:** 1.0
 **Baseline tag:** audit-v47-baseline
-**Status:** in_progress (52 / 125 files audited)
+**Status:** in_progress (53 / 125 files audited)
 
 ## Summary by Severity
 
 - P0: 0 findings
 - P1: 14 findings
-- P2: 141 findings
+- P2: 148 findings
 - P3: 9 findings
-- **Total:** 164 findings
+- **Total:** 171 findings
 
 ## Summary by Category
 
 | Category | Count | Max Severity |
 |----------|-------|--------------|
 | CAT-1 | 44 | P1 |
-| CAT-2 | 31 | P2 |
-| CAT-3 | 15 | P1 |
+| CAT-2 | 32 | P2 |
+| CAT-3 | 16 | P1 |
 | CAT-4 | 7 | P2 |
 | CAT-5 | 6 | P2 |
-| CAT-6 | 23 | P1 |
-| CAT-7 | 3 | P2 |
-| CAT-8 | 21 | P2 |
+| CAT-6 | 24 | P1 |
+| CAT-7 | 4 | P2 |
+| CAT-8 | 23 | P2 |
 | CAT-9 | 9 | P2 |
-| CAT-10 | 5 | P2 |
+| CAT-10 | 6 | P2 |
 
 ## Files
 
@@ -75,6 +75,7 @@
 | `skills/phase-decomposer/SKILL.md` | S07 | 7 | P2 |
 | `skills/plan-critique/SKILL.md` | S07 | 5 | P2 |
 | `skills/questioning-flow/SKILL.md` | S07 | 6 | P1 |
+| `skills/review-evaluators/SKILL.md` | S08 | 7 | P2 |
 | `skills/review-loop/SKILL.md` | S08 | 10 | P1 |
 | `skills/review-panel/SKILL.md` | S08 | 8 | P2 |
 | `skills/spec-pipeline/SKILL.md` | S07 | 5 | P2 |
