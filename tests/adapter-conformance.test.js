@@ -449,6 +449,29 @@ describe('Adapter Conformance: Detection Cross-Reference with workflow-common', 
   }
 });
 
+test('Codex adapter primary detection includes the repo-native plugin marker', () => {
+  const codexAdapterPath = path.join(ADAPTERS_DIR, 'codex-cli.md');
+  const fm = parseAdapterFrontmatter(codexAdapterPath);
+  const workflowCommonPath = path.join(ROOT, 'skills', 'workflow-common', 'SKILL.md');
+  const wcText = fs.readFileSync(workflowCommonPath, 'utf8');
+  const step1Match = wcText.match(
+    /Step 1: Tool probe \(primary detection\)([\s\S]*?)(?=Step (?:1\.5|2):)/
+  );
+  const step1Block = step1Match ? step1Match[1] : '';
+
+  assert.match(
+    fm.detection.primary,
+    /\.codex-plugin\/plugin\.json/,
+    'codex-cli.md detection.primary should recognize the repo-native Codex plugin manifest'
+  );
+
+  assert.match(
+    step1Block,
+    /Codex CLI: .*\.codex-plugin\/plugin\.json/,
+    'workflow-common Step 1 should recognize the repo-native Codex plugin manifest for Codex CLI'
+  );
+});
+
 describe('Adapter Conformance: Capability-Quirk Consistency', () => {
   for (const file of adapterFiles) {
     describe(file, () => {

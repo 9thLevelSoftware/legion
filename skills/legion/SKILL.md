@@ -1,6 +1,9 @@
 ---
 name: legion
 description: Bridge Codex requests to the Legion workflows in this repository when the user references Legion or legacy /legion:* commands.
+triggers: [legion, /legion:, codex, plugin, bridge]
+token_cost: low
+summary: "Routes plain-language Legion requests and legacy /legion:* aliases to the matching command markdown in this repository."
 ---
 
 # Legion for Codex
