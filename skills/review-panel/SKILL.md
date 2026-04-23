@@ -1,9 +1,9 @@
 ---
-name: legion:review-panel
-description: Dynamic multi-perspective review panel composition with domain-weighted rubrics and synthesis
-triggers: [review, panel, expert, opinion, advisory, evaluate]
+name: review-panel
+description: "Assembles a review panel of specialist agents matched to the code or artifact being reviewed, each evaluating against domain-specific rubrics, then synthesizes findings into a consolidated report. Called by review-loop for /legion:review. Use when the user needs multi-reviewer feedback, peer review simulation, rubric-based code evaluation, or expert critique from multiple perspectives."
+triggers: [review, panel, expert, opinion, advisory, evaluate, peer review, code review, multi-reviewer, critique, rubric evaluation, get feedback]
 token_cost: medium
-summary: "Dynamic expert review panels assembled from relevant agents. Each panelist reviews independently, findings are synthesized. Called by review-loop to compose reviewer teams for /legion:review."
+summary: "Assembles specialist review panels from the agent pool, each reviewer evaluating against domain-specific rubrics. Produces a synthesized consolidated report. Called by review-loop for /legion:review."
 ---
 
 # Review Panel
@@ -11,6 +11,10 @@ summary: "Dynamic expert review panels assembled from relevant agents. Each pane
 Composes context-aware multi-perspective review teams from the 48-agent pool (roster defined in CLAUDE.md Division table; count computed at runtime from `agents/` directory). Each reviewer evaluates through domain-specific weighted rubrics with non-overlapping criteria. Produces a synthesized consolidated report.
 
 Used by `/legion:review` when panel mode is selected. Replaces the static phase-type-to-agent mapping with dynamic selection via agent-registry recommendation algorithm.
+
+## Quick Start
+
+Three phases: **Compose** (Section 1) → **Review** (agents evaluate independently against rubrics from Section 2) → **Synthesize** (Section 3 deduplicates, filters, and produces consolidated report). Intent filtering narrows scope when flags like `--just-security` are passed.
 
 ---
 
@@ -263,12 +267,12 @@ Include in each finding: `- **Confidence**: {HIGH | MEDIUM | LOW} — {percentag
 | 3 | Stability | No crashes, hangs, or resource leaks under normal operation |
 | 4 | Integration correctness | Cross-file references resolve, dependencies exist, imports work |
 
-**testing-test-results-analyzer** — Verification Completeness
+**testing-test-results-analyzer** — Verification & Test Quality
 | # | Criterion | What to Check |
 |---|-----------|---------------|
 | 1 | Proof artifacts | Test files, verification scripts, or documented test runs exist for claims |
 | 2 | Coverage breadth | All success criteria have corresponding verification, not just some |
-| 3 | Before/after documentation | Changes are documented with what changed and why |
+| 3 | Assertion quality | Tests check meaningful behavior, not just "no crash"; before/after documented |
 | 4 | Reproducibility | Verification steps can be repeated by someone else with same results |
 
 **testing-api-tester** — API Contract Compliance
@@ -294,14 +298,6 @@ Include in each finding: `- **Confidence**: {HIGH | MEDIUM | LOW} — {percentag
 | 2 | Scalability indicators | Approach handles growth (more agents, larger files, more phases) |
 | 3 | Bottleneck risk | Sequential operations that could be parallelized |
 | 4 | Cost awareness | Agent spawn count, model tier usage aligned with cost profile convention |
-
-**testing-test-results-analyzer** — Test Quality Metrics
-| # | Criterion | What to Check |
-|---|-----------|---------------|
-| 1 | Assertion quality | Tests check meaningful behavior, not just "no crash" |
-| 2 | Test isolation | Tests don't depend on each other or shared mutable state |
-| 3 | Regression coverage | Changes include tests that would catch if the change broke |
-| 4 | Flakiness risk | Tests depend on stable data, not timing, random values, or external services |
 
 **testing-tool-evaluator** — Dependency & Tool Health
 | # | Criterion | What to Check |
@@ -551,7 +547,7 @@ Algorithm:
 
 ---
 
-## Step 2.5: INTENT FILTERING (conditional)
+## Step 2.7: INTENT FILTERING (conditional)
 
 If REVIEW_MODE === "security-only":
 

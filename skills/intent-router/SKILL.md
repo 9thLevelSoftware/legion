@@ -1,9 +1,9 @@
 ---
-name: legion:intent-router
-description: Parses intent flags, validates combinations, and routes to appropriate team templates — the semantic flag interpreter for /legion:build and /legion:review
-triggers: [intent, flags, routing, validation, --just-, --skip-]
+name: intent-router
+description: "Interprets --just-* and --skip-* command flags for /legion:build and /legion:review, validates flag combinations against rules, and resolves the matching team template from intent-teams.yaml. Use when the user passes intent flags to build or review commands, asks about flag combinations, or needs to filter agent teams by intent."
+triggers: [intent, flags, routing, validation, --just-, --skip-, filter agents, team template, flag combinations, build flags, review flags]
 token_cost: low
-summary: "Parses semantic intent flags like --just-harden and --skip-frontend, validates combinations against rules, resolves team templates from intent-teams.yaml. Enables semantic filtering for build and review commands."
+summary: "Interprets --just-* and --skip-* flags for /legion:build and /legion:review. Validates flag combinations, resolves team templates from intent-teams.yaml, and produces filtered execution instructions."
 ---
 
 # Intent Router
