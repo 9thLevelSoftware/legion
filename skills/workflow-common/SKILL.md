@@ -334,7 +334,7 @@ Every SKILL.md file has YAML frontmatter with these fields:
 
 | Field | Type | Purpose |
 |-------|------|---------|
-| `name` | string | Skill identifier (`legion:{skill-name}`) |
+| `name` | string | Skill identifier — unprefixed kebab-case matching the directory name (e.g., `wave-executor`) |
 | `description` | string | One-line description for catalog display |
 | `triggers` | string[] | 3-6 keywords that indicate this skill should be loaded |
 | `token_cost` | enum | `low` (<300 lines), `medium` (300-500), `high` (500+) |

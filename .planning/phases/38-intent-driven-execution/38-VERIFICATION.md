@@ -30,7 +30,7 @@ score: 14/14 must-haves verified
 | 11 | /legion:build --just-document generates docs without implementation | ✓ VERIFIED | build.md Step 0.5 + wave-executor Section 6 filter_plans mode |
 | 12 | /legion:build --skip-frontend drops UI tasks from wave plans | ✓ VERIFIED | wave-executor Section 6 filter predicates exclude frontend files/agents/tasks |
 | 13 | /legion:review --just-security runs security-only audit | ✓ VERIFIED | review.md Step 0.5 + Step 6-INTENT + review-panel Section 1.2 + Step 2.7 |
-| 14 | Review panel filters to security domain findings only | ✓ VERIFIED | review-panel.md Step 2.7 filters by security domains with authority enforcement |
+| 14 | Review panel filters to security domain findings only | ✓ VERIFIED | skills/review-panel/SKILL.md Step 2.7 filters by security domains with authority enforcement |
 
 **Score:** 14/14 truths verified
 
