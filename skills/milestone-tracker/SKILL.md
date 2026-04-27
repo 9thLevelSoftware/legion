@@ -1,5 +1,5 @@
 ---
-name: legion:milestone-tracker
+name: milestone-tracker
 description: Milestone management — definition, completion with metrics, archiving, summary generation
 triggers: [milestone, complete, archive, version, release, ship]
 token_cost: medium

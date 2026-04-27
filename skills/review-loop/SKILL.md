@@ -1,5 +1,5 @@
 ---
-name: legion:review-loop
+name: review-loop
 description: Dev-QA loop engine with structured feedback, fix routing, and user escalation for /legion:review
 triggers: [review, quality, fix, iterate, qa, test]
 token_cost: high

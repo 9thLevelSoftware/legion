@@ -1,5 +1,5 @@
 ---
-name: legion:workflow-common-github
+name: workflow-common-github
 description: Optional GitHub interaction conventions shared across commands
 triggers: [github, issue, pr, milestone]
 token_cost: low

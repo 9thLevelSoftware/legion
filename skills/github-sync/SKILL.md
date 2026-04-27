@@ -1,5 +1,5 @@
 ---
-name: legion:github-sync
+name: github-sync
 description: GitHub integration — issue tracking, PR creation, milestone sync, and status readback via gh CLI
 triggers: [github, issue, pr, milestone, sync, remote]
 token_cost: high

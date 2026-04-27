@@ -1,9 +1,9 @@
 ---
-name: legion:phase-decomposer
-description: Decomposes roadmap phases into wave-structured plans with agent recommendations and plan file generation
-triggers: [plan, decompose, phase, task, wave, breakdown]
+name: phase-decomposer
+description: "Breaks down a roadmap phase into phased implementation plans grouped by dependency order, assigns specialist agents to each plan, and generates PLAN.md files. Core engine for /legion:plan. Use when the user wants to plan a project phase, create implementation plans, organize work into waves, or assign agents to tasks."
+triggers: [plan, decompose, phase, task, wave, breakdown, break down roadmap, create plans, sprint planning, organize work, assign agents]
 token_cost: high
-summary: "Decomposes roadmap phases into wave-structured plans. Analyzes requirements, groups deliverables by dependency, recommends agents, generates PLAN.md files. Core engine for /legion:plan."
+summary: "Breaks down roadmap phases into dependency-ordered implementation plans. Groups deliverables by dependency, recommends specialist agents, and generates PLAN.md files. Core engine for /legion:plan."
 ---
 
 # Phase Decomposer

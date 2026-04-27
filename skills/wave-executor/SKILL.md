@@ -1,5 +1,5 @@
 ---
-name: legion:wave-executor
+name: wave-executor
 description: Executes wave-structured plans with personality-injected agents — parallel or sequential per CLI adapter
 triggers: [build, execute, parallel, wave, dispatch, spawn]
 token_cost: high

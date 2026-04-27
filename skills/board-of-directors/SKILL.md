@@ -1,5 +1,5 @@
 ---
-name: legion:board-of-directors
+name: board-of-directors
 description: Governance escalation tier with dynamic agent panels, deliberation, voting, and audit persistence
 triggers: [board, directors, governance, deliberation, vote, escalation]
 token_cost: high

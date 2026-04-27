@@ -97,13 +97,13 @@ All requirements from 38-03-PLAN.md implemented:
 - ✓ Step 1 security-only agent selection
 - ✓ Step 6-INTENT security output
 - ✓ Section 1.2 intent-based panel filtering
-- ✓ Step 2.5 intent filtering with authority enforcement
+- ✓ Step 2.7 intent filtering with authority enforcement
 
 ## Verification Checklist
 
 - [x] review.md has intent detection (Step 0.5)
 - [x] review.md has security-only mode in agent selection (Step 1)
-- [x] review-panel skill has intent filtering (Section 1.2, Step 2.5)
+- [x] review-panel skill has intent filtering (Section 1.2, Step 2.7)
 - [x] review.md generates security-specific output report (Step 6-INTENT)
 - [x] INTENT-04 satisfied: --just-security runs security-only review
 - [x] Normal review mode (no flags) unchanged
@@ -115,7 +115,7 @@ All requirements from 38-03-PLAN.md implemented:
 
 **Verified Claims:**
 - [x] `commands/review.md` modified with Step 0.5, Step 1 branch, Step 6-INTENT
-- [x] `skills/review-panel/SKILL.md` modified with Section 1.2, Step 2.5
+- [x] `skills/review-panel/SKILL.md` modified with Section 1.2, Step 2.7
 - [x] Commit `d93aca3`: Intent detection in review command
 - [x] Commit `7bd9bf8`: Intent filtering in review panel
 - [x] Commit `6246f6d`: Security-only output in review command
