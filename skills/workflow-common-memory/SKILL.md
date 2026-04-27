@@ -1,5 +1,5 @@
 ---
-name: legion:workflow-common-memory
+name: workflow-common-memory
 description: Optional memory conventions shared across commands
 triggers: [memory, outcomes, preferences, learning]
 token_cost: low

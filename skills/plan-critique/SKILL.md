@@ -1,5 +1,5 @@
 ---
-name: legion:plan-critique
+name: plan-critique
 description: Pre-mortem analysis and assumption hunting for stress-testing plans before execution
 triggers: [critique, pre-mortem, assumption, risk, review-plan]
 token_cost: medium

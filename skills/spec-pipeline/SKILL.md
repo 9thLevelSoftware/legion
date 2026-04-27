@@ -1,5 +1,5 @@
 ---
-name: legion:spec-pipeline
+name: spec-pipeline
 description: Pre-coding specification pipeline that produces structured spec documents through 5 stages
 triggers: [spec, specification, requirements, gather, research, pre-coding]
 token_cost: high

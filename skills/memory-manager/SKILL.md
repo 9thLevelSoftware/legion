@@ -274,7 +274,7 @@ Step 2: Read and parse all outcomes
   - If task_types empty: use all records
 
 Step 3: Apply recency decay to each record
-  - Same formula as Section 5:
+  - Same formula as Section 4 Step 4:
     days_old <= 7: 1.0, <= 30: 0.7, <= 90: 0.4, > 90: 0.1
   - Exclude records where decay_score < 0.2
 
@@ -579,7 +579,7 @@ Step 3: Filter by query_tags
   - If not provided: return all records
 
 Step 4: Apply recency scoring
-  - Same decay formula as OUTCOMES.md (Section 5):
+  - Same decay formula as OUTCOMES.md (Section 4 Step 4):
     days_old <= 7: 1.0, <= 30: 0.7, <= 90: 0.4, > 90: 0.1
   - No importance weight (all patterns are inherently high-value)
   - Sort by recency_weight descending
@@ -1047,7 +1047,7 @@ Step 3: Apply filters
   - branch_filter: "all" (default), "current" (detect via git), or specific name
 
 Step 4: Apply recency scoring
-  - Same decay formula as OUTCOMES.md (Section 5):
+  - Same decay formula as OUTCOMES.md (Section 4 Step 4):
     days_old <= 7: 1.0, <= 30: 0.7, <= 90: 0.4, > 90: 0.1
   - Sort by recency_weight descending
 

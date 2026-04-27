@@ -1,5 +1,5 @@
 ---
-name: legion:questioning-flow
+name: questioning-flow
 description: Adaptive project initialization questioning that captures vision, requirements, and preferences
 triggers: [start, initialize, project, question, discovery, setup]
 token_cost: low

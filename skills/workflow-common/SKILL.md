@@ -1,5 +1,5 @@
 ---
-name: legion:workflow-common
+name: workflow-common
 description: DEPRECATED compatibility shim; workflow-common-core is canonical for all conventions referenced here
 triggers: [common, shared, paths, conventions, state, config]
 token_cost: medium

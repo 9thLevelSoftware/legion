@@ -1,5 +1,5 @@
 ---
-name: legion:workflow-common-core
+name: workflow-common-core
 description: Lean core conventions and path contracts used by all /legion: commands
 triggers: [common, core, paths, state, conventions]
 token_cost: low

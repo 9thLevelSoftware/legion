@@ -1,5 +1,5 @@
 ---
-name: legion:workflow-common-domains
+name: workflow-common-domains
 description: Optional cross-domain conventions for design/marketing/specialized workflows
 triggers: [design, marketing, domain, campaign, brief]
 token_cost: low

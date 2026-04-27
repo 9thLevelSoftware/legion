@@ -1,5 +1,5 @@
 ---
-name: legion:polymath-engine
+name: polymath-engine
 description: Execution engine for structured exploration workflows — research-first clarification with gap detection and decision support
 triggers: [explore, clarify, crystallize, pre-flight, alignment]
 token_cost: medium

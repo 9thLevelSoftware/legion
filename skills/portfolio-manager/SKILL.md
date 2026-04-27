@@ -1,5 +1,5 @@
 ---
-name: legion:portfolio-manager
+name: portfolio-manager
 description: Multi-project portfolio management — registry, state aggregation, dependencies, agent allocation
 triggers: [portfolio, project, multi-project, dashboard, cross-project]
 token_cost: medium

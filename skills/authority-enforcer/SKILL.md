@@ -1,5 +1,5 @@
 ---
-name: legion:authority-enforcer
+name: authority-enforcer
 description: Validates and enforces agent authority boundaries during wave execution and review panels
 triggers: [authority, boundary, domain, enforce, validate, filter]
 token_cost: low

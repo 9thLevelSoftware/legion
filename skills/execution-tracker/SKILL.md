@@ -1,5 +1,5 @@
 ---
-name: legion:execution-tracker
+name: execution-tracker
 description: Tracks execution progress with STATE.md updates, ROADMAP.md progress, and atomic git commits per plan
 triggers: [track, progress, execution, status, state]
 token_cost: low
