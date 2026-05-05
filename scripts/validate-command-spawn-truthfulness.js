@@ -8,8 +8,8 @@ const matter = require('gray-matter');
 const SPAWN_PATTERN = /\b(spawn|dispatch)\s+(the\s+)?(\w[\w-]*\s+)?(agent|polymath|specialist)\b|spawn agent:|Polymath takes over|takes over the conversation/i;
 
 // Literal Agent invocation patterns. Matches Agent({...}), Agent(...) with prompt,
-// or fenced code blocks containing Agent(.
-const AGENT_INVOCATION_PATTERN = /\bAgent\s*\(\s*[\{"']/;
+// fenced code blocks containing Agent(, or adapter-based dispatch (adapter.spawn_agent_*).
+const AGENT_INVOCATION_PATTERN = /\bAgent\s*\(\s*[\{"']|adapter\.spawn_agent/;
 
 function validateCommandFile(filePath) {
   let text;
