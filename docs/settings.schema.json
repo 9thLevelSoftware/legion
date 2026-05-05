@@ -21,7 +21,7 @@
         "planning_reasoning": {
           "type": "boolean",
           "default": false,
-          "deprecated": true,
+          "x-deprecated": true,
           "description": "DEPRECATED — see docs/audits/2026-04-16-legion-4-7/proposals/phase-d-deprecate-planning-reasoning.md. Slated for removal in v8.0."
         }
       },
