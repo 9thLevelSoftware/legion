@@ -54,7 +54,7 @@ function findPlanFiles(dir) {
     for (const e of entries) {
       const full = path.join(d, e.name);
       if (e.isDirectory()) walk(full);
-      else if (e.isFile() && /-PLAN\.md$|valid-.*\.md$|invalid-.*\.md$/.test(e.name)) out.push(full);
+      else if (e.isFile() && /^valid-.*\.md$|^invalid-.*\.md$|-PLAN\.md$/.test(e.name)) out.push(full);
     }
   }
   walk(dir);
@@ -77,7 +77,11 @@ function main() {
     console.error('Usage: node validate-plan-frontmatter.js <file-or-dir>');
     process.exit(2);
   }
-  const stat = fs.statSync(target);
+  let stat;
+  try { stat = fs.statSync(target); } catch (e) {
+    console.error(`Cannot stat target '${target}': ${e.message}`);
+    process.exit(2);
+  }
   if (stat.isDirectory()) {
     const r = validatePlanDir(target);
     if (r.invalidFiles.length === 0) {
@@ -88,7 +92,7 @@ function main() {
     for (const f of r.invalidFiles) {
       console.error(`  ${f.file}`);
       for (const err of f.errors) {
-        console.error(`    ${err.instancePath || '(root)'} ${err.keyword || ''} - ${err.message || ''}`);
+        console.error(`    ${err.instancePath || err.dataPath || '(root)'} ${err.keyword || ''} - ${err.message || ''}`);
       }
     }
     process.exit(1);
@@ -97,7 +101,7 @@ function main() {
     if (r.valid) { console.log(`OK: ${target}`); process.exit(0); }
     console.error(`FAIL: ${target}`);
     for (const err of r.errors) {
-      console.error(`  ${err.instancePath || '(root)'} ${err.keyword || ''} - ${err.message || ''}`);
+      console.error(`  ${err.instancePath || err.dataPath || '(root)'} ${err.keyword || ''} - ${err.message || ''}`);
     }
     process.exit(1);
   }
