@@ -4,6 +4,14 @@
   "description": "Schema for PLAN.md YAML frontmatter fields",
   "type": "object",
   "required": ["phase", "plan", "wave"],
+  "if": {
+    "properties": { "autonomous": { "const": true } },
+    "required": ["autonomous"]
+  },
+  "then": {},
+  "else": {
+    "required": ["agents"]
+  },
   "properties": {
     "phase": {
       "oneOf": [

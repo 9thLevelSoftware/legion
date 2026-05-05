@@ -5,7 +5,7 @@ const path = require('path');
 const matter = require('gray-matter');
 
 // Spawn-flavored language patterns.
-const SPAWN_PATTERN = /\b(spawn|dispatch)\s+(the\s+)?(\w[\w-]*\s+)?(agent|polymath|specialist)\b|spawn agent:|Polymath takes over|takes over the conversation/i;
+const SPAWN_PATTERN = /\b(spawn|dispatch)\b[^.!?\n]{0,80}\b(agent|polymath|specialist)\b|spawn agent:|Polymath takes over|takes over the conversation/i;
 
 // Literal Agent invocation patterns. Matches Agent({...}), Agent(...) with prompt,
 // fenced code blocks containing Agent(, or adapter-based dispatch (adapter.spawn_agent_*).
@@ -32,10 +32,14 @@ function validateCommandFile(filePath) {
   }
 
   if (declaredInline) {
-    // If inline-persona is declared AND body still uses spawn language, that's a contradiction.
+    // Inline-persona commands may still delegate to Agent() for sub-tasks (e.g., research).
+    // Only flag if spawn language is present WITHOUT a backing Agent() invocation.
+    if (hasAgentInvoke) {
+      return { valid: true, reason: 'inline-persona with delegated Agent() sub-task', file: filePath };
+    }
     return {
       valid: false,
-      reason: `Frontmatter declares mode: inline-persona but body contains spawn-flavored language. Rewrite body to inline-flavored prose.`,
+      reason: `Frontmatter declares mode: inline-persona but body contains spawn-flavored language without Agent() invocation. Rewrite body to inline-flavored prose or add Agent() call.`,
       file: filePath
     };
   }
