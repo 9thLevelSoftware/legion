@@ -335,7 +335,7 @@ agents:
     description: "App store optimization, mobile app marketing"
 
   # ============================================================================
-  # PRODUCT DIVISION (3 agents)
+  # PRODUCT DIVISION (4 agents)
   # ============================================================================
 
   product-sprint-prioritizer:
@@ -372,6 +372,21 @@ agents:
       - "industry-intelligence"
     deferred_by: ["*"]
     description: "Market intelligence and competitive analysis"
+
+  product-technical-writer:
+    name: "Technical Writer"
+    division: "product"
+    exclusive_domains:
+      - "api-documentation"
+      - "user-guides"
+      - "readme-generation"
+      - "developer-docs"
+      - "tutorials-and-examples"
+      - "release-notes"
+      - "documentation-clarity"
+      - "stale-doc-detection"
+    deferred_by: ["*"]
+    description: "Technical documentation, API docs, user guides, README generation, and developer-facing content"
 
   # ============================================================================
   # PROJECT MANAGEMENT DIVISION (5 agents)

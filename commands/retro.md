@@ -1,7 +1,7 @@
 ---
 name: legion:retro
 description: Run a structured retrospective on completed phases or milestones
-argument-hint: [--phase N] [--milestone M] [--dry-run]
+argument-hint: "[--phase N] [--milestone M] [--dry-run]"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 

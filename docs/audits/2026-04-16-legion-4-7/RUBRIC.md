@@ -1,6 +1,11 @@
 # RUBRIC.md — Legion v7.4.0 Audit Criteria
 
-**Version:** 1.0 (frozen 2026-04-16)
+**Version:** 1.1 (2026-05-04)
+
+## Changelog
+
+- **v1.1 (2026-05-04)**: Added CAT-11 (Mechanical Contract Drift). Mechanical re-score pass against all 64 already-audited files; existing 10 prose categories not revisited.
+- **v1.0 (2026-04-16)**: Initial rubric — CAT-1 through CAT-10 frozen.
 **Source spec:** docs/superpowers/specs/2026-04-16-legion-4-7-audit-design.md
 **Do not edit without bumping version AND flagging all files for re-scoring.**
 
@@ -99,6 +104,39 @@ Escalation boundaries not clearly stated.
 - **Severity range**: P1 (core execution skills), P2 (elsewhere)
 - **Example**: `If you encounter a problem, stop and tell the user.`
 - **Remediation pattern**: `If you encounter a decision outside your authority (see CLAUDE.md Authority Matrix), emit an <escalation> block per .planning/config/escalation-protocol.yaml with severity, type, decision, and context fields, then continue with other in-scope work.`
+
+### CAT-11: Mechanical Contract Drift
+
+A finding under CAT-11 exists when a file makes a claim that is mechanically falsifiable against a sibling artifact, and the claim is currently false.
+
+This category differs from CAT-1 through CAT-10: detection is by running a check, not by matching prose patterns.
+
+**Detection table:**
+
+| File class | Mechanical claim | Falsification check |
+|---|---|---|
+| `settings.json` | conforms to schema | Ajv against `docs/settings.schema.json` |
+| `docs/settings.schema.json` | every field is consumed somewhere | grep field name across `skills/`, `adapters/`, `commands/`, `tests/` |
+| `docs/schemas/plan-frontmatter.schema.json` | every required field is in phase-decomposer template | parse template frontmatter, diff against schema's `required` |
+| `skills/phase-decomposer/SKILL.md` (template section) | template emits valid frontmatter | extract template, validate against schema with Ajv |
+| `commands/*.md` | if "spawn agent" present, `Agent(` invoked OR `mode: inline-persona` declared | regex + frontmatter parse |
+| `commands/*.md` `<execution_context>` | every listed path exists | filesystem check |
+| `commands/*.md` | command appears in `workflow-common-core` canonical map | parse map, diff command list |
+
+**Severity rubric:**
+
+- **P0:** invalid contract that causes runtime failure on common path (e.g., bad PLAN.md crashes wave-executor; explore.md fails to dispatch Polymath).
+- **P1:** invalid contract that causes silent wrong behavior (e.g., schema accepts garbage because `additionalProperties: true`).
+- **P2:** drift that is currently survivable due to forgiving consumers (e.g., consumer reads a field with a fallback).
+- **P3:** documentation-level drift only.
+
+**Re-scoring policy:**
+
+When CAT-11 is added mid-audit, all already-audited files get a CAT-11-only pass — not a full re-audit. The pass is mechanical: run the checks above, record findings. Files with zero CAT-11 hits get a one-line note in their findings file. Files with CAT-11 hits get appended findings (LEGION-47-NNN ID continues from current max). Existing 10-category findings are NOT revisited.
+
+**Overlap policy:**
+
+When a CAT-11 finding overlaps an existing CAT-N finding (e.g., a missing skill load is both CAT-6 implicit precondition and CAT-11 missing-loader), both findings stay. Different rubric lenses, not duplicates.
 
 ---
 

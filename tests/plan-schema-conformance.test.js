@@ -10,130 +10,30 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const matter = require('gray-matter');
 
 const ROOT = path.resolve(__dirname, '..');
 const FIXTURES = path.join(__dirname, 'fixtures');
 const PHASE1_DIR = path.join(ROOT, '.planning', 'phases', '01-plan-schema-hardening');
 
-// --- YAML frontmatter parser (line-by-line, no dependencies) ---
+// --- YAML frontmatter parser (gray-matter) ---
 
 function parsePlanFrontmatter(filePath) {
   const text = fs.readFileSync(filePath, 'utf8');
-  const lines = text.split(/\r?\n/);
-
-  // Find frontmatter between --- delimiters
-  let start = -1;
-  let end = -1;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].trim() === '---') {
-      if (start === -1) { start = i; }
-      else { end = i; break; }
-    }
-  }
-  if (start === -1 || end === -1) {
+  if (!text.startsWith('---')) {
     throw new Error(`No YAML frontmatter found in ${filePath}`);
   }
-
-  const fm = {};
-  let currentKey = null;
-  let currentArray = null;
-  let inNestedArray = false; // inside array-of-objects (expected_artifacts, must_haves.artifacts)
-  let nestedItems = [];
-  let currentItem = null;
-
-  for (let i = start + 1; i < end; i++) {
-    const line = lines[i];
-    if (line.trim() === '' || line.trim().startsWith('#')) continue;
-
-    // Top-level key: value (no leading spaces)
-    const topMatch = line.match(/^([a-z_]+):\s*(.*)/);
-    if (topMatch && !line.startsWith(' ')) {
-      // Flush any pending nested array
-      if (inNestedArray && currentKey) {
-        if (currentItem) nestedItems.push(currentItem);
-        fm[currentKey] = nestedItems;
-        inNestedArray = false;
-        nestedItems = [];
-        currentItem = null;
-      } else if (currentArray && currentKey) {
-        fm[currentKey] = currentArray;
-        currentArray = null;
-      }
-
-      currentKey = topMatch[1];
-      const val = topMatch[2].trim();
-
-      if (val === '' || val === '[]') {
-        // Could be a scalar with empty value, an empty array, or start of array/object
-        if (val === '[]') {
-          fm[currentKey] = [];
-          currentKey = null;
-        }
-        // else wait for indented lines
-      } else if (val === 'true') {
-        fm[currentKey] = true; currentKey = null;
-      } else if (val === 'false') {
-        fm[currentKey] = false; currentKey = null;
-      } else if (/^\d+$/.test(val)) {
-        fm[currentKey] = parseInt(val, 10); currentKey = null;
-      } else if (val.startsWith('[') && val.endsWith(']')) {
-        // Inline array like [a, b]
-        const inner = val.slice(1, -1).trim();
-        fm[currentKey] = inner ? inner.split(',').map(s => s.trim().replace(/^"|"$/g, '')) : [];
-        currentKey = null;
-      } else {
-        fm[currentKey] = val.replace(/^"|"$/g, '');
-        currentKey = null;
-      }
-      continue;
-    }
-
-    if (!currentKey) continue;
-
-    // Indented content belongs to currentKey
-    const trimmed = line.trim();
-
-    // Array item starting with "- path:" signals array-of-objects
-    if (trimmed.match(/^- path:\s*/)) {
-      if (!inNestedArray) {
-        inNestedArray = true;
-        nestedItems = [];
-      }
-      if (currentItem) nestedItems.push(currentItem);
-      currentItem = { path: trimmed.replace(/^- path:\s*/, '').replace(/^"|"$/g, '') };
-      continue;
-    }
-
-    // Properties of current nested object (indented under - path:)
-    if (inNestedArray && currentItem && trimmed.match(/^[a-z_]+:\s*/)) {
-      const propMatch = trimmed.match(/^([a-z_]+):\s*(.*)/);
-      if (propMatch) {
-        let val = propMatch[2].trim().replace(/^"|"$/g, '');
-        if (val === 'true') val = true;
-        else if (val === 'false') val = false;
-        else if (/^\d+$/.test(val)) val = parseInt(val, 10);
-        currentItem[propMatch[1]] = val;
-      }
-      continue;
-    }
-
-    // Simple array item: "  - value"
-    if (trimmed.startsWith('- ')) {
-      if (!currentArray) currentArray = [];
-      currentArray.push(trimmed.slice(2).replace(/^"|"$/g, ''));
-      continue;
-    }
+  const parsed = matter(text);
+  if (Object.keys(parsed.data).length === 0) {
+    throw new Error(`No YAML frontmatter found in ${filePath}`);
   }
+  return parsed.data;
+}
 
-  // Flush trailing
-  if (inNestedArray && currentKey) {
-    if (currentItem) nestedItems.push(currentItem);
-    fm[currentKey] = nestedItems;
-  } else if (currentArray && currentKey) {
-    fm[currentKey] = currentArray;
-  }
-
-  return fm;
+function listPlanFiles(dir) {
+  return fs.readdirSync(dir)
+    .filter(f => /^.*-PLAN\.md$/.test(f))
+    .map(f => path.join(dir, f));
 }
 
 // --- Validation functions ---
@@ -363,5 +263,17 @@ describe('Plan Schema Conformance (v6.0)', () => {
           `${planFile}: files_modified/files_forbidden overlap: ${overlap.overlapping.join(', ')}`);
       });
     }
+  });
+
+  describe('agents field convention', () => {
+    test('plan frontmatter has plural agents array (not singular agent)', () => {
+      const planFiles = listPlanFiles(PHASE1_DIR);
+      for (const f of planFiles) {
+        const fm = parsePlanFrontmatter(f);
+        assert.equal('agent' in fm, false, `${f} uses legacy singular 'agent' field`);
+        assert.ok(Array.isArray(fm.agents), `${f} missing 'agents' array`);
+        assert.ok(fm.agents.length >= 1, `${f} has empty agents array`);
+      }
+    });
   });
 });

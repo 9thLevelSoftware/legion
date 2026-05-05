@@ -124,6 +124,7 @@ Use resolved path for all personality reads:
 | `/legion:milestone` | workflow-common-core, milestone-tracker, execution-tracker | github-sync, workflow-common-github |
 | `/legion:agent` | workflow-common-core, agent-registry, agent-creator | workflow-common-domains |
 | `/legion:advise` | workflow-common-core, agent-registry | workflow-common-domains |
+| `/legion:explore` | workflow-common-core, questioning-flow, polymath-engine | codebase-mapper |
 | `/legion:board`     | workflow-common-core, agent-registry, board-of-directors, cli-dispatch | workflow-common-memory, workflow-common-github |
 | `/legion:retro` | workflow-common-core, memory-manager, execution-tracker | workflow-common-memory |
 | `/legion:ship` | workflow-common-core, ship-pipeline, execution-tracker | github-sync, workflow-common-github |

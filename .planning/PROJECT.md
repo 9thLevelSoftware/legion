@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A multi-CLI plugin for orchestrating 53 AI specialist personalities as coordinated teams. v6.0 transforms Legion from a working orchestration protocol into a disciplined, observable, and smarter orchestration protocol — better planning constraints, richer agent selection, advanced exploration modes, and explicit human control.
+A multi-CLI plugin for orchestrating 48 AI specialist personalities as coordinated teams. v6.0 transforms Legion from a working orchestration protocol into a disciplined, observable, and smarter orchestration protocol — better planning constraints, richer agent selection, advanced exploration modes, and explicit human control.
 
 ## Core Value
 
@@ -87,7 +87,7 @@ Make Legion's prompt-based orchestration more disciplined by adding constraints 
 
 ## Constraints
 
-- **No custom tooling**: Pure markdown/skills architecture — no new JS executables beyond recommendation engine updates
+- **Runtime stays markdown-native**: Agent personalities, commands, skills, and per-CLI adapters remain pure markdown. Dev-only tooling (test/CI scripts, schema validators, release-check helpers) is permitted because it never ships into a runtime prompt. The runtime never imports new JS dependencies.
 - **Human-readable state**: All planning files remain markdown
 - **Personality-first**: Agent .md files remain the source of truth
 - **ROI-bounded**: Follow the FEEDBACK-ROI-ANALYSIS.md "worth doing" boundaries for each proposal

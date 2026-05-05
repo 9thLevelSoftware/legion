@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../docs/settings.schema.json",
+  "control_mode": "guarded",
+  "models": {
+    "planning": "adapter_default",
+    "execution": "adapter_default",
+    "check": "adapter_default",
+    "planning_reasoning": false
+  },
+  "planning": {
+    "max_tasks_per_plan": 3,
+    "architecture_proposals_default": "prompt",
+    "spec_pipeline_default": "prompt"
+  },
+  "execution": {
+    "auto_commit": true,
+    "commit_prefix": "legion",
+    "agent_personality_verbosity": "full",
+    "use_worktrees": false
+  },
+  "review": {
+    "default_mode": "panel",
+    "max_cycles": 3,
+    "evaluator_depth": "multi-pass",
+    "coverage_thresholds": {
+      "overall": 70,
+      "business_logic": 90,
+      "api_routes": 80
+    }
+  },
+  "board": {
+    "default_size": 5,
+    "min_size": 3,
+    "discussion_rounds": 2,
+    "assessment_timeout_ms": 300000,
+    "persist_artifacts": true
+  },
+  "dispatch": {
+    "enabled": true,
+    "fallback_to_internal": true,
+    "timeout_ms": 300000,
+    "max_retries": 1
+  },
+  "memory": {
+    "enabled": true,
+    "project_scoped_only": true,
+    "auto_prune": false,
+    "prune_threshold": 200,
+    "prune_age_days": 90
+  },
+  "integrations": {
+    "github": "prompt"
+  }
+}

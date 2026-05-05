@@ -3,66 +3,126 @@
   "title": "Legion Plan Frontmatter",
   "description": "Schema for PLAN.md YAML frontmatter fields",
   "type": "object",
-  "required": ["phase", "plan", "wave", "agent"],
+  "required": ["phase", "plan", "wave"],
+  "if": {
+    "properties": { "autonomous": { "const": true } },
+    "required": ["autonomous"]
+  },
+  "then": {},
+  "else": {
+    "required": ["agents"]
+  },
   "properties": {
     "phase": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Phase number this plan belongs to"
+      "oneOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "string", "pattern": "^\\d{2}-[a-z0-9-]+$" }
+      ],
+      "description": "Phase number (legacy) or NN-slug form (current)"
     },
-    "plan": {
-      "type": "string",
-      "pattern": "^\\d{2}-\\d{2}$",
-      "description": "Plan ID in NN-PP format (e.g., 04-01)"
+    "plan": { "type": "string", "pattern": "^\\d{2}-\\d{2}$" },
+    "wave": { "type": "integer", "minimum": 0 },
+    "agents": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Agent IDs from registry. First entry is primary executor; subsequent entries are co-executors."
     },
-    "wave": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Execution wave number"
-    },
-    "agent": {
-      "type": "string",
-      "description": "Agent ID from the registry (e.g., engineering-backend-architect)"
-    },
-    "autonomous": {
-      "type": "boolean",
-      "default": false,
-      "description": "True if plan runs without agent personality injection"
-    },
+    "autonomous": { "type": "boolean", "default": false },
     "depends_on": {
       "type": "array",
-      "items": { "type": "string", "pattern": "^\\d{2}-\\d{2}$" },
-      "description": "Plan IDs that must complete before this plan"
+      "items": { "type": "string", "pattern": "^\\d{2}-\\d{2}$" }
     },
-    "files_modified": {
+    "files_modified": { "type": "array", "items": { "type": "string" } },
+    "files_forbidden": { "type": "array", "items": { "type": "string" } },
+    "sequential_files": { "type": "array", "items": { "type": "string" } },
+    "requirements": { "type": "array", "items": { "type": "string" } },
+    "requirement": { "type": "string", "description": "Singular requirement reference (legacy)" },
+    "user_setup": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "File paths this plan creates or modifies"
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": { "type": "string" },
+          "options": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "description": "Pre-execution user setup steps for human-gated tasks"
     },
-    "files_forbidden": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "File paths this plan must NOT modify"
-    },
-    "sequential_files": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Files requiring single-agent sequential access"
-    },
-    "requirements": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Requirement IDs covered by this plan"
+    "tasks": {
+      "type": "integer",
+      "description": "Number of tasks in this plan (informational)"
     },
     "expected_artifacts": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Expected output file paths"
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": { "type": "string" },
+          "provides": { "type": "string" },
+          "required": { "type": "boolean", "default": true }
+        },
+        "additionalProperties": false
+      }
     },
-    "verification_commands": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Bash commands proving plan success"
+    "verification_commands": { "type": "array", "items": { "type": "string" } },
+    "must_haves": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "truths": { "type": "array", "items": { "type": "string" } },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "provides": { "type": "string" },
+                  "min_lines": { "type": "integer" },
+                  "min_tests": { "type": "integer" },
+                  "contains": {
+                    "oneOf": [
+                      { "type": "string" },
+                      { "type": "array", "items": { "type": "string" } }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "key_links": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["from"],
+                "properties": {
+                  "from": { "type": "string" },
+                  "to": { "type": "string" },
+                  "via": { "type": "string" },
+                  "pattern": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      }
+    },
+    "type": { "type": "string" },
+    "title": { "type": "string" },
+    "recommendation": {
+      "type": "object",
+      "description": "Optional sidecar of recommendation engine output. Reserved; not required for v6.x/v7.x plans."
     }
   },
   "additionalProperties": false

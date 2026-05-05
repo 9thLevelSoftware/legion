@@ -1,6 +1,6 @@
 {
   "name": "legion",
-  "version": "7.3.3",
+  "version": "7.4.0",
   "description": "Official Codex plugin bundle for Legion's multi-agent planning, execution, review, and shipping workflows.",
   "author": {
     "name": "9thLevelSoftware",

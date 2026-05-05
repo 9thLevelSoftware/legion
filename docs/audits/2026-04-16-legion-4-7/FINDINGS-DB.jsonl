@@ -400,3 +400,7 @@
 {"id": "LEGION-47-478", "file": "adapters/windsurf.md", "severity": "P2", "category": "CAT-6", "title": "Model tiers fully user-configured", "status": "open"}
 {"id": "LEGION-47-479", "file": "adapters/windsurf.md", "severity": "P2", "category": "CAT-6", "title": "Global config limited to workspace installs only", "status": "open"}
 {"id": "LEGION-47-480", "file": "adapters/windsurf.md", "severity": "P2", "category": "CAT-9", "title": "Missing lint_commands in conformance metadata", "status": "open"}
+{"id":"LEGION-47-481","file":"docs/schemas/plan-frontmatter.schema.json","category":"CAT-11","severity":"P1","confirmed":true,"title":"Schema required singular agent; template emits plural agents","status":"resolved","rubric_version":"1.1"}
+{"id":"LEGION-47-482","file":"docs/settings.schema.json","category":"CAT-11","severity":"P1","confirmed":true,"title":"Schema additionalProperties:false rejected valid settings fields","status":"resolved","rubric_version":"1.1"}
+{"id":"LEGION-47-483","file":"commands/explore.md","category":"CAT-11","severity":"P0","confirmed":true,"title":"Described spawning Polymath but no Agent() invocation or inline-persona mode","status":"resolved","rubric_version":"1.1"}
+{"id":"LEGION-47-484","file":"skills/phase-decomposer/SKILL.md","category":"CAT-11","severity":"P2","confirmed":true,"title":"Template emits frontmatter not aligned with schema (singular agent, flat artifacts)","status":"resolved","rubric_version":"1.1"}

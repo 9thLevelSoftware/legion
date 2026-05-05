@@ -4,6 +4,10 @@
 const fs = require('fs');
 const path = require('path');
 
+const { validateSettings } = require('./validate-settings.js');
+const { validatePlanDir } = require('./validate-plan-frontmatter.js');
+const { validateCommandsDir } = require('./validate-command-spawn-truthfulness.js');
+
 const ROOT = path.resolve(__dirname, '..');
 const ERRORS = [];
 const WARNINGS = [];
@@ -228,6 +232,37 @@ function checkContextBudgets() {
   }
 }
 
+function checkSettingsSchema() {
+  const settingsPath = path.join(ROOT, 'settings.json');
+  const result = validateSettings(settingsPath);
+  if (!result.valid) {
+    const errSummary = result.errors.map((e) => {
+      const loc = e.instancePath || e.dataPath || '(root)';
+      return `${loc} ${e.keyword || ''} - ${e.message || JSON.stringify(e)}`;
+    }).join('; ');
+    fail(`settings.json does not validate against schema: ${errSummary}`);
+  }
+}
+
+function checkPlanFrontmatter() {
+  const planDir = path.join(ROOT, '.planning', 'phases');
+  if (!fs.existsSync(planDir)) return;
+  const result = validatePlanDir(planDir);
+  if (result.invalidFiles.length > 0) {
+    const names = result.invalidFiles.map((f) => path.basename(f.file)).join(', ');
+    fail(`plan frontmatter: ${result.invalidFiles.length} of ${result.totalFiles} files invalid (${names})`);
+  }
+}
+
+function checkCommandSpawnTruthfulness() {
+  const commandsDir = path.join(ROOT, 'commands');
+  const result = validateCommandsDir(commandsDir);
+  if (result.invalidFiles.length > 0) {
+    const names = result.invalidFiles.map((f) => path.basename(f.file)).join(', ');
+    fail(`command spawn-truthfulness: ${result.invalidFiles.length} of ${result.totalFiles} commands invalid (${names})`);
+  }
+}
+
 function main() {
   checkVersionSync();
   checkCodexPluginVersionSync();
@@ -235,6 +270,9 @@ function main() {
   checkRuntimeSupportTable();
   checkCommandSkillMapping();
   checkContextBudgets();
+  checkSettingsSchema();
+  checkPlanFrontmatter();
+  checkCommandSpawnTruthfulness();
 
   if (TELEMETRY.length > 0) {
     console.log('\nContext Budget Telemetry:');
