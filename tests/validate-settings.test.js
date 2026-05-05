@@ -22,7 +22,7 @@ describe('validate-settings', () => {
   test('invalid-extra-field fails with additionalProperties error', () => {
     const result = validateSettings(path.join(FIXTURES, 'invalid-extra-field.json'));
     assert.equal(result.valid, false);
-    assert.ok(result.errors.some(e => /additional/i.test(e.keyword) || /additional/i.test(e.message || '')));
+    assert.ok(result.errors.some(e => e.keyword === 'additionalProperties'));
   });
 
   test('invalid-missing-required fails with required error', () => {

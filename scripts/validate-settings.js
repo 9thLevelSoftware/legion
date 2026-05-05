@@ -29,7 +29,12 @@ function validateSettings(settingsPath) {
   }
 
   const ajv = new Ajv({ allErrors: true, strict: false });
-  const validate = ajv.compile(schema);
+  let validate;
+  try {
+    validate = ajv.compile(schema);
+  } catch (e) {
+    return { valid: false, errors: [{ message: `Schema failed to compile: ${e.message}` }] };
+  }
   const valid = validate(data);
   return { valid, errors: validate.errors || [] };
 }
