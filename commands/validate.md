@@ -92,14 +92,15 @@ skills/agent-registry/SKILL.md
      a. Check: CONTEXT.md exists.
      b. For each PLAN-*.md file:
         - Check: File has YAML frontmatter between `---` delimiters.
-        - Check: Frontmatter contains `phase`, `plan`, `wave`, and `agent` fields.
-        - Check: `agent` field value is a valid agent ID (exists in the agent catalog via agent-registry).
+        - Check: Frontmatter contains `phase`, `plan`, `wave`, and `agents` fields.
+        - Check: `agents` field is a non-empty array. `agents[0]` is the primary executor; any subsequent entries are co-executors.
+        - Check: Every entry in the `agents` array is a valid agent ID (exists in the agent catalog via agent-registry).
         - Check: `wave` is a positive integer.
      c. For plans with "Complete" status: check that a corresponding SUMMARY-*.md exists.
    - Scoring:
      - Missing CONTEXT.md → WARN
      - Plan missing frontmatter or required fields → FAIL
-     - Agent ID not found in catalog → FAIL (record which agent ID and which plan file)
+     - Any agent ID in the `agents` array not found in catalog → FAIL (record which agent ID and which plan file)
      - Missing SUMMARY for completed plan → WARN
      - All checks pass → PASS
    - If no phase directories exist: PASS with details "No phase files to validate".
