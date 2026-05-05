@@ -3,7 +3,7 @@
   "title": "Legion Plan Frontmatter",
   "description": "Schema for PLAN.md YAML frontmatter fields",
   "type": "object",
-  "required": ["phase", "plan", "wave", "agents"],
+  "required": ["phase", "plan", "wave"],
   "properties": {
     "phase": {
       "oneOf": [
@@ -13,7 +13,7 @@
       "description": "Phase number (legacy) or NN-slug form (current)"
     },
     "plan": { "type": "string", "pattern": "^\\d{2}-\\d{2}$" },
-    "wave": { "type": "integer", "minimum": 1 },
+    "wave": { "type": "integer", "minimum": 0 },
     "agents": {
       "type": "array",
       "items": { "type": "string" },
@@ -29,6 +29,22 @@
     "files_forbidden": { "type": "array", "items": { "type": "string" } },
     "sequential_files": { "type": "array", "items": { "type": "string" } },
     "requirements": { "type": "array", "items": { "type": "string" } },
+    "requirement": { "type": "string", "description": "Singular requirement reference (legacy)" },
+    "user_setup": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "task": { "type": "string" },
+          "options": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "description": "Pre-execution user setup steps for human-gated tasks"
+    },
+    "tasks": {
+      "type": "integer",
+      "description": "Number of tasks in this plan (informational)"
+    },
     "expected_artifacts": {
       "type": "array",
       "items": {
@@ -48,8 +64,50 @@
       "additionalProperties": false,
       "properties": {
         "truths": { "type": "array", "items": { "type": "string" } },
-        "artifacts": { "type": "array", "items": { "type": "string" } },
-        "key_links": { "type": "array", "items": { "type": "string" } }
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "provides": { "type": "string" },
+                  "min_lines": { "type": "integer" },
+                  "min_tests": { "type": "integer" },
+                  "contains": {
+                    "oneOf": [
+                      { "type": "string" },
+                      { "type": "array", "items": { "type": "string" } }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "key_links": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["from"],
+                "properties": {
+                  "from": { "type": "string" },
+                  "to": { "type": "string" },
+                  "via": { "type": "string" },
+                  "pattern": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
       }
     },
     "type": { "type": "string" },

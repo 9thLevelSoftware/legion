@@ -50,7 +50,7 @@ describe('validate-plan-frontmatter', () => {
 
   // Live-state check skipped until Task 9 migration. Real plans currently
   // use legacy schema (agent singular, plan as integer, flat must_haves).
-  test.skip('all real .planning/phases/**/PLAN.md validate (enabled post-migration)', () => {
+  test('all real .planning/phases/**/PLAN.md validate (enabled post-migration)', () => {
     const phasesDir = path.join(ROOT, '.planning', 'phases');
     if (!fs.existsSync(phasesDir)) return;
     const r = validatePlanDir(phasesDir);
