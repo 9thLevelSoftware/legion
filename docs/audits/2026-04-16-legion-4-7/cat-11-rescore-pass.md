@@ -18,7 +18,7 @@
 | LEGION-47-481 | docs/schemas/plan-frontmatter.schema.json | P1 | Schema required singular `agent`; template emits plural `agents` | Resolved: Task 2 (schema rewrite) |
 | LEGION-47-482 | docs/settings.schema.json | P1 | Schema `additionalProperties: false` rejected valid settings fields | Resolved: Task 1 (schema expansion) |
 | LEGION-47-483 | commands/explore.md | P0 | Described spawning Polymath but no Agent() invocation or inline-persona mode | Resolved: Task 13 (inline-persona rewrite) |
-| LEGION-47-484 | skills/phase-decomposer/SKILL.md | P2 | Template emits frontmatter not aligned with schema (singular agent, flat artifacts) | Resolved: Task 9 (migration aligned plans) |
+| LEGION-47-484 | skills/phase-decomposer/SKILL.md | P2 | Template emits frontmatter not aligned with schema (singular agent, flat artifacts) | Resolved: Template Section 6 updated to v2 format (plural `agents`, structured `expected_artifacts`); Completion Gate field list corrected |
 
 ## Per-file CAT-11 verdicts
 

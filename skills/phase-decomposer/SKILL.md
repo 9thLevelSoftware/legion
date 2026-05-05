@@ -978,7 +978,7 @@ If a ROADMAP.md phase has no requirement IDs listed, or the IDs do not exist in 
 
 This skill completes when ALL conditions are met:
 1. `.planning/phases/{NN}/` directory exists for the target phase
-2. At least one plan file `NN-PP-{slug}.md` written to that directory, each with valid frontmatter (`phase`, `plan_id`, `agent`, `tasks`, `verification_commands`, `files_modified`)
+2. At least one plan file `NN-PP-{slug}.md` written to that directory, each with valid frontmatter (`phase`, `plan`, `wave`, `agents`, `expected_artifacts`, `verification_commands`, `files_modified`)
 3. Every plan has non-placeholder `verification_commands` that exit zero when the plan succeeds
 4. Plans are grouped into waves (`wave: 1`, `wave: 2`, ...); wave-level file-overlap detection has run and no unresolved overlaps remain
 5. User confirmation captured via `AskUserQuestion` (proceed / swap agent / adjust / cancel) with "proceed" recorded before any plan files are written
