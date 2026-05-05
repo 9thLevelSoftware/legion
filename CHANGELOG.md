@@ -5,6 +5,31 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased — contract cleanup]
+
+### Schema reconciliation
+- `docs/settings.schema.json`: added `dispatch` block, `models.planning_reasoning` (deprecated), `execution.use_worktrees` (experimental), and `memory` pruning fields. `settings.json` is unchanged and validates clean.
+- `docs/schemas/plan-frontmatter.schema.json`: replaced full schema. Plural `agents` array, structured `expected_artifacts` objects, `must_haves` block, `oneOf` `phase` form for legacy/current compatibility, optional `recommendation` reservation.
+
+### New executable validators (CI + soft-warn)
+- `scripts/validate-settings.js` — runs Ajv against settings; CI hard fail; bootstrap soft-warn via workflow-common-core.
+- `scripts/validate-plan-frontmatter.js` — validates each PLAN.md against the schema; CI hard fail; soft-warn after `/legion:plan` writes.
+- `scripts/validate-command-spawn-truthfulness.js` — CI-only check that every command containing spawn language either invokes `Agent(` or declares `mode: inline-persona`.
+
+### Plan migration
+- All `.planning/phases/**/PLAN.md` files migrated to v2 frontmatter shape via `scripts/migrate-plans-to-v2.js` (one-shot; removed in follow-up commit).
+
+### `/legion:explore` refactor
+- `commands/explore.md`: rewritten to inline-persona pattern. Frontmatter declares `mode: inline-persona`, `inline_persona: polymath`. Execution context loads `workflow-common-core`, `questioning-flow`, `polymath-engine`. No subagent spawn for the user-facing loop.
+- `skills/workflow-common-core/SKILL.md`: `/legion:explore` added to canonical command-to-skill map (was only present in the deprecated compat shim).
+
+### 4.7 audit
+- Rubric bumped to v1.1 with new category CAT-11 (Mechanical Contract Drift).
+- Mechanical re-score pass against the 64 already-audited files; new findings appended to FINDINGS-DB.jsonl.
+
+### devDependencies
+- Added `ajv@^8` and `gray-matter@^4`. Both are dev-only; runtime never imports them.
+
 ## [7.3.3] - 2026-04-17
 
 ### Fixed
