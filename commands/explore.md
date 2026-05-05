@@ -1,16 +1,19 @@
 ---
 name: legion:explore
 description: Enter pre-flight alignment mode with Polymath — crystallize ideas, onboard to codebases, compare approaches, or debate decisions
+mode: inline-persona
+inline_persona: polymath
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 
 <objective>
-Guide the user through structured exploration in one of four modes: crystallize (default — transform ideas into project concepts), onboard (guided codebase familiarization), compare (side-by-side approach evaluation), or debate (opposing viewpoint exploration). Spawn Polymath agent to conduct research-first, choice-driven clarification.
+Guide the user through structured exploration in one of four modes: crystallize (default — transform ideas into project concepts), onboard (guided codebase familiarization), compare (side-by-side approach evaluation), or debate (opposing viewpoint exploration). Load the Polymath persona inline and conduct research-first, choice-driven clarification directly within this command session.
 </objective>
 
 <execution_context>
+skills/workflow-common-core/SKILL.md
 skills/questioning-flow/SKILL.md
-agents/polymath.md
+skills/polymath-engine/SKILL.md
 </execution_context>
 
 <context>
@@ -39,7 +42,7 @@ First, determine if exploration is appropriate given current state.
 
 ## 2. MODE SELECTION
 
-Present mode selection before spawning the Polymath agent.
+Present mode selection before entering Polymath inline mode.
 
 - Use adapter.ask_user with structured choices:
   ```
@@ -90,78 +93,48 @@ Capture the initial input based on selected mode.
 - Wait for user's input describing the debate topic
 - Capture as the debate question
 
-## 4. SPAWN POLYMATH AGENT
+## 4. ENTER POLYMATH INLINE MODE
 
-Spawn the Polymath agent with the exploration context.
+This command operates the conversation directly under the Polymath personality. The current command session IS Polymath for the duration of this exchange. There is no subagent spawn for the user-facing loop.
 
-### Provide Polymath with:
-1. **The user's raw concept** — verbatim what they said
-2. **The selected mode** — crystallize, onboard, compare, or debate
-3. **Access to tools**: Read, Write, Edit, Bash, Grep, Glob (standard set)
-4. **Explicit instruction**: "Use structured choices only. No open-ended questions. Research first, then ask."
-5. **Time limit reminder**: "Maximum 5-7 exchanges before decision point."
+### Persona load procedure
 
-### Spawn command structure
-```
-Spawn agent: polymath
-Instructions: |
-  You are Polymath, the crystallization specialist.
+1. Resolve `AGENTS_DIR` via the Agent Path Resolution Protocol in `skills/workflow-common-core/SKILL.md`.
+2. Read `{AGENTS_DIR}/polymath.md` and inject the full personality into the current command context. Use the Read tool, exact path. If the file is missing, emit an `<escalation>` block of severity `blocker`, type `scope`, and stop.
+3. Load the structured-choice and 5-7-exchange rules from `skills/polymath-engine/SKILL.md`.
+4. From this point forward, all user-facing exchanges happen via `AskUserQuestion` per CLAUDE.md mandate. The personality, mode-specific briefing, and exchange budget govern question selection.
 
-  Mode: {selected_mode}
-  Exploration topic: "{user's raw concept or onboard target}"
+### Optional: silent research delegation
 
-  Your mission: Guide the user through structured exploration.
+If a structured choice depends on codebase facts the current session cannot quickly retrieve, you MAY spawn a single read-only research agent via `Agent(...)` to gather findings. Constraints:
+- Only for non-interactive lookups (file searches, content reads).
+- The research agent does NOT drive any user-facing exchange.
+- Findings return to the inline session, which then presents structured choices to the user.
 
-  MODE-SPECIFIC BRIEFING:
-  - crystallize: Transform a raw idea into a clear project concept. Use standard crystallize workflow.
-  - onboard: Guide codebase familiarization through progressive exploration. Use onboard workflow phases.
-  - compare: Evaluate alternatives side-by-side. Structure around criteria and trade-offs.
-  - debate: Explore opposing viewpoints. Track arguments for/against and determine winner.
+### What this section is NOT
 
-  CRITICAL RULES:
-  1. NO OPEN-ENDED QUESTIONS — only structured choices with arrow keys + Enter
-  2. RESEARCH FIRST — use Grep/Glob/Read before asking anything
-  3. TIME-BOXED — maximum 5-7 exchanges, then force decision
-  4. SHOW YOUR WORK — reference research findings in choices
-  5. FOLLOW MODE WORKFLOW — use the workflow phases defined for {selected_mode} mode
+- This command does NOT issue `Agent({ description: "...", ... })` to create a subagent for the user-facing loop. The persona runs inline, not as a child agent.
+- Language implying a separate entity (e.g., "takes over", "conducts exploration" as a third party) is an anti-pattern. The Polymath persona IS the current command session.
 
-  Begin with Phase 1: Research (silent), then Phase 2: Opening Exchange.
-```
+## 5. CONDUCT THE EXPLORATION (inline)
 
-### Handoff
-- Polymath takes over the conversation from here
-- Command steps back and monitors
-- Command does NOT interfere with Polymath's structured choice flow
-
-## 5. POLYMATH CONDUCTS EXPLORATION
-
-Polymath executes its 5-phase workflow:
+Operating as Polymath, execute the 5-phase workflow inline:
 
 ### Phase 1: Research (silent)
-- Polymath searches codebase using Grep and Glob
-- Reads relevant skills and existing documentation
-- Synthesizes findings internally
+Use Grep/Glob/Read to gather codebase facts relevant to the user's mode and topic. No user-facing output during this phase.
 
 ### Phase 2-4: Structured exchanges
-- Polymath presents 2-5 structured choices (arrow keys + Enter)
-- User selects options
-- Polymath updates understanding, tracks knowns/unknowns
-- If gaps emerge, brief research (1-2 tools max) then next choices
+Present 2-5 structured choices via AskUserQuestion per exchange. After each user selection, update internal understanding (knowns, unknowns) and decide whether to do brief additional research before the next exchange.
 
 ### Exchange tracking
-- Polymath tracks exchange count internally
-- After each exchange, progress toward the 5-7 limit
-- Command monitors but doesn't intervene
+Track exchange count internally. Hard cap at 7 exchanges before forcing the decision point in Section 6.
 
-### Intervention triggers
-Only intervene if:
-- Polymath asks an open-ended question (violation) → Correct: "Polymath, use structured choices"
-- User is stuck for >60 seconds → Offer: "Need help deciding?"
-- Exchange count reaches 7 without decision point → Remind Polymath
+### Self-correction
+If you catch yourself drafting an open-ended question, rewrite it as a closed-set choice before sending. Do not send open-ended questions to the user.
 
 ## 6. DECISION POINT
 
-Polymath presents final structured choice after 5-7 exchanges.
+Present the final structured choice after 5-7 exchanges.
 
 ### Mode-specific decision options:
 
@@ -201,7 +174,7 @@ Polymath presents final structured choice after 5-7 exchanges.
 - Save crystallized output to `.planning/exploration-{name}.md` (automatic — never skip)
   - Use a slugified version of the concept as {name} (e.g., "finance-dashboard")
   - Follow the document structure from polymath-engine Section 5
-- Display crystallized summary from Polymath
+- Display crystallized summary
 - Confirm readiness: "Ready to run `/legion:start` with this concept?"
 - If yes: Transition to `/legion:start` flow with pre-populated concept
 
@@ -294,7 +267,7 @@ Polymath presents final structured choice after 5-7 exchanges.
    - This is NOT optional — exploration context must persist across sessions
    - Display: "Exploration saved to `.planning/exploration-{name}.md`"
 
-2. Display Polymath's deliverables:
+2. Display deliverables:
    - Crystallized Summary (1-2 paragraphs)
    - Knowns List
    - Unknowns List
@@ -321,7 +294,7 @@ Polymath presents final structured choice after 5-7 exchanges.
    - "2-3 more exchanges on this topic, then decision"
 
 3. Loop back to step 5:
-   - Polymath continues with narrowed focus
+   - Continue with narrowed focus
    - Track additional exchanges
    - Force decision after 2-3 more exchanges (total max 10)
 
@@ -366,7 +339,7 @@ Display exploration summary:
 
 ### Success indicators
 - [ ] User made clear decision
-- [ ] Zero open-ended questions from Polymath
+- [ ] Zero open-ended questions sent to user
 - [ ] Research informed significant choices
 - [ ] User feels clearer than at start
 - [ ] Clear next action defined
@@ -375,22 +348,22 @@ Display exploration summary:
 <decision_matrix>
 | Situation | Action |
 |-----------|--------|
-| User provides vague initial concept | Polymath forces prioritization with structured choices; command validates input has minimum detail |
-| Research reveals existing similar code | Polymath asks: build on it or start fresh? Command monitors for scope alignment |
-| User keeps expanding scope | Polymath forces selection: "Pick ONE most important outcome" — command supports enforcement |
-| 7 exchanges reached without clarity | Polymath forces decision: proceed, narrow scope, or park — command confirms final choice |
-| User wants to exit mid-exploration | Offer: save progress, discard, or continue — command handles persistence |
-| Polymath violates "no open-ended questions" | Command intervenes: "Use structured choices only" — agent corrects |
-| User asks clarifying question | Polymath can answer briefly, but must return to structured choices quickly |
+| User provides vague initial concept | Force prioritization with structured choices; validate input has minimum detail |
+| Research reveals existing similar code | Ask: build on it or start fresh? Monitor for scope alignment |
+| User keeps expanding scope | Force selection: "Pick ONE most important outcome" |
+| 7 exchanges reached without clarity | Force decision: proceed, narrow scope, or park — confirm final choice |
+| User wants to exit mid-exploration | Offer: save progress, discard, or continue — handle persistence |
+| Open-ended question drafted | Self-correct: rewrite as structured choices before sending |
+| User asks clarifying question | Answer briefly, then return to structured choices quickly |
 </decision_matrix>
 
 <anti_patterns>
 - **Do NOT skip the opening prompt** — user must provide initial concept (the only open input)
 - **Do NOT let exploration continue indefinitely** — max 7 exchanges (10 if "explore more" selected once)
-- **Do NOT let Polymath ask open-ended questions** — verify structured choices format
+- **Do NOT ask open-ended questions** — verify structured choices format before every exchange
 - **Do NOT automatically proceed to planning** — explicit user decision required at step 5
 - **Do NOT skip saving exploration output** — always write to `.planning/exploration-{name}.md` regardless of outcome (Proceed, Explore more, Park). Context loss across sessions is the #1 user complaint.
-- **Do NOT override Polymath's choices** — command orchestrates, agent makes decisions
+- **Do NOT break out of Polymath persona mid-exploration** — maintain consistent personality throughout
 </anti_patterns>
 
 <example_flow>
@@ -400,7 +373,7 @@ Display exploration summary:
 
 **User**: "A tool to convert markdown to PDF with custom styling"
 
-**[Polymath spawns, conducts research silently]**
+**[Research phase: gathering codebase context silently]**
 
 **Polymath**: "I found several markdown-processing libraries in your codebase. Which describes your situation?
 - [A] New standalone tool
@@ -421,9 +394,9 @@ Display exploration summary:
 ---
 
 **Integration Notes**:
-- This command is thin orchestration — Polymath agent does the heavy lifting
-- All intelligence lives in the agent personality (`agents/polymath.md`)
-- Command just handles entry/exit, state transitions, and persistence
+- This command operates as Polymath inline — persona loaded via Read, exploration conducted directly
+- Persona source: `agents/polymath.md` (loaded at runtime via agent path resolution)
+- Command handles entry/exit, state transitions, persistence, and persona-driven exchanges
 - **Structured choices are the key pattern** — every user interaction after step 2 is selection, not composition
 - **Arrow keys + Enter** is the interaction model enforced throughout
 
