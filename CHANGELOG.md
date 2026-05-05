@@ -5,7 +5,7 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased — contract cleanup]
+## [7.4.0] - 2026-05-04
 
 ### Schema reconciliation
 - `docs/settings.schema.json`: added `dispatch` block, `models.planning_reasoning` (deprecated), `execution.use_worktrees` (experimental), and `memory` pruning fields. `settings.json` is unchanged and validates clean.
