@@ -51,5 +51,9 @@
     "opencode",
     "cursor"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "gray-matter": "^4.0.3"
+  }
 }
