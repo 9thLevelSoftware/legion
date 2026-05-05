@@ -17,7 +17,13 @@
       "properties": {
         "planning": { "type": "string" },
         "execution": { "type": "string" },
-        "check": { "type": "string" }
+        "check": { "type": "string" },
+        "planning_reasoning": {
+          "type": "boolean",
+          "default": false,
+          "deprecated": true,
+          "description": "DEPRECATED — see docs/audits/2026-04-16-legion-4-7/proposals/phase-d-deprecate-planning-reasoning.md. Slated for removal in v8.0."
+        }
       },
       "required": ["planning", "execution", "check"]
     },
@@ -37,7 +43,12 @@
       "properties": {
         "auto_commit": { "type": "boolean" },
         "commit_prefix": { "type": "string", "minLength": 1 },
-        "agent_personality_verbosity": { "type": "string", "enum": ["full", "condensed"] }
+        "agent_personality_verbosity": { "type": "string", "enum": ["full", "condensed"] },
+        "use_worktrees": {
+          "type": "boolean",
+          "default": false,
+          "description": "EXPERIMENTAL — opt-in worktree isolation per plan. See skills/wave-executor/SKILL.md for behavior. Defaults to false; flip only after running scripts/worktree-doctor.js (forthcoming, separate spec)."
+        }
       },
       "required": ["auto_commit", "commit_prefix", "agent_personality_verbosity"]
     },
@@ -92,7 +103,10 @@
       "additionalProperties": false,
       "properties": {
         "enabled": { "type": "boolean" },
-        "project_scoped_only": { "type": "boolean", "const": true }
+        "project_scoped_only": { "type": "boolean", "const": true },
+        "auto_prune": { "type": "boolean", "default": false },
+        "prune_threshold": { "type": "integer", "minimum": 1, "default": 200 },
+        "prune_age_days": { "type": "integer", "minimum": 1, "default": 90 }
       },
       "required": ["enabled", "project_scoped_only"]
     },
@@ -105,5 +119,5 @@
       "required": ["github"]
     }
   },
-  "required": ["models", "planning", "execution", "review", "memory", "integrations"]
+  "required": ["models", "planning", "execution", "review", "memory", "integrations", "dispatch"]
 }
