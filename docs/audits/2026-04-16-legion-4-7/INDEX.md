@@ -1,17 +1,17 @@
 # Audit Index — Legion v7.3.2 → v7.4.0
 
 **Audit started:** 2026-04-16
-**Rubric version:** 1.0
+**Rubric version:** 1.0 (CAT-11 added in v1.1)
 **Baseline tag:** audit-v47-baseline
 **Status:** in_progress (64 / 125 files audited)
 
 ## Summary by Severity
 
-- P0: 0 findings
-- P1: 17 findings
-- P2: 200 findings
+- P0: 1 findings
+- P1: 19 findings
+- P2: 201 findings
 - P3: 9 findings
-- **Total:** 226 findings
+- **Total:** 230 findings
 
 ## Summary by Category
 
@@ -27,6 +27,7 @@
 | CAT-8 | 33 | P2 |
 | CAT-9 | 9 | P2 |
 | CAT-10 | 12 | P2 |
+| CAT-11 | 4 | P0 |
 
 ## Files
 
