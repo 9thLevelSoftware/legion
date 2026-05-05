@@ -1,5 +1,5 @@
 ---
-name: legion:security-review
+name: security-review
 description: OWASP Top 10 and STRIDE threat modeling security review for code and architecture
 triggers: [security, owasp, threat-model, vulnerability, cso]
 token_cost: high

@@ -1,5 +1,5 @@
 ---
-name: legion:agent-creator
+name: agent-creator
 description: Guided agent personality creation with schema validation and registry integration
 triggers: [agent, create, custom, personality, new-agent]
 token_cost: medium

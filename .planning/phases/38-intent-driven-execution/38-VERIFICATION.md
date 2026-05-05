@@ -29,8 +29,8 @@ score: 14/14 must-haves verified
 | 10 | /legion:build --just-harden summons Testing + Security divisions | ✓ VERIFIED | build.md Step 4-ADHOC spawns ad_hoc team from harden template |
 | 11 | /legion:build --just-document generates docs without implementation | ✓ VERIFIED | build.md Step 0.5 + wave-executor Section 6 filter_plans mode |
 | 12 | /legion:build --skip-frontend drops UI tasks from wave plans | ✓ VERIFIED | wave-executor Section 6 filter predicates exclude frontend files/agents/tasks |
-| 13 | /legion:review --just-security runs security-only audit | ✓ VERIFIED | review.md Step 0.5 + Step 6-INTENT + review-panel Section 1.2 + Step 2.5 |
-| 14 | Review panel filters to security domain findings only | ✓ VERIFIED | review-panel.md Step 2.5 filters by security domains with authority enforcement |
+| 13 | /legion:review --just-security runs security-only audit | ✓ VERIFIED | review.md Step 0.5 + Step 6-INTENT + review-panel Section 1.2 + Step 2.7 |
+| 14 | Review panel filters to security domain findings only | ✓ VERIFIED | skills/review-panel/SKILL.md Step 2.7 filters by security domains with authority enforcement |
 
 **Score:** 14/14 truths verified
 
@@ -50,7 +50,7 @@ score: 14/14 must-haves verified
 | `commands/build.md` | Build command with intent support | ✓ EXISTS + SUBSTANTIVE | Step 0.5 INTENT DETECTION, Step 4-ADHOC, usage docs |
 | `commands/review.md` | Review command with --just-security | ✓ EXISTS + SUBSTANTIVE | Step 0.5 INTENT DETECTION, Step 6-INTENT, security-only mode |
 | `skills/wave-executor/SKILL.md` | Enhanced with plan filtering | ✓ EXISTS + SUBSTANTIVE | Section 6: INTENT-BASED PLAN FILTERING with filter predicates |
-| `skills/review-panel/SKILL.md` | Intent-based panel filtering | ✓ EXISTS + SUBSTANTIVE | Section 1.2 Intent-Based Panel Filtering + Step 2.5 INTENT FILTERING |
+| `skills/review-panel/SKILL.md` | Intent-based panel filtering | ✓ EXISTS + SUBSTANTIVE | Section 1.2 Intent-Based Panel Filtering + Step 2.7 INTENT FILTERING |
 
 **Artifacts:** 13/13 verified (all exist, substantive, and wired)
 
@@ -63,7 +63,7 @@ score: 14/14 must-haves verified
 | `commands/build.md` | `skills/intent-router/SKILL.md` | parseIntentFlags(), validateFlagCombinations() | ✓ WIRED | Line 150: parseIntentFlags($ARGUMENTS) call |
 | `commands/build.md` | `skills/wave-executor/SKILL.md` | executeWithIntent(), filterPlans() | ✓ WIRED | build.md references wave-executor Section 6 filtering |
 | `commands/review.md` | `skills/intent-router/SKILL.md` | parseIntentFlags(), validateFlagCombinations() | ✓ WIRED | Line 65: parseIntentFlags($ARGUMENTS) call |
-| `commands/review.md` | `skills/review-panel/SKILL.md` | composePanel(intent) with domain filtering | ✓ WIRED | review.md sets REVIEW_MODE; review-panel Section 1.2 + Step 2.5 consumes it |
+| `commands/review.md` | `skills/review-panel/SKILL.md` | composePanel(intent) with domain filtering | ✓ WIRED | review.md sets REVIEW_MODE; review-panel Section 1.2 + Step 2.7 consumes it |
 
 **Wiring:** 6/6 connections verified
 

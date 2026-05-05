@@ -1,5 +1,5 @@
 ---
-name: legion:agent-registry
+name: agent-registry
 description: Maps all 48 Legion agents by division, capability, and task type for intelligent team assembly
 triggers: [agent, recommend, team, catalog, assign, match]
 token_cost: low

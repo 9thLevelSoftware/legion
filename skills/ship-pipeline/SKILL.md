@@ -1,5 +1,5 @@
 ---
-name: legion:ship-pipeline
+name: ship-pipeline
 description: Pre-ship quality gates, deployment verification, and canary monitoring for the /legion:ship command
 triggers: [ship, deploy, release, pr, canary]
 token_cost: medium

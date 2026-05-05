@@ -1,9 +1,9 @@
 ---
-name: legion:memory-manager
-description: Cross-session memory — outcome tracking, pattern recall with decay, and graceful degradation for Legion workflows
-triggers: [memory, outcome, pattern, recall, learn]
+name: memory-manager
+description: "Stores and retrieves task outcomes and agent performance across sessions via .planning/memory/OUTCOMES.md, scores recalled entries by recency and importance, and degrades gracefully when memory files are absent. Use when the user references past sessions, asks to recall previous results, records lessons learned, or is working within a Legion multi-agent workflow."
+triggers: [memory, outcome, pattern, recall, learn, past sessions, previous results, remember, lessons learned, track outcomes]
 token_cost: medium
-summary: "Cross-session learning layer via OUTCOMES.md. Stores agent performance and task outcomes with importance scoring and time-based decay. Enhances agent recommendations and status briefings."
+summary: "Stores and retrieves task outcomes and agent performance across sessions. Scores recalled entries by recency and importance. Degrades gracefully when memory files are absent."
 ---
 
 # Memory Manager
@@ -274,7 +274,7 @@ Step 2: Read and parse all outcomes
   - If task_types empty: use all records
 
 Step 3: Apply recency decay to each record
-  - Same formula as Section 5:
+  - Same formula as Section 4 Step 4:
     days_old <= 7: 1.0, <= 30: 0.7, <= 90: 0.4, > 90: 0.1
   - Exclude records where decay_score < 0.2
 
@@ -336,36 +336,11 @@ Step 4: Return briefing data
 
 ## Section 5: Decay Rules
 
-Decay is the mechanism that ensures recent outcomes matter more than old ones. It is computed at recall time, never applied destructively.
+Decay is computed at recall time, never applied destructively. The formula is defined in Section 4, Step 4. Key rules:
 
-```
-Recency Weight Formula:
-  days_old = (current_date - record_date) in days
-
-  if days_old <= 7:   recency_weight = 1.0   (full signal)
-  if days_old <= 30:  recency_weight = 0.7   (recent)
-  if days_old <= 90:  recency_weight = 0.4   (relevant)
-  if days_old > 90:   recency_weight = 0.1   (historical)
-
-Decay Score:
-  decay_score = importance × recency_weight
-
-  Example: importance=4, 15 days old → 4 × 0.7 = 2.8
-  Example: importance=2, 60 days old → 2 × 0.4 = 0.8
-  Example: importance=5, 120 days old → 5 × 0.1 = 0.5
-
-Exclusion Threshold:
-  Records with decay_score < 0.2 are excluded from recall results.
-  This only affects importance=1 records older than 90 days (1 × 0.1 = 0.1 < 0.2).
-  All other combinations remain above threshold.
-
-No Auto-Deletion:
-  Records are NEVER deleted by decay. Decay only affects which records appear
-  in recall results. When pruning is invoked (manually via `/legion:learn --prune`
-  or automatically when `memory.auto_prune` is enabled), records are archived to
-  ARCHIVE.md — never deleted. Pruning preserves high-importance records
-  (importance 4-5) and current-phase records regardless of age.
-```
+- **Formula**: `decay_score = importance × recency_weight` (see Section 4 Step 4 for weight tiers)
+- **Exclusion**: Records with `decay_score < 0.2` are excluded from recall (only affects importance=1 records older than 90 days)
+- **No auto-deletion**: Decay only affects recall visibility. Pruning archives to ARCHIVE.md — never deletes. High-importance (4-5) and current-phase records are preserved regardless of age.
 
 ---
 
@@ -604,7 +579,7 @@ Step 3: Filter by query_tags
   - If not provided: return all records
 
 Step 4: Apply recency scoring
-  - Same decay formula as OUTCOMES.md (Section 5):
+  - Same decay formula as OUTCOMES.md (Section 4 Step 4):
     days_old <= 7: 1.0, <= 30: 0.7, <= 90: 0.4, > 90: 0.1
   - No importance weight (all patterns are inherently high-value)
   - Sort by recency_weight descending
@@ -1072,7 +1047,7 @@ Step 3: Apply filters
   - branch_filter: "all" (default), "current" (detect via git), or specific name
 
 Step 4: Apply recency scoring
-  - Same decay formula as OUTCOMES.md (Section 5):
+  - Same decay formula as OUTCOMES.md (Section 4 Step 4):
     days_old <= 7: 1.0, <= 30: 0.7, <= 90: 0.4, > 90: 0.1
   - Sort by recency_weight descending
 

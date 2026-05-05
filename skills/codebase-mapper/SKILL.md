@@ -1,9 +1,9 @@
 ---
-name: legion:codebase-mapper
-description: Brownfield codebase analysis — architecture mapping, framework detection, risk assessment, dependency graphs, test coverage, API surface, config/environment, pattern library, monorepo support, and CODEBASE.md generation
-triggers: [codebase, analyze, brownfield, architecture, map, existing]
+name: codebase-mapper
+description: "Analyzes an existing codebase to map architecture, detect frameworks, assess risks, graph dependencies, measure test coverage, catalog API surfaces, and generate a structured CODEBASE.md consumed by /legion:start, /plan, /build, /review, and /status. Use when the user asks to analyze an existing codebase, understand a legacy project, audit code architecture, onboard to a project, or generate a CODEBASE.md file."
+triggers: [codebase, analyze, brownfield, architecture, map, existing, analyze existing code, legacy code, code audit, understand project, onboard, map architecture]
 token_cost: high
-summary: "Comprehensive codebase analysis producing structured CODEBASE.md. Maps architecture, frameworks, patterns, risks, dependency graphs, test coverage, API surface, config/environment, and pattern library. Supports monorepo detection and standalone re-analysis. Consumed by /start, /plan, /build, /review, and /status."
+summary: "Analyzes existing codebases to produce structured CODEBASE.md. Maps architecture, frameworks, patterns, risks, dependency graphs, test coverage, API surface, and config/environment. Supports monorepo detection and standalone re-analysis."
 ---
 
 # Codebase Mapper
