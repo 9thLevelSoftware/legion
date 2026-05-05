@@ -1,7 +1,7 @@
 ---
 name: legion:quick
 description: Run a single ad-hoc task with intelligent agent selection
-argument-hint: [--fix] <task-description>
+argument-hint: "[--fix] <task-description>"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 

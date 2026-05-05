@@ -1,7 +1,7 @@
 ---
 name: legion:validate
 description: Validate .planning/ state file integrity, schema conformance, and cross-references
-argument-hint: [--fix] [--ci]
+argument-hint: "[--fix] [--ci]"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
 

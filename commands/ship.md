@@ -1,7 +1,7 @@
 ---
 name: legion:ship
 description: Pre-ship checklist, PR creation, deployment verification, and canary monitoring
-argument-hint: [--phase N] [--canary] [--dry-run]
+argument-hint: "[--phase N] [--canary] [--dry-run]"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 

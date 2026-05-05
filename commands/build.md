@@ -1,7 +1,7 @@
 ---
 name: legion:build
 description: Execute current phase plans with parallel agent teams
-argument-hint: [--phase N] [--dry-run]
+argument-hint: "[--phase N] [--dry-run]"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage, AskUserQuestion]
 ---
 
