@@ -2,7 +2,7 @@
 SNAPSHOT — pre-refactor of commands/explore.md
 Date: 2026-05-04
 Reason: spawn-truthfulness defect (CAT-3 + CAT-6 + CAT-11)
-Refactor commit: <to be filled in by Task 13>
+Refactor commit: f45cf4fbe020156c0b2bc931b274a7a5737c766d
 Original file lives at: commands/explore.md
 -->
 
