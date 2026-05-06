@@ -549,7 +549,7 @@ v7.1.0 completes the core workflow loop with three new commands and tightens the
 
 ### Agent Consolidation (53→49→48)
 
-Four agent merges in v7.1.0 reduced the roster from 53 to 49. v7.2.0 merged one more, bringing the total to 48 agents across 9 divisions. v7.4.0 added the Code Polisher specialist (see below), bringing the current total to 49.
+Four agent merges in v7.1.0 reduced the roster from 53 to 49. v7.2.0 merged one more, bringing the total to 48 agents across 9 divisions. v7.5.0 added the Code Polisher specialist (see below), bringing the current total to 49.
 
 ## v7.2.0 Agent Depth, Security & Infrastructure
 
@@ -619,9 +619,9 @@ Based on [Vercel's Context Engineering research](https://vercel.com/blog/agents-
 
 A generator script (`scripts/generate-knowledge-index.js`) rebuilds the index when agents or skills change. The `--patch` flag updates both AGENTS.md and CLAUDE.md in-place. The agent-creator skill calls this automatically after creating new agents.
 
-## v7.4.0 Code Polish ("Deslopping")
+## v7.5.0 Code Polish ("Deslopping")
 
-v7.4.0 adds automated code cleanup to the post-review pipeline and as a standalone command. The Code Polisher agent runs a structured 4-pass rubric that removes AI-generated slop — excessive comments, over-engineered patterns, inconsistent naming, and redundant abstractions — with safety rails that revert any file whose tests regress.
+v7.5.0 adds automated code cleanup to the post-review pipeline and as a standalone command. The Code Polisher agent runs a structured 4-pass rubric that removes AI-generated slop — excessive comments, over-engineered patterns, inconsistent naming, and redundant abstractions — with safety rails that revert any file whose tests regress.
 
 ### `/legion:polish`
 
@@ -649,7 +649,7 @@ Legion didn't invent its patterns from scratch. It cherry-picked the best ideas 
 
 #### The Agent Personality Foundation — [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)
 
-Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 4 Legion-native specializations, consolidated from the original 55 via 5 agent merges and 1 addition (Code Polisher, v7.4.0). These are not generic role labels — they are structured character sheets (current range 155-679 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
+Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 4 Legion-native specializations, consolidated from the original 55 via 5 agent merges and 1 addition (Code Polisher, v7.5.0). These are not generic role labels — they are structured character sheets (current range 155-679 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
 
 #### From [GSD (Get Shit Done)](https://github.com/gsd-build/get-shit-done)
 
