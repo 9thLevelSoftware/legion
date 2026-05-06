@@ -1,7 +1,7 @@
 ---
 name: legion:polish
 description: Clean and polish code for readability, consistency, and clarity
-argument-hint: [--phase N] [--scope=changed|dependents|directory] [--dry-run] [<target-path>]
+argument-hint: "[--phase N] [--scope=changed|dependents|directory] [--dry-run] [<target-path>]"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 

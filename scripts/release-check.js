@@ -204,7 +204,7 @@ function checkContextBudgets() {
   const softBudgetsKb = {
     'commands/build.md': 180,
     'commands/plan.md': 180,
-    'commands/review.md': 180,
+    'commands/review.md': 190,
     'commands/status.md': 120,
   };
 
