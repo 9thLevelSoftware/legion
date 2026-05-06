@@ -52,6 +52,17 @@
           "enum": ["single", "multi-pass"],
           "default": "multi-pass"
         },
+        "polish": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable post-review code polish step. When true, /legion:review runs a 4-pass cleanup after review passes."
+        },
+        "polish_scope": {
+          "type": "string",
+          "enum": ["changed", "dependents", "directory"],
+          "default": "dependents",
+          "description": "Scope for review-integrated polish: changed files only, changed + dependents (default), or full directory."
+        },
         "coverage_thresholds": {
           "type": "object",
           "additionalProperties": false,
