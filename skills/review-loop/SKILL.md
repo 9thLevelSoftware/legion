@@ -861,6 +861,53 @@ Step 5: Route to next action
 
 ---
 
+## Section 7.5: Post-Review Polish
+
+Optional code cleanup pass that runs after review passes. Invoked by `commands/review.md` Step c4. The full polish logic lives in `skills/code-polish/SKILL.md` — this section is a thin integration point.
+
+### Activation
+
+```
+Check settings.review.polish (default: true)
+If false: skip this section entirely, proceed to phase completion
+If true: proceed to dispatch
+```
+
+### Dispatch
+
+The review command (Step c4) handles all dispatch details:
+- Scope resolution (code-polish Section 1)
+- Convention detection (code-polish Section 2)
+- Agent personality loading (testing-code-polisher.md)
+- 4-pass rubric injection (code-polish Sections 3-6)
+- Safety rails (code-polish Section 7)
+- Artifact output (code-polish Section 8)
+
+This section documents the integration contract only.
+
+### Non-Blocking Guarantee
+
+Polish failures NEVER block phase completion. The review has already passed — the code is correct. Polish is about making correct code *clean*.
+
+Failure modes and their handling:
+- Agent spawn failure → log warning, skip polish, proceed
+- Agent timeout → log warning, skip polish, proceed
+- Safety check failure (tests break) → revert all changes, log in REVIEW.md, proceed
+- Partial safety failure (some files revert) → keep safe changes, log reverts, proceed
+
+### Artifact
+
+When polish succeeds, its summary is appended to {NN}-REVIEW.md under a "## Post-Review Polish" heading. This keeps the polish results co-located with the review results for the phase.
+
+### Settings
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `review.polish` | boolean | `true` | Enable/disable post-review polish step |
+| `review.polish_scope` | string | `"dependents"` | Scope override: `"changed"`, `"dependents"`, `"directory"` |
+
+---
+
 ## Section 8: Escalation
 
 What happens when the configured cycle limit is exhausted without resolving all blockers.
