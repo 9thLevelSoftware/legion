@@ -41,9 +41,9 @@ function listAgents() {
   return fs.readdirSync(AGENTS_DIR).filter((f) => f.endsWith('.md')).sort();
 }
 
-test('agent contract: 48 agents, minimum size, and required sections', () => {
+test('agent contract: 49 agents, minimum size, and required sections', () => {
   const files = listAgents();
-  assert.equal(files.length, 48, 'expected 48 built-in agent files');
+  assert.equal(files.length, 49, 'expected 49 built-in agent files');
 
   for (const file of files) {
     const fullPath = path.join(AGENTS_DIR, file);

@@ -32,10 +32,10 @@
 
 - 12 commands (`/legion:start`, `plan`, `build`, `review`, `status`, `quick`, `portfolio`, `milestone`, `agent`, `advise`, `explore`, `update`)
 - 25 skills with progressive disclosure metadata (triggers, token_cost, summary in frontmatter)
-- 48 agents across 9 divisions (including Polymath + security-engineer + technical-writer)
+- 49 agents across 9 divisions (including Polymath + security-engineer + technical-writer + code-polisher)
 - Agent registry gap analysis skill for roster coverage validation
 - Intent teams with validated agent mappings for harden/document/security-only
-- Authority matrix with domain ownership for 48 agents across 9 divisions
+- Authority matrix with domain ownership for 49 agents across 9 divisions
 - Two-wave execution pattern (Wave A + Wave B with gates)
 - Environment mapping with directory mappings and path enforcement
 - Plugin manifest at `.claude-plugin/plugin.json` — name: `legion`, version: `6.0.0`

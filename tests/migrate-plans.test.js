@@ -13,7 +13,8 @@ describe('migrate-plans-to-v2', () => {
     const before = fs.readFileSync(path.join(FIXTURES, 'before', 'sample-plan.md'), 'utf8');
     const expected = fs.readFileSync(path.join(FIXTURES, 'after', 'sample-plan.md'), 'utf8');
     const actual = migratePlanText(before);
-    assert.equal(actual.trim(), expected.trim());
+    // Normalize line endings — migration script outputs LF; fixtures may be CRLF on Windows
+    assert.equal(actual.trim().replace(/\r\n/g, '\n'), expected.trim().replace(/\r\n/g, '\n'));
   });
 
   test('plain integer plan field becomes NN-PP string', () => {
@@ -32,6 +33,7 @@ describe('migrate-plans-to-v2', () => {
   test('idempotent: running on already-migrated text yields same text', () => {
     const after = fs.readFileSync(path.join(FIXTURES, 'after', 'sample-plan.md'), 'utf8');
     const actual = migratePlanText(after);
-    assert.equal(actual.trim(), after.trim());
+    // Normalize line endings — migration script outputs LF; fixtures may be CRLF on Windows
+    assert.equal(actual.trim().replace(/\r\n/g, '\n'), after.trim().replace(/\r\n/g, '\n'));
   });
 });

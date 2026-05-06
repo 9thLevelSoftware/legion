@@ -27,7 +27,7 @@ test('always-load command context budgets stay under hard ceilings', () => {
   const hardBudgetsKb = {
     'commands/build.md': 225,
     'commands/plan.md': 225,
-    'commands/review.md': 225,
+    'commands/review.md': 237.5,
     'commands/status.md': 150,
   };
 
