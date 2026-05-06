@@ -5,6 +5,27 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.5.0] - 2026-05-06
+
+### Added
+- **`/legion:polish`** — Standalone command for ad-hoc code cleanup. Runs a structured 4-pass rubric (Comment Cleanup → Code Simplification → Readability Refactoring → Consistency Normalization) on target files with safety rails that revert any file whose tests regress. Supports `--scope=changed|dependents|directory`, `--dry-run`, `--phase N`, and target path arguments.
+- **`testing-code-polisher` agent (#49)** — New Testing-division specialist for code clarity, comment quality, naming conventions, structural simplification, and convention consistency. Includes `review_strengths` metadata for recommendation engine scoring.
+- **`code-polish` skill** — Reusable 4-pass polish engine consumed by both `/legion:polish` and the review pipeline integration. Features convention detection (CLAUDE.md > CODEBASE.md > code sampling), severity split (auto-apply vs. flag-for-review), and a 50-file scope cap.
+- **Review pipeline integration** — `/legion:review` now runs code polish as a post-review step (Step c4) after the QA loop passes. Non-blocking: polish failures never prevent phase completion. Controlled by `review.polish` (boolean, default `true`) and `review.polish_scope` (enum, default `"dependents"`) in settings.
+- **`review-loop` Section 7.5** — Thin integration point in the review-loop skill documenting polish dispatch, activation check, and failure mode handling.
+
+### Changed
+- **Settings schema** — Added `review.polish` and `review.polish_scope` to `docs/settings.schema.json`.
+- **Agent catalog** — Testing division updated from 6 to 7 agents in `skills/agent-registry/CATALOG.md`.
+- **CLAUDE.md** — Updated command table (18 commands), skill index (added `|polish:{code-polish/SKILL.md}`), agent index (added `testing-code-polisher.md`), division counts (49 agents, Testing 7).
+- **README.md** — Added v7.5.0 section, `/legion:polish` in commands table and workflow diagram, updated all count references.
+- **Website** (`docs/index.html`) — Added v7.5.0 section with 6 feature cards, updated stats bar, commands table, workflow visual, division grid, and footer.
+
+### Stats
+- 18 commands, 33 skills, 49 agents
+- Agent personality line range: 155-679
+- 3 new files, 6 modified files
+
 ## [7.4.0] - 2026-05-04
 
 ### Schema reconciliation

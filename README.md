@@ -1,12 +1,12 @@
 # Legion
 
-Orchestrate 48 AI specialist personalities across 9 AI CLI runtimes.
+Orchestrate 49 AI specialist personalities across 9 AI CLI runtimes.
 
 > *"My name is Legion, for we are many."*
 
 ## What It Does
 
-Turn 48 isolated agent personalities into a coordinated legion. The native Legion entry point now depends on the runtime you install into. See the audited compatibility matrix in [docs/runtime-audit.md](docs/runtime-audit.md) before assuming `/legion:*` works everywhere.
+Turn 49 isolated agent personalities into a coordinated legion. The native Legion entry point now depends on the runtime you install into. See the audited compatibility matrix in [docs/runtime-audit.md](docs/runtime-audit.md) before assuming `/legion:*` works everywhere.
 
 ## Installation
 
@@ -101,7 +101,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 
 ## Commands
 
-These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot and OpenCode use flat `/legion-start`; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Seventeen commands total.
+These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot and OpenCode use flat `/legion-start`; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Eighteen commands total.
 
 | Command | Description | Usage |
 |---------|-------------|-------|
@@ -121,6 +121,7 @@ These are the canonical Legion command names. Each runtime maps them to its own 
 | `/legion:ship` | Pre-ship checklist, PR creation, deployment verification, canary monitoring | After review — formal shipping stage before the next phase |
 | `/legion:learn` | Record, recall, and manage project-specific patterns and preferences | Anytime — operationalizes project memory |
 | `/legion:update` | Check for updates and install latest version from npm | After installation — keeps Legion current |
+| `/legion:polish` | Run 4-pass code cleanup on changed files or a target path | After review, or anytime via ad-hoc invocation |
 | `/legion:validate` | Validate .planning/ state file integrity, schema conformance, and cross-references | Anytime — catches drift and corruption early (supports `--ci`, `--fix`) |
 
 ## How It Works
@@ -137,6 +138,8 @@ These are the canonical Legion command names. Each runtime maps them to its own 
 /legion:review           Quality gate → Review → Fix → Re-review (default max 3 cycles, configurable)
        ↓                       ↓ (optional)
        ↓                 Panel mode → 2-4 domain-weighted reviewers with rubrics
+       ↓                       ↓ (post-review, configurable)
+       ↓                 Code polish → 4-pass cleanup (comments, simplification, readability, consistency)
        ↓
 /legion:ship             Ship pipeline → Pre-ship gates → PR creation → deployment verification
        ↓
@@ -148,6 +151,7 @@ These are the canonical Legion command names. Each runtime maps them to its own 
 /legion:explore          Pre-flight → Crystallize, onboard, compare, or debate (before start)
 /legion:advise <topic>   Standalone → Read-only expert consultation (any time)
 /legion:quick <task>     Standalone → One-off task with agent selection (any time)
+/legion:polish [target]  Standalone → 4-pass code cleanup with safety rails (any time)
 /legion:learn <lesson>   Standalone → Record patterns, pitfalls, and preferences (any time)
 ```
 
@@ -176,7 +180,7 @@ Guides you through an adaptive conversation (5-8 exchanges) to capture project v
 1. Pre-flight check — detects existing projects and offers to reinitialize or continue
 2. Brownfield detection — if an existing codebase is found, offers architecture analysis via the `codebase-mapper` skill, producing `.planning/CODEBASE.md` with framework detection, risk areas, and conventions
 3. Vision exploration — 3-stage adaptive conversation via `questioning-flow`: vision → requirements → constraints, targeting 5-8 natural exchanges
-4. Agent recommendation — `agent-registry` scores all 48 agents to recommend 2-4 per phase based on keyword match and division affinity
+4. Agent recommendation — `agent-registry` scores all 49 agents to recommend 2-4 per phase based on keyword match and division affinity
 5. Document generation — produces `PROJECT.md`, `ROADMAP.md`, and `STATE.md` using questioning-flow templates
 6. Portfolio registration — registers the project in the global portfolio via `portfolio-manager` at `~/.claude/legion/portfolio.md`
 
@@ -187,7 +191,7 @@ Guides you through an adaptive conversation (5-8 exchanges) to capture project v
 
 #### `/legion:plan <N>` — Phase Planning
 
-Decomposes a roadmap phase into wave-structured plans with a default max of 3 tasks each (configurable via settings). Recommends agents from the 48-agent registry for each plan and gets your confirmation.
+Decomposes a roadmap phase into wave-structured plans with a default max of 3 tasks each (configurable via settings). Recommends agents from the 49-agent registry for each plan and gets your confirmation.
 
 **Key steps:**
 1. Parse or auto-detect the next unplanned phase from STATE.md
@@ -297,7 +301,7 @@ Run any task outside the normal phase workflow with automatic agent selection. N
 
 #### `/legion:advise <topic>` — Expert Consultation
 
-Get read-only strategic advice from any of the 48 agent personalities. The advisor can explore your codebase and ask clarifying questions but cannot modify any files.
+Get read-only strategic advice from any of the 49 agent personalities. The advisor can explore your codebase and ask clarifying questions but cannot modify any files.
 
 **Key steps:**
 1. Parse the topic (architecture, UX, marketing strategy, etc.) — provides a topic reference table spanning Engineering, Design, Business, Marketing, Testing, Product, and Spatial Computing
@@ -373,7 +377,7 @@ Handles the full milestone lifecycle: define milestone groupings, track status, 
 
 #### `/legion:agent` — Agent Creator
 
-Create a new specialist agent when the 48 existing personalities don't cover your needs. Guided conversation produces a validated agent .md file and registers it in the catalog.
+Create a new specialist agent when the 49 existing personalities don't cover your needs. Guided conversation produces a validated agent .md file and registers it in the catalog.
 
 **Key steps:**
 1. Stage 1: Agent Identity — adaptive conversation via `agent-creator` to define role, specialty, and division (infers kebab-case name like `{division}-{specialty}`)
@@ -397,7 +401,7 @@ Three capabilities shipped in v2.0 that extend the core workflow with read-only 
 Lightweight expert consultation without the overhead of phase workflows or the risk of code changes.
 
 - **Read-only by design** — advisors are spawned as Explore agents (tool-level enforcement: no Write, no Edit, no Bash)
-- **Topic-based agent selection** — the registry algorithm scores all 48 agents against the topic and recommends the best match
+- **Topic-based agent selection** — the registry algorithm scores all 49 agents against the topic and recommends the best match
 - **Full personality injection** — the advisor operates in complete character with its specialist expertise, communication style, and hard rules
 - **Project-aware** — loads PROJECT.md context when available, but works without it for pure domain expertise
 - **Interactive follow-up** — after initial advice, continue with follow-up questions, switch topics, or end the session
@@ -466,7 +470,7 @@ Two additions provide audit trails for agent decisions:
 
 ### Agent Metadata Enrichment & Recommendation Engine v2
 
-All 48 agent frontmatter files now include structured metadata:
+All 49 agent frontmatter files now include structured metadata:
 
 ```yaml
 languages: [javascript, typescript, python]
@@ -513,7 +517,7 @@ v7.0 adds a governance layer and cross-CLI orchestration to Legion. Claude Code 
 
 A governance escalation tier for decisions that matter too much for routine review:
 
-- **Dynamic composition** — Board members are assembled from Legion's 48 agents by the recommendation engine, scored by topic relevance. No fixed director roles.
+- **Dynamic composition** — Board members are assembled from Legion's 49 agents by the recommendation engine, scored by topic relevance. No fixed director roles.
 - **5-phase deliberation** — Independent assessment (parallel, dispatch-aware) → structured discussion (2 rounds) → final vote (with confidence scores) → resolution (supermajority formula) → persistence (auditable artifact trail).
 - **Two modes** — `/legion:board meet <topic>` for full deliberation with voting; `/legion:board review` for quick parallel assessments without deliberation.
 - **Cross-CLI assessments** — Board assessments can be dispatched to Gemini (for UX evaluation) or Codex (for implementation feasibility) via the dispatch layer.
@@ -545,7 +549,7 @@ v7.1.0 completes the core workflow loop with three new commands and tightens the
 
 ### Agent Consolidation (53→49→48)
 
-Four agent merges in v7.1.0 reduced the roster from 53 to 49. v7.2.0 merged one more (see below), bringing the total to 48 agents across 9 divisions.
+Four agent merges in v7.1.0 reduced the roster from 53 to 49. v7.2.0 merged one more, bringing the total to 48 agents across 9 divisions. v7.5.0 added the Code Polisher specialist (see below), bringing the current total to 49.
 
 ## v7.2.0 Agent Depth, Security & Infrastructure
 
@@ -553,7 +557,7 @@ v7.2.0 is the largest single release: 61 files changed across agent enrichment, 
 
 ### Agent Enrichment
 
-10 thin agents (88-131 lines) enriched to 200-338 lines with domain-specific depth: code review rubrics, refactoring frameworks, spatial interaction patterns, Livewire lifecycle edge cases, growth experiment templates, and more. Merge of `data-analytics-reporter` + `support-analytics-reporter` into `data-analytics-engineer` (49→48 agents).
+10 thin agents (88-131 lines) enriched to 200-338 lines with domain-specific depth: code review rubrics, refactoring frameworks, spatial interaction patterns, Livewire lifecycle edge cases, growth experiment templates, and more. Merge of `data-analytics-reporter` + `support-analytics-reporter` into `data-analytics-engineer`.
 
 ### Security Hardening
 
@@ -615,6 +619,28 @@ Based on [Vercel's Context Engineering research](https://vercel.com/blog/agents-
 
 A generator script (`scripts/generate-knowledge-index.js`) rebuilds the index when agents or skills change. The `--patch` flag updates both AGENTS.md and CLAUDE.md in-place. The agent-creator skill calls this automatically after creating new agents.
 
+## v7.5.0 Code Polish ("Deslopping")
+
+v7.5.0 adds automated code cleanup to the post-review pipeline and as a standalone command. The Code Polisher agent runs a structured 4-pass rubric that removes AI-generated slop — excessive comments, over-engineered patterns, inconsistent naming, and redundant abstractions — with safety rails that revert any file whose tests regress.
+
+### `/legion:polish`
+
+Standalone command for ad-hoc code cleanup on any target path, phase files, or the current working directory.
+
+- **4-pass rubric** — Comment Cleanup → Code Simplification → Readability Refactoring → Consistency Normalization
+- **Severity split** — Each pass has auto-apply actions (safe mechanical fixes) and flag-for-review actions (judgment calls presented to the user)
+- **Safety rails** — Runs project tests before and after polish. Any file that causes test regression is reverted automatically. Type checker verification when available
+- **Convention detection** — Merges conventions from three sources: CLAUDE.md explicit rules > CODEBASE.md detected patterns > code sampling implicit conventions
+- **Scope control** — `--scope=changed` (current phase files only), `--scope=dependents` (changed + direct importers, default), `--scope=directory` (full directory tree). Hard cap at 50 files
+
+### Review Pipeline Integration
+
+When `review.polish` is enabled in settings (default: `true`), `/legion:review` automatically runs the code polish skill as a post-review step after the QA loop passes. This is non-blocking — polish failures never prevent phase completion.
+
+- **Configurable scope** — `review.polish_scope` setting controls how many files are polished: `changed`, `dependents` (default), or `directory`
+- **New agent** — `testing-code-polisher` (#49) joins the Testing division with specialized review strengths: code-clarity, comment-quality, naming-conventions, structural-simplification, convention-consistency
+- **New skill** — `code-polish` provides the reusable 4-pass engine consumed by both the command and the review integration
+
 ## Standing on the Shoulders of Giants
 
 Legion didn't invent its patterns from scratch. It cherry-picked the best ideas from twelve proven Claude Code projects, combined them into something greater than the sum of its parts, and left behind the complexity that made each hard to adopt.
@@ -623,7 +649,7 @@ Legion didn't invent its patterns from scratch. It cherry-picked the best ideas 
 
 #### The Agent Personality Foundation — [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)
 
-Legion now ships 48 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 2 Legion-native specializations, consolidated from the original 53 via 5 agent merges. These are not generic role labels — they are structured character sheets (current range 156-680 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
+Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 4 Legion-native specializations, consolidated from the original 55 via 5 agent merges and 1 addition (Code Polisher, v7.5.0). These are not generic role labels — they are structured character sheets (current range 155-679 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
 
 #### From [GSD (Get Shit Done)](https://github.com/gsd-build/get-shit-done)
 
@@ -663,7 +689,7 @@ Atomic commits per completed plan (from Shipyard's `execution-tracker`) means ev
 
 Best Practice's `.claude/` directory structure (commands → skills → agents) is the canonical way to build Claude Code plugins. We adopted it wholesale: commands are entry points, skills are reusable logic, agents are personalities. Clean separation of concerns.
 
-Best Practice's agent frontmatter schema (YAML with name, description, color, division) became our agent contract. Every one of our 48 agents follows this structure, which means the `agent-registry.md` can programmatically catalog and recommend agents based on structured metadata rather than parsing free-form text.
+Best Practice's agent frontmatter schema (YAML with name, description, color, division) became our agent contract. Every one of our 49 agents follows this structure, which means the `agent-registry.md` can programmatically catalog and recommend agents based on structured metadata rather than parsing free-form text.
 
 **Left behind:** Best Practice's RPI workflow (too domain-specific) and custom hooks infrastructure. We kept the architecture patterns and dropped the opinionated workflows.
 
@@ -729,7 +755,7 @@ Puzld.ai's DPO (Direct Preference Optimization) extraction pattern — capturing
 
 Beyond combining these twelve projects, Legion introduced several original patterns:
 
-- **Personality-first agents**: The 48 agent personalities are not role labels — they are 156-680 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its complete personality as system instructions, not a generic "you are a backend developer" prompt.
+- **Personality-first agents**: The 49 agent personalities are not role labels — they are 155-679 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its complete personality as system instructions, not a generic "you are a backend developer" prompt.
 
 - **Hybrid agent selection**: The workflow recommends agents based on task analysis (keyword matching, division affinity, past performance), but the user always confirms or overrides. No black-box assignment.
 
@@ -747,7 +773,7 @@ Beyond combining these twelve projects, Legion introduced several original patte
 
 - **Control modes** (v6.0): Four presets (autonomous, guarded, advisory, surgical) adjust authority enforcement per-project, from full agent freedom to maximum restriction where agents only touch explicitly listed files.
 
-- **Structured agent metadata** (v6.0): All 48 agents include `languages`, `frameworks`, `artifact_types`, and `review_strengths` in frontmatter, enabling metadata-aware recommendation scoring instead of keyword-only matching.
+- **Structured agent metadata** (v6.0): All 49 agents include `languages`, `frameworks`, `artifact_types`, and `review_strengths` in frontmatter, enabling metadata-aware recommendation scoring instead of keyword-only matching.
 
 - **Pre-flight exploration modes** (v6.0): `/legion:explore` offers crystallize, onboard, compare, and debate modes — structured exploration before committing to formal project planning.
 
@@ -757,18 +783,18 @@ Legion intentionally optimizes for orchestration ergonomics (few commands, markd
 
 | Design Axis | Typical Alternative | Legion Choice | Tradeoff |
 |-------------|---------------------|---------------|----------|
-| Command surface | 15-33+ command sets | 17 commands | Faster onboarding, but less granular command specialization |
+| Command surface | 15-33+ command sets | 18 commands | Faster onboarding, but less granular command specialization |
 | State storage | JSON/DB/hybrid state | Markdown-only `.planning/` | Human-readable and git-native, but less strict schema enforcement |
 | Setup model | CLI bootstrap + config | `npx` installer | Simpler install path, but runtime capabilities can vary more |
 | Always-load context | Monolithic shared instructions | Lean `workflow-common-core` + optional extensions | Lower prompt cost on hot paths, but activation rules must stay accurate |
-| Agent model | Generic role prompts | 48 full personalities + retrieval-led loading | Higher specificity without preloading the full roster, but prompt discipline still matters for large agents |
+| Agent model | Generic role prompts | 49 full personalities + retrieval-led loading | Higher specificity without preloading the full roster, but prompt discipline still matters for large agents |
 | User interaction gates | Free-form confirmations | Closed-set AskUserQuestion flows | More deterministic on literal models, but less conversational looseness |
 | Runtime coverage | Single-runtime focus | 9 runtime adapters | Broader portability, but feature parity differs by runtime tier |
 | Memory strategy | Hook-based/global memory | Project-local explicit memory | Better project isolation, but requires explicit integration points |
 
-Current repository metrics: 17 commands, 32 skills, 48 agent personalities, 9 runtime adapters, and 4 control mode presets.
+Current repository metrics: 18 commands, 33 skills, 49 agent personalities, 9 runtime adapters, and 4 control mode presets.
 
-## The 48 Agents
+## The 49 Agents
 
 Agents are organized across 9 divisions, each with deep specialist personalities:
 
@@ -777,7 +803,7 @@ Agents are organized across 9 divisions, each with deep specialist personalities
 | Engineering | 9 | Full-stack, backend, frontend, AI, infrastructure/DevOps, mobile, prototyping, Laravel, security |
 | Design | 6 | UI/UX, branding, visual storytelling, research |
 | Marketing | 4 | Content & social strategy, platform execution, growth, ASO |
-| Testing | 6 | QA verification, performance, API testing, tool evaluation |
+| Testing | 7 | QA verification, performance, API testing, tool evaluation, code polish |
 | Product | 4 | Sprint planning, feedback synthesis, trends, technical writing |
 | Project Management | 5 | Coordination, portfolio, operations, experiments |
 | Support | 4 | Finance, legal, executive summaries, support |
@@ -794,11 +820,12 @@ legion/                     <- Project root
 ├── bin/
 │   └── install.js         <- Cross-runtime installer (npx entry point)
 ├── CLAUDE.md               <- Project instructions (injected into Claude Code context)
-├── commands/               <- 17 /legion: command entry points
+├── commands/               <- 18 /legion: command entry points
 │   ├── start.md
 │   ├── plan.md
 │   ├── build.md
 │   ├── review.md
+│   ├── polish.md
 │   ├── status.md
 │   ├── quick.md
 │   ├── advise.md
@@ -812,12 +839,12 @@ legion/                     <- Project root
 │   ├── learn.md
 │   ├── update.md
 │   └── validate.md
-├── skills/                 <- 32 reusable workflow skills
+├── skills/                 <- 33 reusable workflow skills
 │   ├── workflow-common-core/SKILL.md <- Lean always-load core conventions
 │   ├── workflow-common/SKILL.md      <- Compatibility shim for legacy references
 │   ├── agent-registry/
 │   │   ├── SKILL.md               <- Recommendation algorithm + team patterns
-│   │   └── CATALOG.md             <- 48 agent catalog + task-type index
+│   │   └── CATALOG.md             <- 49 agent catalog + task-type index
 │   ├── questioning-flow/SKILL.md   <- 3-stage adaptive conversation
 │   ├── phase-decomposer/SKILL.md   <- Phase decomposition with domain detection
 │   ├── wave-executor/SKILL.md      <- Parallel execution with personality injection
@@ -826,13 +853,13 @@ legion/                     <- Project root
 │   ├── review-panel/SKILL.md       <- Dynamic multi-reviewer composition with rubrics
 │   ├── plan-critique/SKILL.md      <- Pre-mortem analysis + assumption hunting
 │   ├── hooks-integration/SKILL.md  <- Claude Code hooks for lifecycle automation
-│   └── + 21 more (portfolio, milestone, memory, agents, GitHub, brownfield, marketing, design, spec pipeline, ship pipeline, security review, Legion bridge integration, and workflow-common extensions)
-├── agents/                 <- 48 personality .md files (flat, with division in frontmatter)
+│   └── + 22 more (portfolio, milestone, memory, agents, GitHub, brownfield, marketing, design, spec pipeline, ship pipeline, security review, code polish, Legion bridge integration, and workflow-common extensions)
+├── agents/                 <- 49 personality .md files (flat, with division in frontmatter)
 │   ├── engineering-senior-developer.md
 │   ├── design-ui-designer.md
 │   ├── marketing-content-social-strategist.md
 │   ├── testing-qa-verification-specialist.md
-│   └── ... (48 more)
+│   └── ... (45 more)
 ├── adapters/               <- Per-CLI adapter files (claude-code.md, codex-cli.md, etc.)
 ├── docs/
 │   ├── control-modes.md   <- Control mode usage guide (v6.0)
@@ -855,7 +882,7 @@ legion/                     <- Project root
 - **CLI-agnostic**: Works with 9 AI CLI runtimes — skills, commands, and agents adapt via per-runtime adapters (support tiers listed below)
 - **Human-readable state**: All planning files are markdown, readable without tools
 - **Full personality injection**: Agents are spawned with their complete .md as instructions
-- **Standardized format**: All 48 agents use Format A — emoji section headings, "Your" pronouns, current range 156-680 lines (minimum 80)
+- **Standardized format**: All 49 agents use Format A — emoji section headings, "Your" pronouns, current range 155-679 lines (minimum 80)
 - **Budget-aware orchestration**: Heavier reasoning is reserved for planning and governance when the adapter supports it; execution stays on faster defaults, optional skills stay unloaded until needed, and prompt ceilings prevent oversized spawns
 - **Default max 3 tasks per plan (configurable)**: Keeps work focused and reviewable
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides
@@ -892,13 +919,14 @@ These activate automatically when their prerequisites are met:
 | **Hooks Integration** | Claude Code hooks configured per `hooks-integration` skill | Pre-build validation, post-build notification, pre-ship security gate |
 | **Extended Thinking** | `models.planning_reasoning: true` in `settings.json` | Deeper requirement analysis and wave ordering rationale in planning |
 | **Memory Pruning** | `memory.auto_prune: true` in `settings.json` | Automatic archiving of old OUTCOMES.md entries to keep active memory lean |
+| **Code Polish** | `review.polish: true` in `settings.json` (default) | 4-pass post-review cleanup: comments, simplification, readability, consistency. Non-blocking with safety rails |
 | **State Validation** | `/legion:validate` command | Schema conformance, cross-reference checking, integrity verification for `.planning/` files |
 
 <!-- legion-metrics:start -->
-- Commands: 17
-- Skills: 32
-- Agents: 48
-- Agent personality line range (current): 156-680
+- Commands: 18
+- Skills: 33
+- Agents: 49
+- Agent personality line range (current): 155-679
 <!-- legion-metrics:end -->
 
 ## Requirements

@@ -17,6 +17,7 @@ skills/review-loop/SKILL.md
 skills/review-panel/SKILL.md
 skills/execution-tracker/SKILL.md
 skills/intent-router/SKILL.md
+skills/code-polish/SKILL.md
 </execution_context>
 
 <context>
@@ -59,6 +60,7 @@ Examples:
    - `skills/review-evaluators/SKILL.md` only if `settings.review.evaluator_depth` is `"multi-pass"` (default).
    - `skills/security-review/SKILL.md` only if `--just-security` flag is set, or security-sensitive files detected in SUMMARY.md (auth/crypto/permission/token/session files).
    - `skills/design-workflows/SKILL.md` only for design phases when multi-pass evaluators are active (enables post-implementation design audit, Section 9).
+   - `skills/code-polish/SKILL.md` only if `settings.review.polish` is not explicitly `false` (default: true). Enables post-review code polish step (Step c4).
    If a condition is not met, skip that skill silently and continue.
 
 ## Step 0.5: INTENT DETECTION AND VALIDATION
@@ -608,6 +610,61 @@ If REVIEW_MODE === "security-only":
        If memory not available: skip silently.
        NOTE: This captures a positive signal — the review process and its agents produced
        accepted results. Especially valuable when review passes on cycle 1 (clean execution).
+
+   c4. POST-REVIEW POLISH (optional — follows code-polish skill)
+       Read `settings.review.polish` (default: true).
+
+       If settings.review.polish != false:
+         1. Load skills/code-polish/SKILL.md (if not already loaded in Step 0)
+         2. Resolve scope: phase's files_modified list + direct dependents
+            (override with settings.review.polish_scope if set, default: "dependents")
+         3. Execute convention detection per code-polish skill Section 2
+         4. Resolve agent path: follow workflow-common Agent Path Resolution Protocol for AGENTS_DIR
+         5. Read agent personality: {AGENTS_DIR}/testing-code-polisher.md
+            If file not found after Read: log warning, skip polish step
+         6. Construct polish prompt:
+            - Full personality content (no truncation)
+            - "---"
+            - "# Polish Task (Post-Review)"
+            - Convention context from Step 3
+            - File list from Step 2
+            - All 4 pass rubrics from code-polish skill Sections 3-6
+            - "This is a post-review polish pass. The code has already passed review.
+              Your job is to clean it up for clarity and consistency. Do not change behavior."
+         7. Spawn testing-code-polisher agent via adapter.spawn_agent_personality:
+            - model: adapter.model_execution
+            - name: "code-polisher-phase-{N}"
+         8. Wait for agent completion per adapter.collect_results
+         9. Execute safety rails per code-polish skill Section 7:
+            - Run verification_commands from the phase plan (if available) instead of generic test detection
+            - Same revert logic as standalone mode
+         10. If changes were made and safety check passed:
+             - Commit:
+               git add {all polished files that passed safety check}
+               git commit -m "refactor(legion): polish phase {N} code
+
+               Post-review polish: {stats summary}.
+
+               {adapter.commit_signature}"
+             - Append polish summary to {NN}-REVIEW.md under a new section:
+               "## Post-Review Polish
+                {polish summary from code-polish skill Section 8}"
+         11. If changes caused safety failures:
+             - Revert all changes
+             - Append to {NN}-REVIEW.md:
+               "## Post-Review Polish
+                Polish skipped — changes caused verification failures. {count} file(s) reverted."
+             - Log: "Post-review polish skipped (safety)"
+         12. If agent errors or times out:
+             - Log warning: "Post-review polish agent failed — skipping"
+             - Append to {NN}-REVIEW.md:
+               "## Post-Review Polish
+                Polish skipped — agent error."
+         13. Proceed to step d (display pass result) regardless of polish outcome.
+             Polish NEVER blocks phase completion.
+
+       If settings.review.polish == false:
+         Skip silently. Log: "Post-review polish: disabled via settings"
 
    d. Display pass result:
       "Phase {N}: {phase_name} — Review PASSED ({cycles} cycle(s))

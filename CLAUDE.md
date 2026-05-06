@@ -12,6 +12,7 @@ A multi-CLI plugin for orchestrating 48 AI specialist personalities as a coordin
 |---------|-------------|
 | `/legion:start` | Initialize a new project with guided questioning flow |
 | `/legion:plan <N>` | Plan phase N with agent recommendations and wave-structured tasks |
+| `/legion:polish` | Polish code for readability, consistency, and clarity (standalone or post-review) |
 | `/legion:build` | Execute current phase plans with parallel agent teams |
 | `/legion:review` | Run quality review cycle with testing/QA agents |
 | `/legion:status` | Show progress dashboard and route to next action |
@@ -32,23 +33,23 @@ A multi-CLI plugin for orchestrating 48 AI specialist personalities as a coordin
 
 ```
 bin/                  — npm installer (install.js)
-commands/             — 17 /legion: command entry points
-skills/               — 30 reusable workflow skills (SKILL.md per directory)
-agents/               — 48 agent personality .md files (flat, with division in frontmatter)
+commands/             — 18 /legion: command entry points
+skills/               — 31 reusable workflow skills (SKILL.md per directory)
+agents/               — 49 agent personality .md files (flat, with division in frontmatter)
 adapters/             — Per-CLI adapter files (claude-code.md, codex-cli.md, cursor.md, etc.)
 .planning/            — Project state (PROJECT.md, ROADMAP.md, STATE.md)
   milestones/         — Archived requirements and roadmaps
   phases/             — Phase plan and summary files
 ```
 
-## Agent Divisions (48 total)
+## Agent Divisions (49 total)
 
 | Division | Count | Focus |
 |----------|-------|-------|
 | Engineering | 9 | Full-stack, backend, frontend, AI, infrastructure/DevOps, mobile, prototyping, Laravel, security |
 | Design | 6 | UI/UX, branding, visual storytelling, research |
 | Marketing | 4 | Content & social strategy, platform execution, growth, ASO |
-| Testing | 6 | QA verification, performance, API testing, workflow optimization |
+| Testing | 7 | QA verification, performance, API testing, workflow optimization, code polish |
 | Product | 4 | Sprint planning, feedback synthesis, trends, technical writing |
 | Project Management | 5 | Coordination, portfolio, operations, experiments |
 | Support | 4 | Finance, legal, executive summaries, support |
@@ -67,7 +68,7 @@ IMPORTANT: Prefer retrieval-led reasoning over pre-training-led reasoning for Ag
 |design:{design-brand-guardian.md,design-ui-designer.md,design-ux-architect.md,design-ux-researcher.md,design-visual-storyteller.md,design-whimsy-injector.md}
 |marketing:{marketing-app-store-optimizer.md,marketing-content-social-strategist.md,marketing-growth-hacker.md,marketing-social-platform-specialist.md}
 |product:{product-feedback-synthesizer.md,product-sprint-prioritizer.md,product-technical-writer.md,product-trend-researcher.md}
-|testing:{testing-api-tester.md,testing-performance-benchmarker.md,testing-qa-verification-specialist.md,testing-test-results-analyzer.md,testing-tool-evaluator.md,testing-workflow-optimizer.md}
+|testing:{testing-api-tester.md,testing-code-polisher.md,testing-performance-benchmarker.md,testing-qa-verification-specialist.md,testing-test-results-analyzer.md,testing-tool-evaluator.md,testing-workflow-optimizer.md}
 |project-management:{project-management-experiment-tracker.md,project-management-project-shepherd.md,project-management-studio-operations.md,project-management-studio-producer.md,project-manager-senior.md}
 |support:{support-executive-summary-generator.md,support-finance-tracker.md,support-legal-compliance-checker.md,support-support-responder.md}
 |spatial:{macos-spatial-metal-engineer.md,terminal-integration-specialist.md,visionos-spatial-engineer.md,xr-cockpit-interaction-specialist.md,xr-immersive-developer.md,xr-interface-architect.md}
@@ -78,6 +79,7 @@ IMPORTANT: Prefer retrieval-led reasoning over pre-training-led reasoning for Ag
 |planning:{phase-decomposer/SKILL.md,plan-critique/SKILL.md,spec-pipeline/SKILL.md}
 |execution:{cli-dispatch/SKILL.md,execution-tracker/SKILL.md,wave-executor/SKILL.md}
 |review:{review-evaluators/SKILL.md,review-loop/SKILL.md,review-panel/SKILL.md,security-review/SKILL.md}
+|polish:{code-polish/SKILL.md}
 |agents:{agent-creator/SKILL.md,agent-registry/SKILL.md,authority-enforcer/SKILL.md}
 |integration:{github-sync/SKILL.md,hooks-integration/SKILL.md}
 |intelligence:{codebase-mapper/SKILL.md,intent-router/SKILL.md,polymath-engine/SKILL.md}

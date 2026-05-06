@@ -112,11 +112,12 @@ The recommendation algorithm and team assembly patterns are in `SKILL.md` in thi
 | support-legal-compliance-checker | `agents/support-legal-compliance-checker.md` | Expert legal and compliance specialist ensuring business operations, data handling, and content comply with laws, regulations, and industry standards | legal-compliance, risk-assessment, policy-development, regulatory, gdpr-privacy |
 | support-support-responder | `agents/support-support-responder.md` | Expert customer support specialist delivering exceptional customer service, issue resolution, and user experience optimization | customer-support, issue-resolution, multi-channel-support, customer-success, user-experience |
 
-### Testing Division (6 agents)
+### Testing Division (7 agents)
 
 | ID | File | Specialty | Task Types |
 |----|------|-----------|------------|
 | testing-api-tester | `agents/testing-api-tester.md` | Expert API testing specialist focused on comprehensive API validation, performance testing, and quality assurance across all systems | api-testing, integration-testing, performance-testing, security-testing, test-automation |
+| testing-code-polisher | `agents/testing-code-polisher.md` | Code clarity and consistency specialist focused on removing noise, simplifying structure, improving naming, and normalizing conventions without changing behavior | code-polish, comment-cleanup, code-simplification, readability-refactoring, convention-normalization, deslopping |
 | testing-performance-benchmarker | `agents/testing-performance-benchmarker.md` | Expert performance testing and optimization specialist focused on measuring, analyzing, and improving system performance | performance-benchmarking, load-testing, optimization, metrics-analysis, capacity-planning |
 | testing-qa-verification-specialist | `agents/testing-qa-verification-specialist.md` | Evidence-based QA verification specialist combining visual proof collection, screenshot-driven bug verification, and production-readiness certification with strict evidence requirements | visual-qa, screenshot-evidence, bug-verification, proof-collection, reality-checks, production-readiness, certification, evidence-review, go-no-go, quality-gates |
 | testing-test-results-analyzer | `agents/testing-test-results-analyzer.md` | Expert test analysis specialist focused on comprehensive test result evaluation, quality metrics analysis, and actionable insight generation | test-analysis, quality-metrics, test-reporting, trend-analysis, continuous-improvement |
