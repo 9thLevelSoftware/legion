@@ -758,5 +758,5 @@ Items requiring human judgment before applying. These were NOT auto-applied.
 - Review integration: `commands/review.md`
 - Review loop skill: `skills/review-loop/SKILL.md`
 - Agent personality: `agents/testing-code-polisher.md`
-- Settings: `settings.polish.enabled` (boolean, default: true) — master toggle
-- Settings: `settings.polish.auto_after_review` (boolean, default: false) — run polish automatically after review-loop completes
+- Settings: `review.polish` (boolean, default: true) — enable/disable post-review polish step
+- Settings: `review.polish_scope` (string, default: "dependents") — scope for review-integrated polish: "changed", "dependents", "directory"
