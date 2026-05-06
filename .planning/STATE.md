@@ -1,8 +1,10 @@
 # Project State
 
+> ⚠ **Stale notice (2026-05-04)**: This file frames the project at v6.0 milestone completion. `package.json` is authoritative and currently reports **v7.3.3**. Post-v6.0 work (4.7 literalism audit; security/dispatch hardening) is tracked outside `.planning/` at `docs/audits/2026-04-16-legion-4-7/` and `docs/superpowers/specs/`. Run `/legion:milestone` to reconcile this file before the next milestone cycle.
+
 ## Project Reference
 
-**Core Value:** Turn 53 isolated agent personalities into a functional AI legion — "My name is Legion, for we are many."
+**Core Value:** Turn 48 isolated agent personalities into a functional AI legion — "My name is Legion, for we are many."
 
 ## Current Position
 

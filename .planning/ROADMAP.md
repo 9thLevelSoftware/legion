@@ -165,17 +165,17 @@
 
 ## Progress
 
-| Phase | Plans | Completed | Status |
-|-------|-------|-----------|--------|
-| 1 — Plan Schema Hardening | 3 | 3 | Complete |
-| 2 — Wave Safety | 2 | 2 | Complete |
-| 3 — Control Modes | 3 | 3 | Complete ✓ |
-| 4 — Observability | 3 | 3 | Complete ✓ |
-| 5 — Agent Metadata Enrichment | 3 | 3 | Complete ✓ (reviewed) |
-| 6 — Recommendation Engine v2 | 3 | 3 | Complete ✓ |
-| 7 — Validation & Conformance | 3 | 3 | Complete ✓ |
-| 8 — Codebase Mapper Enrichment | 2 | 2 | Complete ✓ |
-| 9 — Polymath Advanced Modes | 3 | 3 | Complete ✓ |
-| 10 — Authority & Conflict Resolution | 2 | 2 | Complete ✓ |
-| 11 — Intent Routing v2 | 2 | 2 | Complete ✓ |
-| 12 — Integration & Release | 2 | 2 | Complete ✓ |
+| Phase | Plans | Completed | Status | Reviewed |
+|-------|-------|-----------|--------|----------|
+| 1 — Plan Schema Hardening | 3 | 3 | Complete | — |
+| 2 — Wave Safety | 2 | 2 | Complete | — |
+| 3 — Control Modes | 3 | 3 | Complete | — |
+| 4 — Observability | 3 | 3 | Complete | — |
+| 5 — Agent Metadata Enrichment | 3 | 3 | Complete | yes |
+| 6 — Recommendation Engine v2 | 3 | 3 | Complete | — |
+| 7 — Validation & Conformance | 3 | 3 | Complete | — |
+| 8 — Codebase Mapper Enrichment | 2 | 2 | Complete | — |
+| 9 — Polymath Advanced Modes | 3 | 3 | Complete | — |
+| 10 — Authority & Conflict Resolution | 2 | 2 | Complete | — |
+| 11 — Intent Routing v2 | 2 | 2 | Complete | — |
+| 12 — Integration & Release | 2 | 2 | Complete | — |

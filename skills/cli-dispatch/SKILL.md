@@ -1,5 +1,5 @@
 ---
-name: legion:cli-dispatch
+name: cli-dispatch
 description: Cross-CLI dispatch infrastructure for routing work to external CLIs
 triggers: [dispatch, gemini, codex, copilot, external, cli, cross-cli]
 token_cost: medium

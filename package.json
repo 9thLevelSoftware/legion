@@ -1,6 +1,6 @@
 {
   "name": "@9thlevelsoftware/legion",
-  "version": "7.3.3",
+  "version": "7.4.0",
   "description": "Orchestrate 48 AI specialist personalities as a coordinated legion — project initialization, phase planning, parallel execution, quality review, shipping, and portfolio management.",
   "bin": {
     "legion": "bin/install.js"
@@ -51,5 +51,9 @@
     "opencode",
     "cursor"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "gray-matter": "^4.0.3"
+  }
 }

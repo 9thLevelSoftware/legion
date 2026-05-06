@@ -1,5 +1,5 @@
 ---
-name: legion:hooks-integration
+name: hooks-integration
 description: Claude Code hooks for automated Legion lifecycle events
 triggers: [hooks, automation, lifecycle, pre-build, post-build]
 token_cost: low

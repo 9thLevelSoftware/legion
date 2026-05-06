@@ -1,5 +1,5 @@
 ---
-name: legion:marketing-workflows
+name: marketing-workflows
 description: Marketing campaign planning — campaign documents, content calendars, cross-channel coordination, and marketing-specific phase decomposition
 triggers: [marketing, campaign, content, social, channel, audience]
 token_cost: high

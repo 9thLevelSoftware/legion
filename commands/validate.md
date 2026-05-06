@@ -1,7 +1,7 @@
 ---
 name: legion:validate
 description: Validate .planning/ state file integrity, schema conformance, and cross-references
-argument-hint: [--fix] [--ci]
+argument-hint: "[--fix] [--ci]"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
 
@@ -92,14 +92,21 @@ skills/agent-registry/SKILL.md
      a. Check: CONTEXT.md exists.
      b. For each PLAN-*.md file:
         - Check: File has YAML frontmatter between `---` delimiters.
-        - Check: Frontmatter contains `phase`, `plan`, `wave`, and `agent` fields.
-        - Check: `agent` field value is a valid agent ID (exists in the agent catalog via agent-registry).
+        - Check: Frontmatter contains `phase`, `plan`, `wave`, and `agents` fields.
+        - Check: `agents` field is a non-empty array. `agents[0]` is the primary executor; any subsequent entries are co-executors.
+        - Check: Every entry in the `agents` array is a valid agent ID (exists in the agent catalog via agent-registry).
         - Check: `wave` is a positive integer.
+        - Check: `expected_artifacts` field exists and is a non-empty array. Each entry has a `path` (string) and `provides` (string) property.
+        - Check: `verification_commands` field exists and is a non-empty array of strings (bash commands).
+        - Check: `must_haves` field exists and is an object containing at least a `truths` array.
      c. For plans with "Complete" status: check that a corresponding SUMMARY-*.md exists.
    - Scoring:
      - Missing CONTEXT.md → WARN
      - Plan missing frontmatter or required fields → FAIL
-     - Agent ID not found in catalog → FAIL (record which agent ID and which plan file)
+     - Missing or empty `expected_artifacts` → FAIL
+     - Missing or empty `verification_commands` → FAIL
+     - Missing `must_haves` or missing `must_haves.truths` → FAIL
+     - Any agent ID in the `agents` array not found in catalog → FAIL (record which agent ID and which plan file)
      - Missing SUMMARY for completed plan → WARN
      - All checks pass → PASS
    - If no phase directories exist: PASS with details "No phase files to validate".

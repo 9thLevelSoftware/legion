@@ -1,5 +1,5 @@
 ---
-name: legion:review-evaluators
+name: review-evaluators
 description: Multi-pass specialized evaluators for deep code quality, UI/UX, integration, and business logic review
 triggers: [evaluator, multi-pass, deep-review, code-quality, ui-ux, integration, business-logic]
 token_cost: high
