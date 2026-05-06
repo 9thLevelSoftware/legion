@@ -37,6 +37,7 @@ header(){ echo ""; echo "=== $1 ==="; }
 frontmatter_field() {
   local file="$1" field="$2"
   awk -v field="$field" '
+    { sub(/\r$/, "") }
     /^---$/ { if (NR==1) { in_fm=1; next } else { in_fm=0 } }
     in_fm && tolower($0) ~ "^" tolower(field) ":" {
       sub(/^[^:]+:[[:space:]]*/, ""); print; exit

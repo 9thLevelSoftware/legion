@@ -13,6 +13,7 @@
     "prepublishOnly": "bash scripts/validate.sh && node scripts/release-check.js && node --test"
   },
   "files": [
+    ".codex-plugin/",
     "bin/",
     "agents/",
     "commands/",
