@@ -407,62 +407,6 @@ const RUNTIME_METADATA = {
       },
     ],
   },
-  opencode: {
-    key: 'opencode',
-    flag: '--opencode',
-    aliases: [],
-    label: 'OpenCode',
-    adapterFile: 'opencode.md',
-    supportTier: 'beta',
-    disposition: 'commands-and-subagent',
-    installSurface: 'custom commands plus a Legion subagent',
-    scopeSupport: { local: true, global: true },
-    storageLayout: 'legion',
-    allowedTools: ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob', 'Agent'],
-    supportsAtRefs: false,
-    nativeSurfaces: [
-      {
-        key: 'opencode-commands',
-        type: 'opencode-commands',
-        pathKind: 'dir',
-        localPath: '$PROJECT/.opencode/command',
-        globalPath: '$HOME/.config/opencode/command',
-      },
-      {
-        key: 'opencode-agent',
-        type: 'opencode-agent',
-        pathKind: 'file',
-        localPath: '$PROJECT/.opencode/agent/legion-orchestrator.md',
-        globalPath: '$HOME/.config/opencode/agent/legion-orchestrator.md',
-      },
-    ],
-    entrypoints: {
-      local: '/legion-start',
-      global: '/legion-start',
-    },
-    evidence: [
-      {
-        title: 'Custom commands',
-        url: 'https://opencode.ai/docs/customize/commands',
-        verifiedOn: '2026-03-11',
-      },
-      {
-        title: 'Custom agents',
-        url: 'https://opencode.ai/docs/customize/agents',
-        verifiedOn: '2026-03-11',
-      },
-      {
-        title: 'Task tool and subagents',
-        url: 'https://opencode.ai/docs/agents/task',
-        verifiedOn: '2026-03-11',
-      },
-      {
-        title: 'Configuration directories',
-        url: 'https://opencode.ai/docs/config',
-        verifiedOn: '2026-03-11',
-      },
-    ],
-  },
   kilo: {
     key: 'kilo',
     flag: '--kilo',

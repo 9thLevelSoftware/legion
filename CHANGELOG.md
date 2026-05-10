@@ -5,6 +5,12 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.6.1] - 2026-05-10
+
+### Fixed
+- Removed duplicate `opencode` entry in `bin/runtime-metadata.js`.
+- Published to npm so `npx @9thlevelsoftware/legion --kilo` resolves Kilo CLI support correctly.
+
 ## [7.6.0] - 2026-05-10
 
 ### Added
