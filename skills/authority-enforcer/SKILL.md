@@ -119,7 +119,7 @@ def validate_boundary(agent_id, topic, active_agents):
             return {
                 authorized: False,
                 domain_owner: active_agent,
-                reason: f"{active_agent} has exclusive authority; defer to domain owner"
+                reason: f"{active_agent} has exclusive authority; respect domain owner"
             }
     
     # Check 3: No owner for this topic
@@ -179,7 +179,7 @@ def inject_authority_constraints(agent_id, base_prompt, active_agents):
             f"## Your Authority\\n\\n"
             f"You have EXCLUSIVE AUTHORITY over these domains:\\n"
             + "\\n".join(f"- {d}" for d in own_domains)
-            + "\\n\\nWhen active, other agents defer to your judgment in these areas."
+            + "\\n\\nWhen active, other agents must respect your judgment in these areas."
         )
     
     # Step 2: Add deference rules for other active agents
@@ -191,7 +191,7 @@ def inject_authority_constraints(agent_id, base_prompt, active_agents):
         if other_domains:
             agent_name = matrix.get_name(other_agent)
             constraints.append(
-                f"\\n## Deference Required\\n\\n"
+                f"\\n## Domain Ownership Required\\n\\n"
                 f"{agent_name} ({other_agent}) has exclusive authority over:\\n"
                 + "\\n".join(f"- {d}" for d in other_domains)
                 + "\\n\\nDO NOT critique or override their findings in these domains."
@@ -276,9 +276,9 @@ You have EXCLUSIVE AUTHORITY over these domains:
 - vulnerability-assessment
 - pentest
 
-When active, other agents defer to your judgment in these areas.
+When active, other agents must respect your judgment in these areas.
 
-## Deference Required
+## Domain Ownership Required
 
 Backend Architect (engineering-backend-architect) has exclusive authority over:
 - backend-architecture
@@ -598,7 +598,7 @@ All authority decisions MUST be logged:
   - Timestamp
   - Active agents
   - Topic in question
-  - Decision (authorized/deferred)
+  - Decision (authorized/domain-owned)
   - Domain owner (if applicable)
   - Reason
 
@@ -616,7 +616,7 @@ Log Location: `.planning/logs/authority-decisions-{date}.log`
 | Unknown agent in matrix | Agent ID typo or removed agent | Check agent-registry, update matrix |
 | Duplicate domain assignment | Two agents claim same exclusive domain | Assign to more specific agent, mark other as secondary |
 | Missing authority-matrix.yaml | File deleted or moved | Regenerate from template |
-| Circular deference | Agent A defers to B, B defers to A | Fix deferred_by arrays in matrix |
+| Circular domain ownership | Agent A yields ownership to B while B yields ownership to A | Fix deferred_by arrays in matrix |
 
 ### Validation Command
 

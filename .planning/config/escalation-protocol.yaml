@@ -65,6 +65,7 @@ severity_levels:
       - Halt current task (agent does not proceed with the blocked action)
       - Agent continues other in-scope tasks if available
       - Display to user via adapter.ask_user with Approve/Reject/Defer options
+      - Defer is valid only as an explicit user-selected resolution; agents never self-defer planned work
       - Record resolution in SUMMARY.md
     review: "Requires human decision before blocked task can proceed"
     color: "red"
@@ -187,24 +188,26 @@ control_mode_behaviors:
 
 resolution:
   statuses:
-    - pending    # escalation raised, awaiting human decision
+    - pending    # escalation raised, awaiting human decision; all agent-authored escalations start here
     - approved   # human approved the out-of-scope action
     - rejected   # human rejected — agent must find alternative
-    - deferred   # decision postponed to a later phase or session
+    - deferred   # human explicitly postponed the decision to a later phase or session via adapter.ask_user
 
   tracking:
     location: "SUMMARY.md"
     description: >
       Escalation resolutions are recorded in the plan's SUMMARY.md file alongside
       the original escalation. No separate registry file is maintained — escalations
-      live in the plan output where they occurred.
+      live in the plan output where they occurred. Agents may not write a deferred
+      resolution directly; the wave-executor records deferred only after the user
+      chooses the Defer option.
 
   summary_format: |
     ## Escalations
     | # | Severity | Type | Decision | Status | Resolution |
     |---|----------|------|----------|--------|------------|
     | 1 | blocker | dependency | Add lodash for deep merge | approved | Human approved, added to dependencies |
-    | 2 | warning | scope | Edit shared utils file | deferred | Deferred to phase 12 |
+    | 2 | blocker | scope | Edit shared utils file | deferred | User explicitly deferred to phase 12 |
 
 # ============================================================================
 # USAGE NOTES

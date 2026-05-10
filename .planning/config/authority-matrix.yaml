@@ -1,7 +1,7 @@
 # Authority Matrix for Legion
 # Defines exclusive domain ownership to prevent agent conflicts during parallel execution
 version: "1.0"
-description: "Exclusive domain ownership — when an agent with a domain is active, other agents defer on that domain"
+description: "Exclusive domain ownership — when an agent with a domain is active, other agents must respect that domain owner"
 
 # ============================================================================
 # ENGINEERING DIVISION (8 agents)

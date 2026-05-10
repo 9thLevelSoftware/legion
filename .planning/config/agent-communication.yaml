@@ -125,7 +125,7 @@ agent_discovery:
     escalations_pending:
       description: "Unresolved escalations from prior waves"
       source: "Extracted from prior SUMMARY.md Escalations sections"
-      injection: "Included in handoff context if any escalations have status: pending or deferred"
+      injection: "Included in handoff context if any escalations have status: pending or user-deferred"
 
 # ============================================================================
 # CROSS-WAVE COMMUNICATION RULES
@@ -162,12 +162,12 @@ cross_wave_rules:
   escalation_inheritance:
     description: "Unresolved escalations from prior waves are passed via handoff context"
     rationale: >
-      A deferred or pending escalation from Wave 1 may affect Wave 2 agents.
+      A pending escalation or user-deferred escalation from Wave 1 may affect Wave 2 agents.
       Making escalation state visible prevents agents from unknowingly
       depending on decisions that haven't been made.
     protocol:
-      - "Wave executor extracts escalations with status pending or deferred from prior SUMMARY.md"
-      - "Pending/deferred escalations are injected into Wave 2+ agent prompts"
+      - "Wave executor extracts escalations with status pending or user-deferred from prior SUMMARY.md"
+      - "Pending/user-deferred escalations are injected into Wave 2+ agent prompts"
       - "Wave 2+ agents may re-escalate if the unresolved escalation blocks their work"
 
 # ============================================================================

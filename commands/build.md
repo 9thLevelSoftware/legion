@@ -377,7 +377,7 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
 
    f. Process results for each completed agent (wave-executor Section 5):
       - Parse the agent's completion report for the structured Status field
-      - Determine status: Complete | Complete with Warnings | Failed
+      - Determine status: Complete | Partial | Complete with Warnings | Failed
       - Check the agent's summary for auto-remediation reports:
         If the summary contains "Auto-remediated:" lines, include them in the SUMMARY.md
         under a "## Auto-Remediation" section with what was fixed and the retry result

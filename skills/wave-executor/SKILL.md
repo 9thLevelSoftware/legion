@@ -47,6 +47,7 @@ These rules govern all execution decisions. Do not deviate from them.
 10. **One coordination context per phase** — per adapter protocol: one Team on Claude Code, one checklist file on other CLIs. Not per wave.
 11. **Agents report via adapter.collect_results** — spawned agents send their structured completion summary per the adapter's result collection method. This keeps the coordinator's context window small.
 12. **Verification-gated completion** — after each task, the agent MUST run all `> verification:` commands from the task's action block. If any verification command returns a non-zero exit code, the task is marked as failed and the agent must report the failure. Do not proceed to the next task until all verifications pass.
+13. **No agent self-deferrals** — agents must attempt every in-scope planned task. They may complete it, fail it with evidence, or raise a blocker escalation for human resolution. They must never mark planned work as deferred on their own authority, treat deferred work as complete, or move in-scope planned work to a later phase without an explicit user decision.
 
 ---
 
@@ -338,14 +339,14 @@ Step 3.6: Load authority constraints
     You have exclusive authority over these domains:
     {list of exclusive_domains for this agent}
 
-    When you are active, other agents defer to you on these topics.
+    When you are active, other agents must respect your judgment on these topics.
 
     Other agents active in this wave with their exclusive domains:
     {for each other agent in wave:
       - {agent-id}: {exclusive_domains}}
 
     You must NOT critique or override findings from other agents in their exclusive domains.
-    You may critique general code quality, but defer to domain owners for specialist topics.
+    You may critique general code quality, but must respect domain owners for specialist topics.
 
   - If authority matrix does not exist: AUTHORITY_CONTEXT = "" (no constraints)
 
@@ -532,6 +533,11 @@ Step 4: Construct the agent execution prompt
     e. Do NOT skip failed verifications or proceed to the next task
   - Run verifications in order — they may have implicit dependencies
   - After all tasks complete, run the full <verification> checklist
+  - No Agent Deferrals: attempt every in-scope task in this plan. Do not mark planned
+    work as deferred, parked, future-phase work, or complete if it remains unfinished.
+  - If permission, scope, dependencies, API/schema/infrastructure decisions, or quality
+    gates prevent completion, emit a blocker <escalation> block and mark the plan
+    Failed or Partial based on the completed evidence. Do not self-defer the work.
   - Do NOT modify files outside of the plan's files_modified list unless the task
     explicitly requires it (e.g., updating an import in a file that uses the new file)
   - If a task is ambiguous, apply your specialist expertise to resolve the ambiguity
@@ -551,7 +557,7 @@ Step 4: Construct the agent execution prompt
   2. The coordinator will read this file after your execution completes
 
   Your summary MUST include these fields:
-  - **Status**: Complete | Complete with Warnings | Failed
+  - **Status**: Complete | Partial | Complete with Warnings | Failed
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
   - **Verification Commands Run**: count of `> verification:` commands executed
@@ -621,6 +627,11 @@ For autonomous plans (autonomous: true):
     e. Do NOT skip failed verifications or proceed to the next task
   - Run verifications in order — they may have implicit dependencies
   - After all tasks complete, run the full <verification> checklist
+  - No Agent Deferrals: attempt every in-scope task in this plan. Do not mark planned
+    work as deferred, parked, future-phase work, or complete if it remains unfinished.
+  - If permission, scope, dependencies, API/schema/infrastructure decisions, or quality
+    gates prevent completion, emit a blocker <escalation> block and mark the plan
+    Failed or Partial based on the completed evidence. Do not self-defer the work.
 
   ## Reporting Results (adapter-conditional)
   When all tasks and verification are complete, report your results:
@@ -636,7 +647,7 @@ For autonomous plans (autonomous: true):
   2. The coordinator will read this file after your execution completes
 
   Your summary MUST include these fields:
-  - **Status**: Complete | Complete with Warnings | Failed
+  - **Status**: Complete | Partial | Complete with Warnings | Failed
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
   - **Verification Commands Run**: count of `> verification:` commands executed
@@ -876,7 +887,7 @@ For each completed agent (success or failure):
 
 Step 1: Parse the agent's completion report
   The agent's report (received per adapter.collect_results) contains a structured summary with these fields:
-  - **Status**: Complete | Complete with Warnings | Failed
+  - **Status**: Complete | Partial | Complete with Warnings | Failed
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
   - **Verification Commands Run**: count of `> verification:` commands executed
@@ -888,6 +899,7 @@ Step 1: Parse the agent's completion report
 
   Use the Status field directly to determine the result:
   - "Complete" → SUCCESS
+  - "Partial" → PARTIAL
   - "Complete with Warnings" → COMPLETE WITH WARNINGS
   - "Failed" → FAILED
   If the Status field is missing or ambiguous, fall back to parsing for signals:
@@ -896,6 +908,9 @@ Step 1: Parse the agent's completion report
 
 Step 2: Determine result status
   - SUCCESS: agent completed all tasks, ALL verification commands passed (exit code 0)
+  - PARTIAL: agent completed some tasks but planned work remains incomplete due to
+    explicit user-deferred blocker work, approved-but-not-executed escalation work,
+    rejected blocker work with no authorized alternative, or missing evidence
   - COMPLETE WITH WARNINGS: agent completed tasks but some non-critical verify steps had issues
     (e.g., line count slightly below expected but content is correct)
   - FAILED: agent could not complete one or more tasks, OR any `> verification:` command
@@ -903,7 +918,7 @@ Step 2: Determine result status
 
   IMPORTANT: Verification failure is a hard gate. Unlike `<verify>` block outputs which
   are advisory, `> verification:` command failures block plan completion. A plan with
-  any failed verification command MUST have Status: Failed or Status: Complete with Warnings
+  any failed verification command MUST have Status: Failed or Status: Partial
   (never Status: Complete).
 
 Step 3: Generate the plan summary file
@@ -916,7 +931,7 @@ Step 3: Generate the plan summary file
   # Plan {NN}-{PP} Summary: {plan_name}
 
   ## Result
-  **Status**: Complete | Complete with Warnings | Failed
+  **Status**: Complete | Partial | Complete with Warnings | Failed
   **Wave**: {wave_number}
   **Agent**: {agent-id} | Autonomous
   **Completed**: {timestamp}
@@ -982,6 +997,10 @@ Step 3: Generate the plan summary file
   | # | Severity | Type | Decision | Status | Resolution |
   |---|----------|------|----------|--------|------------|
   | 1 | {severity} | {type} | {decision text} | {pending/approved/rejected/deferred} | {resolution details or "Awaiting decision"} |
+
+  `deferred` may appear only after the user explicitly selects Defer in the escalation
+  prompt. Agent-authored output never sets an escalation to `deferred`; new escalation
+  blocks start as `pending` until routed by the orchestrator.
 
   ## Handoff Context
   - **Key outputs**: {list of files created/modified with purpose}
@@ -1062,6 +1081,8 @@ After receiving an agent's completion report (Section 5, Step 1):
    - type must be one of: architecture | dependency | scope | schema | api | deletion | infrastructure | quality
    - If any required field is missing or invalid, treat the escalation as severity: warning
      and append a note: "Malformed escalation block — defaulted to warning severity"
+   - Ignore any agent-authored `status` or `resolution` field. New escalation blocks
+     always start as status: pending until the orchestrator routes them.
 4. Collect all parsed escalation blocks into an escalation_list for this agent
 ```
 
@@ -1136,14 +1157,17 @@ For each escalation_block in the escalation_list (using effective severity after
          re-executed (blocker escalations do not auto-retry — the approved
          action is recorded for reference in subsequent builds).
          If the blocked task could not complete, mark the plan as
-         "Complete with Warnings" and inform the user they must re-run
+         "Partial" and inform the user they must re-run
          `/legion:build` to execute the approved action.
        - Reject: Update SUMMARY.md escalation status to "rejected",
          note the rejection reason. Agent must find an alternative approach
-         within its authorized scope.
+         within its authorized scope. If no authorized alternative completes
+         the task, mark the plan "Partial" or "Failed" with evidence.
        - Defer: Update SUMMARY.md escalation status to "deferred",
-         note deferral rationale. Task remains incomplete — tracked for
-         future phase resolution.
+         note deferral rationale. This option is valid only when selected by
+         the user through adapter.ask_user. Task remains incomplete; mark the
+         affected plan "Partial" or "Failed", stop dependent waves, and track
+         the decision for future phase resolution.
 ```
 
 ### Step 4: Aggregate Escalation Counts
@@ -1155,9 +1179,12 @@ After processing all escalation_blocks for all agents in a wave:
 2. Include escalation counts in the Phase Decision Summary table (Section 5):
    - "Escalations" column shows: "{blocker_count}B / {warning_count}W / {info_count}I"
    - If no escalations: show "none"
-3. If any blocker escalations were rejected or deferred:
-   - Flag the affected plan as "Complete with Warnings" (not "Complete")
-   - Include rejected/deferred escalation details in the Issues Encountered section
+3. If any blocker escalations were approved-but-not-executed, rejected without an
+   alternative, or explicitly deferred by the user:
+   - Flag the affected plan as "Partial" or "Failed" (never "Complete" or
+     "Complete with Warnings")
+   - Stop dependent waves because planned work remains incomplete
+   - Include approved/rejected/deferred escalation details in the Issues Encountered section
 ```
 
 ### Escalation Detection Algorithm (pseudocode)
@@ -1181,6 +1208,10 @@ def detect_and_route_escalations(agent_output, agent_id, control_mode, plan_file
         if not all(f in parsed for f in required):
             parsed["severity"] = "warning"
             parsed["_note"] = "Malformed escalation block - defaulted to warning"
+
+        parsed.pop("status", None)
+        parsed.pop("resolution", None)
+        parsed["status"] = "pending"
 
         valid_severities = ["info", "warning", "blocker"]
         if parsed.get("severity") not in valid_severities:
@@ -1459,8 +1490,10 @@ How to handle common failure modes without retrying or hiding problems.
    Symptom: Agent completes all tasks but verify commands produce unexpected results
             (file missing, grep finds wrong content, line count too low, etc.)
    Action:
-   - Do NOT mark as hard failure — agent completed its work
-   - Status: Complete with Warnings
+   - If any `> verification:` command failed and could not be fixed after one attempt,
+     mark Status as Partial or Failed based on whether any planned outputs are usable
+   - Use Status: Complete with Warnings only for non-critical `<verify>` checklist
+     concerns after all `> verification:` commands passed
    - Include the failing verify outputs in the Verification Results section
    - Note in Issues Encountered: "Verify step N returned unexpected result: {output}"
    - The plan is not retried; /legion:review will assess whether it's acceptable
@@ -1537,8 +1570,9 @@ How to handle common failure modes without retrying or hiding problems.
      - Check if the plan's files_modified list has been created/updated
      - Run the plan's <verification> commands manually
      - Write the SUMMARY.md based on filesystem evidence
-     - Mark Status as "Complete with Warnings" and note: "Agent did not send
-       completion message — result inferred from filesystem."
+     - Mark Status as "Complete with Warnings" only if all planned work and
+       verification can be proven complete; otherwise mark Status as "Partial"
+       or "Failed" and list the missing evidence.
 ```
 
 ---

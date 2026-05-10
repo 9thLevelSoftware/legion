@@ -191,6 +191,12 @@ describe('Resolution Tracking', () => {
     }
   });
 
+  test('deferred resolution is user-selected only', () => {
+    assert.match(content, /Defer is valid only as an explicit user-selected resolution/);
+    assert.match(content, /agents never self-defer planned work/);
+    assert.match(content, /Agents may not write a deferred\s+resolution directly/);
+  });
+
   test('resolution tracking location is SUMMARY.md', () => {
     assert.ok(content.includes('location: "SUMMARY.md"'),
       'Resolution tracking should be in SUMMARY.md');

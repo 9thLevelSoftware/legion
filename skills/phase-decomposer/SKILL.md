@@ -23,6 +23,7 @@ Engine for `/legion:plan`. Takes a ROADMAP.md phase entry and transforms it into
    - A `<verify>` block with the same commands in executable form
    No "manually check" or "visually inspect" instructions. If you cannot script the check, the task is too vague.
 6. **Fewer plans over more** — 2 focused plans beats 4 thin ones. Combine related work when it fits within the configured task limit. Only create additional plans when dependency ordering or agent specialization requires separation.
+7. **No planned-work deferrals** — every planned task must be written so execution ends in one of three states: completed, blocked with evidence, or escalated through the blocker escalation protocol. Do not tell executors to leave planned work for later, move it to a future phase, or mark it deferred unless the task itself is to create a user-approved follow-up artifact.
 
 ---
 
@@ -648,7 +649,10 @@ Relevant source files:
   <action>
 {Detailed, unambiguous instructions for what to do.
 Include format examples, specific content guidance,
-and enough detail that the executor does not need to guess.}
+and enough detail that the executor does not need to guess.
+Do not include "leave for later", "future phase", or self-deferral instructions
+for any in-scope planned work. If permission or scope may block completion,
+instruct the executor to raise a blocker escalation instead.}
 
 > verification: {bash command that proves task 1 success — e.g., test -f path/to/file.md}
 > verification: {second check — e.g., grep -q "expected string" path/to/file.md}
@@ -667,6 +671,7 @@ grep -q "expected string" path/to/file.md
 Before declaring plan complete:
 - [ ] {verification item 1}
 - [ ] {verification item 2}
+- [ ] Every planned task is completed, blocked with evidence, or escalated; no planned work is self-deferred.
 ...
 </verification>
 
@@ -733,9 +738,14 @@ Task `<action>` blocks must be detailed enough for an executor (agent or autonom
 - **Content guidance** — what each section should contain, with examples
 - **References** — which existing files to read for patterns or data
 - **Constraints** — line counts, required strings, formatting rules
+- **Completion contract** — each planned task must end as completed, blocked with evidence, or escalated; never instruct the executor to defer planned work on its own authority
 
 Bad action: "Create the authentication module."
 Good action: "Create `src/auth/jwt.ts`. Export two functions: `generateToken(userId: string): string` and `verifyToken(token: string): { userId: string } | null`. Use the `jose` library. Tokens expire in 24 hours. Include the refresh token rotation pattern from `@docs/auth-spec.md` Section 3."
+
+### Prohibited Deferral Language
+
+Generated plan tasks MUST NOT use phrases such as "leave for later", "future phase", "defer this work", "deferred by the agent", or "park this task" for in-scope planned work. If the work is intentionally outside this phase, exclude it from the task list or make the task explicitly create a user-approved follow-up artifact. If the executor discovers that a planned task needs human permission, additional scope, a dependency, or an API/schema/infrastructure decision, the task must instruct the executor to emit a blocker `<escalation>` block rather than self-deferring.
 
 ### Writing Verification Lines
 
@@ -983,6 +993,7 @@ This skill completes when ALL conditions are met:
 4. Plans are grouped into waves (`wave: 1`, `wave: 2`, ...); wave-level file-overlap detection has run and no unresolved overlaps remain
 5. User confirmation captured via `AskUserQuestion` (proceed / swap agent / adjust / cancel) with "proceed" recorded before any plan files are written
 6. If cancelled: no partial plan files on disk (clean rollback)
+7. No generated task delegates planned in-scope work to an agent-authored deferred state; any unresolved planned work is represented as blocked evidence or a blocker escalation path
 
 If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.
 
