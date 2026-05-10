@@ -1,6 +1,6 @@
 # Legion
 
-Orchestrate 49 AI specialist personalities across 9 AI CLI runtimes.
+Orchestrate 49 AI specialist personalities across 10 AI CLI runtimes.
 
 > *"My name is Legion, for we are many."*
 
@@ -29,6 +29,7 @@ Replace `--claude` with your runtime of choice:
 | `--amazon-q` | Deprecated alias for `--kiro` |
 | `--windsurf` | Windsurf |
 | `--opencode` | OpenCode |
+| `--kilo` | Kilo CLI |
 | `--aider` | Aider (manual-only; native install disabled) |
 
 ### Runtime Support Tiers
@@ -41,6 +42,7 @@ Replace `--claude` with your runtime of choice:
 | Google Gemini CLI | Beta | Native `/legion:start` custom commands in `.gemini/commands/legion/` |
 | Kiro CLI (formerly Amazon Q Developer CLI) | Beta | Native `@legion-orchestrator` custom agent plus steering files |
 | OpenCode | Beta | Native `/legion-start` custom commands plus a Legion subagent |
+| Kilo CLI | Beta | Native `/legion-start` custom commands plus a Legion subagent |
 | Cursor | Experimental | Local-only rules install in `.cursor/rules/`; plain-language Legion requests only |
 | Windsurf | Experimental | Local-only rules install in `.windsurf/rules/`; plain-language Legion requests only |
 | Aider | Experimental | Manual-only fallback; automated native install is intentionally disabled |
@@ -55,7 +57,7 @@ node bin/install.js --claude
 ### Prerequisites
 
 - Node.js 18+
-- One of the 9 AI CLI runtimes listed above (support tier varies by runtime)
+- One of the 10 AI CLI runtimes listed above (support tier varies by runtime)
 
 ### Codex note
 
@@ -84,6 +86,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 | Google Gemini CLI | `/legion:start` | `/legion:start` |
 | Kiro CLI | `@legion-orchestrator` | `@legion-orchestrator` |
 | OpenCode | `/legion-start` | `/legion-start` |
+| Kilo CLI | `/legion-start` | `/legion-start` |
 | Cursor | Plain-language request after local rules install | Not supported |
 | Windsurf | Plain-language request after local rules install | Not supported |
 | Aider | Manual-only | Manual-only |
@@ -101,7 +104,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 
 ## Commands
 
-These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot and OpenCode use flat `/legion-start`; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Eighteen commands total.
+These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot, OpenCode, and Kilo use flat `/legion-start`; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Eighteen commands total.
 
 | Command | Description | Usage |
 |---------|-------------|-------|
@@ -483,7 +486,7 @@ The recommendation engine scores against these fields (not just keywords and div
 
 ### Adapter Conformance & Validation
 
-- **Adapter schema conformance tests** — All 9 adapters validated for required fields
+- **Adapter schema conformance tests** — All 10 adapters validated for required fields
 - **Cross-reference validation** — Command files verified to reference existing skills and agents (no dead references)
 - **`lint-commands` test** — Catches orphan tags and broken references in command .md files
 - **New adapter fields** — `max_prompt_size` and `known_quirks` in ADAPTER.md spec, so skills can adapt behavior per-runtime
@@ -789,10 +792,10 @@ Legion intentionally optimizes for orchestration ergonomics (few commands, markd
 | Always-load context | Monolithic shared instructions | Lean `workflow-common-core` + optional extensions | Lower prompt cost on hot paths, but activation rules must stay accurate |
 | Agent model | Generic role prompts | 49 full personalities + retrieval-led loading | Higher specificity without preloading the full roster, but prompt discipline still matters for large agents |
 | User interaction gates | Free-form confirmations | Closed-set AskUserQuestion flows | More deterministic on literal models, but less conversational looseness |
-| Runtime coverage | Single-runtime focus | 9 runtime adapters | Broader portability, but feature parity differs by runtime tier |
+| Runtime coverage | Single-runtime focus | 10 runtime adapters | Broader portability, but feature parity differs by runtime tier |
 | Memory strategy | Hook-based/global memory | Project-local explicit memory | Better project isolation, but requires explicit integration points |
 
-Current repository metrics: 18 commands, 33 skills, 49 agent personalities, 9 runtime adapters, and 4 control mode presets.
+Current repository metrics: 18 commands, 33 skills, 49 agent personalities, 10 runtime adapters, and 4 control mode presets.
 
 ## The 49 Agents
 
@@ -879,7 +882,7 @@ legion/                     <- Project root
 ## Design Principles
 
 - **Personality-first**: Agent .md files are the source of truth for behavior
-- **CLI-agnostic**: Works with 9 AI CLI runtimes — skills, commands, and agents adapt via per-runtime adapters (support tiers listed below)
+- **CLI-agnostic**: Works with 10 AI CLI runtimes — skills, commands, and agents adapt via per-runtime adapters (support tiers listed below)
 - **Human-readable state**: All planning files are markdown, readable without tools
 - **Full personality injection**: Agents are spawned with their complete .md as instructions
 - **Standardized format**: All 49 agents use Format A — emoji section headings, "Your" pronouns, current range 155-679 lines (minimum 80)
@@ -933,7 +936,7 @@ These activate automatically when their prerequisites are met:
 
 - Node.js 18+ (install-time only — zero runtime dependencies)
 - One of the 9 supported AI CLI runtimes:
-  Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, or Aider
+  Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, Kilo CLI, or Aider
 
 ## Contributing
 

@@ -58,6 +58,13 @@ Use these checklists for manual verification when CI cannot prove runtime-native
 - Restart OpenCode and verify `/legion-start` is available.
 - Confirm the installed `legion-orchestrator` agent can execute the authoritative workflow file in `.legion/commands/legion/start.md`.
 
+## Kilo CLI
+
+- Confirm `.kilo/command/legion-start.md` or `~/.config/kilo/command/legion-start.md` exists.
+- Confirm `.kilo/agent/legion-orchestrator.md` or `~/.config/kilo/agent/legion-orchestrator.md` exists.
+- Restart Kilo CLI and verify `/legion-start` is available.
+- Confirm the installed `legion-orchestrator` agent can execute the authoritative workflow file in `.legion/commands/legion/start.md`.
+
 ## Aider
 
 - Confirm Legion does not offer an automated native install for Aider.

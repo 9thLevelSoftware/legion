@@ -43,6 +43,7 @@ Step 1: Tool probe (primary detection)
     - Kiro CLI: `.kiro/agents/legion-orchestrator.md`, `~/.kiro/agents/legion-orchestrator.md`, `.kiro/steering/legion.md`, or `~/.kiro/steering/AGENTS.md` exists
     - Windsurf: `.windsurf/rules/legion.md` exists
     - OpenCode: `.opencode/command/legion-start.md`, `~/.config/opencode/command/legion-start.md`, `.opencode/agent/legion-orchestrator.md`, or `~/.config/opencode/agent/legion-orchestrator.md` exists
+    - Kilo CLI: `.kilo/command/legion-start.md`, `~/.config/kilo/command/legion-start.md`, `.kilo/agent/legion-orchestrator.md`, or `~/.config/kilo/agent/legion-orchestrator.md` exists
     - Aider: `.aider.conf.yml`, `AGENTS.md`, or `CONVENTIONS.md` exists
   - If exactly one primary matches: use that adapter
   - If multiple match: use the first match in the order above (Claude Code wins ties)

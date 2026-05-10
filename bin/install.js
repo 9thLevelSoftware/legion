@@ -93,6 +93,7 @@ Runtime (pick one):
   --amazon-q    Deprecated alias for --kiro
   --windsurf    Windsurf
   --opencode    OpenCode
+  --kilo        Kilo CLI
   --aider       Aider (manual-only guidance; native install disabled)
 
   If no runtime flag is given, you'll be prompted to select one.
@@ -543,6 +544,35 @@ Treat \`$ARGUMENTS\` as extra user-provided arguments or clarification.
 `;
 }
 
+function generateKiloCommand(paths, commandName, commandContent) {
+  const description = extractFrontmatterValue(commandContent, 'description')
+    || `Run the Legion ${commandName} workflow`;
+  return `---
+description: ${JSON.stringify(description)}
+agent: legion-orchestrator
+---
+
+${legionRuntimeWrapperPreamble('Kilo CLI', commandName, paths)}
+
+Treat user-provided arguments after the slash command as extra clarification for the workflow.
+`;
+}
+
+function generateKiloAgent(paths) {
+  return `---
+description: "Coordinate Legion workflows using the installed Legion bundle"
+mode: subagent
+---
+
+You are Legion's orchestrator for Kilo CLI.
+
+- Use \`${paths.manifestFile}\` to find the installed Legion bundle.
+- Read only the matching command file under \`${paths.commandsDir}\`.
+- Route legacy \`/legion:*\` aliases to the corresponding flat Kilo commands such as \`/legion-start\`.
+- Coordinate through artifacts in \`.planning/\`; do not assume direct inter-agent messaging.
+`;
+}
+
 function generateCopilotSkill(paths, commandName, commandContent) {
   const description = extractFrontmatterValue(commandContent, 'description')
     || `Run the Legion ${commandName} workflow`;
@@ -970,6 +1000,28 @@ function install(runtimeKey, scope, verify = false) {
           const commandPath = joinPath(surface.path, `legion-${commandName}.md`);
           const wrappedContent = generateOpenCodeCommand(paths, commandName, commandContent);
           const backedUp = writeManagedFile(commandPath, wrappedContent, nativeArtifacts);
+          if (backedUp) {
+            console.log(`  ${surface.key}: backed up ${path.basename(commandPath)}.bak`);
+          }
+          console.log(`  ${surface.key}: ${commandPath}`);
+        }
+        break;
+      }
+
+      case 'kilo-agent': {
+        const backedUp = writeManagedFile(surface.path, generateKiloAgent(paths), nativeArtifacts);
+        if (backedUp) {
+          console.log(`  ${surface.key}: backed up ${path.basename(surface.path)}.bak`);
+        }
+        console.log(`  ${surface.key}: ${surface.path}`);
+        break;
+      }
+
+      case 'kilo-commands': {
+        for (const [commandName, commandContent] of transformedCommands.entries()) {
+          const commandPath = joinPath(surface.path, `legion-${commandName}.md`);
+          const wrapped = generateKiloCommand(paths, commandName, commandContent);
+          const backedUp = writeManagedFile(commandPath, wrapped, nativeArtifacts);
           if (backedUp) {
             console.log(`  ${surface.key}: backed up ${path.basename(commandPath)}.bak`);
           }

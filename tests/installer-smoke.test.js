@@ -95,6 +95,13 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
         expected.push(path.join(surfacePath, 'legion-start.md'));
         expected.push(path.join(surfacePath, 'legion-update.md'));
         break;
+      case 'kilo-commands':
+        expected.push(path.join(surfacePath, 'legion-start.md'));
+        expected.push(path.join(surfacePath, 'legion-update.md'));
+        break;
+      case 'kilo-agent':
+        expected.push(surfacePath);
+        break;
       default:
         throw new Error(`Unhandled native surface type in tests: ${surface.type}`);
     }

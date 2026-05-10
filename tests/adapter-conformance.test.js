@@ -332,11 +332,11 @@ describe('Adapter Conformance: Tool Mappings Completeness', () => {
 });
 
 describe('Adapter Conformance: Cross-adapter Consistency', () => {
-  test('exactly 9 adapter files exist (excluding ADAPTER.md)', () => {
+  test('exactly 10 adapter files exist (excluding ADAPTER.md)', () => {
     assert.equal(
       adapterFiles.length,
-      9,
-      `Expected 9 adapter files, found ${adapterFiles.length}: ${adapterFiles.join(', ')}`
+      10,
+      `Expected 10 adapter files, found ${adapterFiles.length}: ${adapterFiles.join(', ')}`
     );
   });
 
@@ -388,6 +388,7 @@ describe('Adapter Conformance: Detection Cross-Reference with workflow-common', 
     'kiro-cli': 'Kiro CLI',
     windsurf: 'Windsurf',
     opencode: 'OpenCode',
+    'kilo-cli': 'Kilo CLI',
     aider: 'Aider',
   };
 

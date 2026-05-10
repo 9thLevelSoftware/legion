@@ -13,6 +13,7 @@ Claude Code remains the control runtime. Every other runtime below was re-audite
 | Kiro CLI (formerly Amazon Q Developer CLI) | Beta | Custom agent and steering | Yes | Yes | `.kiro/agents/`, `.kiro/steering/`, `~/.kiro/agents/`, `~/.kiro/steering/` | `@legion-orchestrator` |
 | Windsurf | Experimental | Rules-only | Yes | No | `.windsurf/rules/legion.md` | Plain-language Legion requests |
 | OpenCode | Beta | Commands and subagent | Yes | Yes | `.opencode/command/`, `.opencode/agent/`, `~/.config/opencode/command/`, `~/.config/opencode/agent/` | `/legion-start` |
+| Kilo CLI | Beta | Commands and subagent | Yes | Yes | `.kilo/command/`, `.kilo/agent/`, `~/.config/kilo/command/`, `~/.config/kilo/agent/` | `/legion-start` |
 | Aider | Experimental | Manual-only | No | No | None | None |
 
 ## Evidence
