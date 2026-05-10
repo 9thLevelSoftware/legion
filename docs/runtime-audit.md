@@ -67,6 +67,10 @@ Claude Code remains the control runtime. Every other runtime below was re-audite
 - [Task tool and subagents](https://opencode.ai/docs/agents/task)
 - [Configuration](https://opencode.ai/docs/config)
 
+### Kilo CLI
+
+- [Kilo CLI custom commands](https://kilo.ai/docs)
+
 ### Aider
 
 - [Configuration](https://aider.chat/docs/config/aider_conf.html)

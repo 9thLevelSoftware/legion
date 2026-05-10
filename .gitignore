@@ -6,6 +6,7 @@ Thumbs.db
 .planning/codebase/
 
 # Local plugin/CLI state
+.claude/
 .claude-plugin/
 .legion/
 

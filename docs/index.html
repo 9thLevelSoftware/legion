@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legion | My Name Is Legion, For We Are Many</title>
-    <meta name="description" content="Orchestrate 49 AI specialist personalities across 9 AI CLI runtimes. Plan, build, review, and polish with personality-first agents across 9 divisions.">
+    <meta name="description" content="Orchestrate 49 AI specialist personalities across 10 AI CLI runtimes. Plan, build, review, and polish with personality-first agents across 9 divisions.">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -701,7 +701,7 @@
 
             <h1>LEG<span>I</span>ON</h1>
             <p class="tagline">"My Name Is Legion, For We Are Many"</p>
-            <p class="sub-tagline">49 AI Specialist Personalities. 9 CLI Runtimes. One Coordinated Force.</p>
+            <p class="sub-tagline">49 AI Specialist Personalities. 10 CLI Runtimes. One Coordinated Force.</p>
         </header>
 
         <div class="divider"><div class="divider-line"></div></div>
@@ -761,7 +761,7 @@
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--codex</span>      <span class="comment"># OpenAI Codex CLI</span>
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--cursor</span>     <span class="comment"># Cursor</span>
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--gemini</span>     <span class="comment"># Google Gemini CLI</span>
-<span class="comment"># + copilot, kiro, windsurf, opencode, aider</span>
+<span class="comment"># + copilot, kiro, windsurf, opencode, kilo, aider</span>
 
 <span class="comment"># Then, in any project directory:</span>
 <span class="command">/project:legion-start</span>    <span class="comment"># Codex local install</span>
@@ -1158,6 +1158,36 @@
 
         <div class="divider"><div class="divider-line"></div></div>
 
+        <!-- ===== v7.6.0 ===== -->
+        <section class="reveal-section">
+            <h2>v7.6.0 &mdash; Kilo CLI Support</h2>
+            <p class="intro-text" style="margin-bottom: 1.5rem;">
+                Tenth runtime adapter. Kilo CLI joins the Legion matrix with full tool mappings,
+                native command wrappers, and a <code>legion-orchestrator</code> subagent.
+                Blocking-only <code>task</code> execution with file-based coordination.
+            </p>
+            <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
+                <div class="feature-card">
+                    <h3>Kilo CLI Adapter</h3>
+                    <p>Beta-tier adapter with Kilo-specific quirks: blocking <code>task</code> tool, XML <code>&lt;suggest&gt;</code> tags for the <code>question</code> tool, and sequential execution. No parallel subagents.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Native Wrappers</h3>
+                    <p>Installs flat <code>/legion-start</code> commands to <code>.kilo/command/</code> and a <code>legion-orchestrator</code> subagent to <code>.kilo/agent/</code>. Same pattern as OpenCode but with Kilo-specific frontmatter.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>10 Runtimes</h3>
+                    <p>Legion now covers 10 AI CLI runtimes: Claude Code, Codex CLI, Cursor, Copilot CLI, Gemini CLI, Kiro CLI, Windsurf, OpenCode, <strong>Kilo CLI</strong>, and Aider.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Detection Protocol</h3>
+                    <p>Kilo CLI added to <code>workflow-common</code> Step 1 probe. Primary detection via <code>.kilo/command/legion-start.md</code>; secondary via <code>.kilo/agent/legion-orchestrator.md</code>.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"><div class="divider-line"></div></div>
+
         <!-- ===== v7.5.0 ===== -->
         <section class="reveal-section">
             <h2>v7.5.0 &mdash; Code Polish</h2>
@@ -1304,7 +1334,7 @@
                 "My name is Legion, for we are many."
             </p>
             <p style="margin-top: 0.5rem; color: #444; font-size: 0.8rem;">
-                49 agents &middot; 9 divisions &middot; 9 CLIs &middot; 18 commands &middot; 33 skills &middot; Zero runtime dependencies
+                49 agents &middot; 9 divisions &middot; 10 CLIs &middot; 18 commands &middot; 33 skills &middot; Zero runtime dependencies
             </p>
         </footer>
     </div>

@@ -5,6 +5,29 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.6.0] - 2026-05-10
+
+### Added
+- **Kilo CLI adapter** — 10th supported runtime (beta tier). Full adapter schema with Kilo-specific tool mappings (`question` tool with XML `<suggest>` tags, blocking `task` tool, file-based coordination). Native command and agent wrappers installed to `.kilo/command/` and `.kilo/agent/` (local) or `~/.config/kilo/` (global).
+- **`--kilo` install flag** — `npx @9thlevelsoftware/legion --kilo` installs flat `/legion-start` commands plus a `legion-orchestrator` subagent for Kilo CLI.
+- **`generateKiloCommand()` and `generateKiloAgent()`** in `bin/install.js` — follows the OpenCode pattern (closest structural match).
+- **Detection protocol** — Kilo CLI added to `skills/workflow-common/SKILL.md` Step 1 probe with primary/secondary paths.
+
+### Changed
+- **README.md** — Updated all "9 runtime" references to "10", added `--kilo` to install flags, support tiers table, and native entry points table.
+- **Runtime audit** — Added Kilo CLI row to `docs/runtime-audit.md` compatibility matrix.
+- **Certification checklist** — Added Kilo CLI certification steps to `docs/runtime-certification-checklists.md`.
+- **Website** (`docs/index.html`) — Updated stats bar (10 CLIs), install examples, meta description, and added v7.6.0 section.
+- **Test suite** — Bumped adapter count 9→10, added `kilo-commands`/`kilo-agent` to smoke test `expectedNativeFiles()`, added `kilo-cli` to `cliToDisplayName` mapping.
+- **Adapter count** — README, website, and test assertions all synchronized to 10 adapters.
+
+### Fixed
+- **GitHub Pages build** — Added `.claude/` to `.gitignore` and untracked `.claude/worktrees/` from git to fix `actions/checkout` submodule error.
+
+### Stats
+- 18 commands, 33 skills, 49 agents, 10 runtime adapters
+- 11 files changed, 347 insertions(+), 19 deletions(-)
+
 ## [7.5.0] - 2026-05-06
 
 ### Added
