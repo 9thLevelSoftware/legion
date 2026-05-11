@@ -5,6 +5,11 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.6.3] - 2026-05-11
+
+### Fixed
+- Kilo native command wrappers now run the `legion-orchestrator` subagent via `subtask: true`, avoiding invalid direct routing to a subagent-only agent.
+
 ## [7.6.2] - 2026-05-11
 
 ### Added

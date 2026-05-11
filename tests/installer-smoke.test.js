@@ -159,6 +159,16 @@ function assertManifest(runtimeKey, scope, projectDir, homeDir) {
   return { manifestFile, manifest };
 }
 
+function assertKiloCommandUsesSubtask(commandFile) {
+  const content = fs.readFileSync(commandFile, 'utf8');
+  assert.match(content, /^agent:\s+legion-orchestrator$/m, `${commandFile}: should route through the Legion orchestrator`);
+  assert.match(
+    content,
+    /^subtask:\s+true$/m,
+    `${commandFile}: commands routed to the subagent orchestrator must run as subtasks`
+  );
+}
+
 test('installer local mode installs runtime-native artifacts for every supported runtime', async (t) => {
   const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-local-smoke-'));
   const homeDir = path.join(sandboxRoot, 'home');
@@ -187,6 +197,10 @@ test('installer local mode installs runtime-native artifacts for every supported
 
       for (const filePath of nativeFiles) {
         assert.ok(fs.existsSync(filePath), `${runtimeKey}: expected native artifact missing at ${filePath}`);
+      }
+      if (runtimeKey === 'kilo') {
+        assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'command', 'legion-start.md'));
+        assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'command', 'legion-update.md'));
       }
 
       const uninstallResult = runInstaller([runtime.flag, '--local', '--uninstall'], projectDir, homeDir);
@@ -221,6 +235,10 @@ test('installer global mode installs runtime-native artifacts for every globally
       const nativeFiles = expectedNativeFiles(runtimeKey, 'global', projectDir, homeDir);
       for (const filePath of nativeFiles) {
         assert.ok(fs.existsSync(filePath), `${runtimeKey}: expected global native artifact missing at ${filePath}`);
+      }
+      if (runtimeKey === 'kilo') {
+        assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'command', 'legion-start.md'));
+        assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'command', 'legion-update.md'));
       }
 
       const uninstallResult = runInstaller([runtime.flag, '--global', '--uninstall'], projectDir, homeDir);

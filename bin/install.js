@@ -550,6 +550,7 @@ function generateKiloCommand(paths, commandName, commandContent) {
   return `---
 description: ${JSON.stringify(description)}
 agent: legion-orchestrator
+subtask: true
 ---
 
 ${legionRuntimeWrapperPreamble('Kilo CLI', commandName, paths)}
