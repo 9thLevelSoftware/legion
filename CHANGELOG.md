@@ -5,6 +5,21 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.6.2] - 2026-05-11
+
+### Added
+- Decision-complete execution harness contract for planning and build flows: `read-before-write -> evidence-before-action -> minimal diff -> verify-before-report`.
+- Markdown-only plan sections for executor constraints, stop gates, and recovery: `<execution_contract>`, `<stop_gates>`, and `<recovery>`.
+- Regression coverage for decision-complete planning contracts and vague plan action validation.
+
+### Changed
+- `/legion:plan`, `phase-decomposer`, `spec-pipeline`, `plan-critique`, and `wave-executor` now require implementable contracts with named read/write targets, explicit verification, and `BLOCKED` handling instead of executor-side guessing.
+- Focused planner, coordinator, reviewer, writer, and implementer personas now reference a reusable mandatory persona contract.
+- Kilo adapter guidance now documents Kimi K2.6 Turbo as a high-speed execution model that needs strict planner/executor separation and scope locking.
+
+### Fixed
+- Normalized the npm package manifest for publishing by removing the accidental package self-dependency.
+
 ## [7.6.1] - 2026-05-10
 
 ### Fixed

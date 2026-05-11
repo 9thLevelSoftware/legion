@@ -12,7 +12,7 @@ Pre-coding specification pipeline that produces a structured spec document befor
 
 Can be invoked standalone (before `/legion:plan`) or offered as an optional step during `/legion:plan` (step 3.6). Output is written to `.planning/specs/{NN}-{phase-slug}-spec.md`, where `{NN}` is the zero-padded phase number and `{phase-slug}` follows the phase slug convention from workflow-common-core.
 
-The 5 stages run sequentially: gather requirements, research domain, write spec, critique spec, assess complexity. Each stage has defined inputs, process, and outputs that feed the next stage.
+The 5 stages run sequentially: gather requirements, research domain, write spec, critique spec, assess complexity. Each stage has defined inputs, process, and outputs that feed the next stage. Specs must resolve design decisions before planning: API/type contracts, file placement, data/control flow, compatibility constraints, failure modes, and acceptance checks belong in the spec so `/legion:plan` can generate decision-complete implementation contracts.
 
 ## Activation trigger (concrete — no "when appropriate")
 
@@ -181,11 +181,18 @@ Step 4: Compile research brief
   ### Open Questions
   - {question that could not be resolved by research}
   - {question that needs user decision}
+  Each question must be classified as Blocking or Non-blocking.
+  Blocking questions halt planning until resolved.
+  Non-blocking questions must include the default chosen by the spec and the
+  evidence that makes that default safe.
 
   ### Recommended Approaches
   For each major deliverable:
   - **{deliverable}**: {recommended approach based on research}
     Rationale: {why this approach, what evidence supports it}
+    Decision coverage: {API/type contracts, file placement, data/control flow,
+    compatibility constraints, failure modes, and acceptance checks resolved for
+    this deliverable}
 ```
 
 ---
@@ -234,6 +241,36 @@ Step 2: Draft spec document
   |----------|--------|-----------|----------------------|
   | {decision} | {what was chosen} | {why} | {what else was considered} |
 
+  ## API and Type Contracts
+  {For each public or internal interface created/changed: function signatures,
+  exported types, request/response shapes, schema keys, command arguments,
+  output formats, and backward-compatibility expectations. If no API/type
+  contract changes exist, write `None -- no API or type contract changes`.}
+
+  ## File Placement
+  | Artifact | Path | Placement Rationale | Existing Pattern |
+  |----------|------|---------------------|------------------|
+  | {artifact} | {path} | {why this path is correct} | {source file/pattern followed} |
+
+  ## Data and Control Flow
+  {Ordered flow from input/source through transformation, persistence/output,
+  errors, and verification. Include caller/callee relationships or artifact
+  producer/consumer relationships.}
+
+  ## Compatibility Constraints
+  - {public API, persisted data, CLI, adapter, config, migration, platform, or
+    backward-compatibility constraint}
+
+  ## Failure Modes
+  | Failure Mode | Expected Behavior | Verification |
+  |--------------|-------------------|--------------|
+  | {missing file / invalid input / unavailable dependency / conflict} | {behavior} | {check} |
+
+  ## Acceptance Checks
+  | Check | Command or Evidence | Required |
+  |-------|---------------------|----------|
+  | {acceptance check} | {command or deterministic evidence} | true/false |
+
   ## Deliverables
   {For each deliverable:}
 
@@ -247,11 +284,11 @@ Step 2: Draft spec document
   ## Open Questions
   {Unresolved items from research. Items needing user decision.
   Each question should note its impact: "Blocking" (must resolve before
-  planning) or "Deferrable" (can resolve during implementation).}
+  planning) or "Non-blocking" (the spec chooses a default that planning may use).}
 
-  | # | Question | Impact | Default if Unresolved |
-  |---|----------|--------|---------------------|
-  | 1 | {question} | Blocking / Deferrable | {what happens if not answered} |
+  | # | Question | Impact | Default Chosen by Spec | Planning Effect |
+  |---|----------|--------|------------------------|-----------------|
+  | 1 | {question} | Blocking / Non-blocking | {only for Non-blocking; Blocking = none} | {halt planning or use default} |
 
   ## Complexity Assessment
   {Left empty — filled in by Section 5}
@@ -263,8 +300,10 @@ Step 3: Validate spec completeness
   - [ ] Every requirement from Section 1 appears in the Requirements table
   - [ ] Every deliverable has a defined path and purpose
   - [ ] Architecture section explains how deliverables connect
+  - [ ] API/type contracts are explicit, or explicitly marked none
+  - [ ] File placement, data/control flow, compatibility constraints, failure modes, and acceptance checks are explicit
   - [ ] Key decisions have rationale (not arbitrary choices)
-  - [ ] Open questions are categorized as Blocking or Deferrable
+  - [ ] Blocking open questions halt planning; Non-blocking open questions include a default chosen by the spec
 
   The spec is a draft at this stage — Section 4 will critique it.
 
@@ -419,6 +458,17 @@ Step 3: Review deliverable specifications
   b. Are dependencies on other deliverables explicit?
   c. Is the estimated size reasonable for the described content?
   d. Are there files the deliverable should modify that aren't listed?
+  e. Are API/type contracts, file placement, data/control flow, compatibility
+     constraints, failure modes, and acceptance checks specific enough for
+     phase-decomposer to create implementation contracts without new design work?
+
+Step 3.5: Review open questions and defaults
+  - If any Open Question is `Blocking`: verdict is REWORK and `/legion:plan`
+    must halt until the user or spec revision resolves it.
+  - If any Non-blocking question lacks a default chosen by the spec: verdict is
+    REWORK. Planning must not ask the implementer to choose the default.
+  - If a default has no cited evidence or compatibility rationale: verdict is
+    CAUTION or REWORK depending on impact.
 
 Step 4: Hunt implicit assumptions
   Apply the same assumption extraction technique as plan-critique
@@ -447,7 +497,8 @@ Step 6: Revise spec
   a. Fill coverage gaps (add missing deliverables or acceptance criteria)
   b. Strengthen weak decisions (add real rationale or change the decision)
   c. Make deliverables more concrete (add structure details, key content)
-  d. Convert high-impact/weak-evidence assumptions into Open Questions
+  d. Convert high-impact/weak-evidence assumptions into Blocking Open Questions
+     or resolve them with a chosen Non-blocking default and evidence
   e. Note applied revisions at the bottom of the spec:
 
   ## Revision History
@@ -538,7 +589,7 @@ How the spec pipeline connects with other Legion workflows.
 | `/legion:build` | Agents can reference the spec document for implementation guidance. Spec path included in plan `<context>` blocks. | Build reads spec |
 | `plan-critique` | Spec critique (Section 4) reuses the same skeptical-agent pattern and read-only Explore spawning from plan-critique Section 4. | Shared pattern |
 | `workflow-common` | Spec documents stored at `.planning/specs/{NN}-{phase-slug}-spec.md`. Registered in State File Locations table and Command-to-Skill Mapping. | Registration |
-| `phase-decomposer` | If a spec exists when decomposition begins, deliverables and architecture from the spec document supplement ROADMAP.md requirements. | Decomposer reads spec |
+| `phase-decomposer` | If a spec exists when decomposition begins, deliverables, API/type contracts, file placement, data/control flow, compatibility constraints, failure modes, acceptance checks, and chosen Non-blocking defaults from the spec supplement ROADMAP.md requirements. Any Blocking open question halts planning. | Decomposer reads spec |
 
 ### Spec Document Lifecycle
 
@@ -556,9 +607,9 @@ Absent → Created (Section 3) → Critiqued (Section 4) → Assessed (Section 5
 
 Spec pipeline follows the same degradation pattern as all Legion optional features:
 1. Check if `.planning/specs/{NN}-{phase-slug}-spec.md` exists
-2. If yes: use spec data to enhance planning and execution context
+2. If yes: use spec data to enhance planning and execution context; halt planning if it contains unresolved Blocking open questions
 3. If no: skip silently — plan from ROADMAP.md requirements directly
-4. Never error, never block, never require a spec for workflow completion
+4. Never require a spec for workflow completion, but once a spec exists its Blocking open questions are authoritative stop gates
 
 ---
 
@@ -802,7 +853,8 @@ This skill completes when ALL conditions are met:
 1. All 5 pipeline stages have been executed in order: gather → research → write → critique → assess (no stage skipped unless explicitly listed as optional in Section 6)
 2. Spec document written to `.planning/phases/{NN}/SPEC.md` (or configured path) with all required sections present: Requirements, Architecture, Deliverables, Key Decisions, Open Questions, Assessment
 3. Section 5 acceptance checklist is machine-checkable: each of the 5 checklist items has produced an observable PASS/FAIL result (not a free-text judgment), written into the Assessment section
-4. `Open Questions` section either lists concrete questions with owner+due-date, or is explicitly written as `None — all decisions resolved`
-5. Critique stage (Stage 4) has emitted a verdict and any REWORK findings have been addressed before SPEC.md is marked final
+4. `Open Questions` section either lists concrete questions with owner+due-date, or is explicitly written as `None -- all decisions resolved`
+5. No Blocking open question remains unresolved before planning starts; every Non-blocking question includes a default chosen by the spec
+6. Critique stage (Stage 4) has emitted a verdict and any REWORK findings have been addressed before SPEC.md is marked final
 
 If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

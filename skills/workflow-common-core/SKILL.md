@@ -17,6 +17,35 @@ Always-load core conventions for every `/legion:` command. This file is intentio
 - Resolve `AGENTS_DIR` once per invocation before loading personality files.
 - Provide baseline command-to-skill mapping and context budget ceilings.
 
+## Execution Harness Contract (Core)
+
+Every planning, execution, review, and advisory prompt must preserve this shared
+contract:
+
+`read-before-write -> evidence-before-action -> minimal diff -> verify-before-report`
+
+The contract turns Legion plans into constrained implementation work instead of
+open-ended design prompts. Any generated plan, executor prompt, or review brief
+that asks an implementation agent to modify files must define:
+
+| Field | Required content |
+|-------|------------------|
+| Role | The agent role/persona responsible for the task and whether it is planner, executor, reviewer, or coordinator work |
+| Task | The exact outcome to produce, with requirement IDs or source references |
+| Scope | Exact read targets, exact write targets, files_forbidden, and any sequential_files constraints |
+| Allowed tools/actions | The tools/actions the agent may use, including verification commands and permitted file edits |
+| Forbidden actions | Out-of-scope files, unapproved dependencies, API/schema/architecture changes, destructive git operations, and self-deferral |
+| Stop gates | Conditions that must halt execution and emit `BLOCKED` instead of guessing |
+| Verification criteria | Commands or deterministic checks that prove success before reporting |
+| Final result format | Required status, files changed, verification evidence, decisions, issues, and errors |
+
+Stop gates are mandatory when a prompt or plan is incomplete. If a required read
+target is missing, a write target is absent from `files_modified`, instructions
+conflict with `files_forbidden`, an API/type/validation decision is unresolved,
+or success cannot be verified, the agent must report `BLOCKED` with evidence and
+the narrow missing decision. It must not infer the design, broaden scope, or
+report confidence without proof.
+
 ## Adapter Detection (Core)
 
 1. Check `.legion-cli` override in project root.

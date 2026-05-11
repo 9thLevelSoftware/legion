@@ -105,6 +105,27 @@ Kilo supports user-configured models across providers. Recommended tier assignme
 
 Model configuration is set in Kilo's configuration file. Legion reads whatever model the user has configured — the above are recommendations, not requirements.
 
+### Kimi K2.6 Turbo Guidance
+
+Kimi K2.6 Turbo should be treated as a high-speed execution model, not as a
+planner substitute. When Kilo users configure Kimi for `model_execution`, Legion
+must lean harder on planner/executor separation:
+
+- Planning produces decision-complete implementation contracts before execution.
+- Execution prompts lock scope to `files_modified` and `files_forbidden`.
+- Stop gates use literal `BLOCKED` when read targets, APIs, helpers, validation
+  rules, or verification commands are missing.
+- Result artifacts are persisted to `.planning/phases/{NN}/{NN}-{PP}-RESULT.md`
+  before the coordinator advances.
+- Ambiguity is reduced in the prompt: clear role, task, scope, allowed
+  tools/actions, forbidden actions, verification criteria, and final result
+  format.
+- The execution harness is mandatory:
+  `read-before-write -> evidence-before-action -> minimal diff -> verify-before-report`.
+
+This is adapter guidance only. It does not add a Kimi runtime dependency or
+change Kilo's user-configured model selection.
+
 ### Model Selection Guidelines
 
 - **Budget-conscious**: Use the same mid-tier model (e.g., `claude-sonnet-4-6`) for all three tiers. Acceptable quality loss on planning, significant cost savings.

@@ -253,6 +253,64 @@ what might be missed, not to mandate 100% coverage.
 
 ---
 
+## Section 2.6: Decision Completeness Check (COMP-02)
+
+Evaluates whether each plan is a decision-complete implementation contract rather
+than an invitation for the executor to design the approach during implementation.
+
+```
+Decision Completeness Check:
+
+Input: all plan files for the phase
+
+Step 1: Validate required harness sections
+  For each plan:
+  - Must include `<execution_contract>`, `<stop_gates>`, and `<recovery>`.
+  - `<execution_contract>` must mention:
+    read-before-write, evidence-before-action, minimal diff, verify-before-report,
+    role, task, scope, allowed tools/actions, forbidden actions, verification
+    criteria, and final result format.
+  - `<stop_gates>` must use the literal status `BLOCKED`.
+  - `<recovery>` must mention `git diff`, modified files, verification state,
+    and the plan result artifact.
+
+Step 2: Find implementer-owned decisions
+  Flag a decision-completeness gap when a task asks the executor to:
+  - choose architecture or design pattern
+  - infer paths, APIs, schemas, types, helpers, or imports
+  - decide validation behavior, error handling, compatibility behavior, or UI states
+  - invent test files, test commands, mocks, fixtures, or acceptance checks
+  - use phrases such as "implement as appropriate", "use existing helpers"
+    without named files/symbols/patterns, "add tests" without paths and
+    commands, or "verify manually"
+  - rely on "confidence", "looks good", or unscripted review instead of proof
+
+Step 3: Rate each gap
+  - High impact: executor could choose a different architecture/API/path/test
+    shape than the planner intended, or success cannot be proven.
+  - Medium impact: executor still has a constrained path, but one edge/error
+    case or helper reference needs clarification.
+  - Low impact: wording polish; no implementation choice changes.
+
+Step 4: Produce decision-completeness findings
+  | # | Gap | Plan | Task/Section | Impact | Required Rewrite |
+  |---|-----|------|--------------|--------|------------------|
+  | 1 | {gap} | {NN}-{PP} | {task or section} | High | {exact addition needed} |
+
+  Any High impact decision-completeness gap triggers REWORK.
+  Three or more Medium impact gaps in one plan also trigger REWORK.
+  Low impact gaps are CAUTION unless they combine with other blockers.
+
+Step 5: AUTO_REFINE behavior
+  When `AUTO_REFINE=true`, rewrite affected plans and re-run critique until:
+  - no High impact decision-completeness gaps remain,
+  - every stop gate has a BLOCKED condition,
+  - every executor decision is either resolved by the plan or explicitly blocked,
+  - or MAX_REFINE_CYCLES is exhausted.
+```
+
+---
+
 ## Section 3: Critique Report and Routing
 
 How to synthesize both passes and route to user action.
@@ -267,16 +325,20 @@ Step 1: Merge findings
   - Pre-mortem critical risks (Section 1)
   - Assumption critical/warning items (Section 2)
   - Completeness gaps (Section 2.5)
+  - Decision-completeness gaps (Section 2.6)
   Deduplicate: if a pre-mortem finding and an assumption point to the same
   plan section with the same root issue, merge into one entry.
   Schema BLOCKERs are never deduplicated — they always appear individually.
 
 Step 2: Compute critique verdict
   - PASS: No schema BLOCKERs AND no critical risks AND no critical assumptions
+    AND no High impact decision-completeness gaps
     → "Plan looks solid. Proceed to execution."
   - CAUTION: 1-2 critical items (including schema warnings), all have clear mitigations
+    AND decision-completeness gaps are Low/Medium only
     → "Plan has addressable risks. Review mitigations before proceeding."
-  - REWORK: Any schema BLOCKER OR any wave overlap BLOCKER OR 3+ critical items OR any item without clear mitigation
+  - REWORK: Any schema BLOCKER OR any wave overlap BLOCKER OR any High impact
+    decision-completeness gap OR 3+ critical items OR any item without clear mitigation
     → "Plan needs revision before execution."
 
 Step 3: Present consolidated critique
@@ -293,6 +355,7 @@ Step 3: Present consolidated critique
   | Assumptions extracted | {N} |
   | Critical assumptions | {N} |
   | Warning assumptions | {N} |
+  | Decision-completeness gaps | {N} |
   | Merged findings | {N} |
 
   ### Schema Conformance
@@ -329,8 +392,10 @@ Step 4: Route based on verdict
     - "Proceed anyway" — execute despite warnings (user takes responsibility)
     - "Re-plan from scratch" — delete plans, restart /legion:plan
 
-  User choice determines next action. Critique does NOT automatically
-  modify plans — the user decides.
+  User choice determines next action unless `AUTO_REFINE=true`. In normal mode,
+  critique does NOT automatically modify plans. In AUTO_REFINE mode, REWORK from
+  decision-completeness gaps triggers plan rewrites until the executor has no
+  high-impact decisions left or MAX_REFINE_CYCLES is exhausted.
 ```
 
 ---

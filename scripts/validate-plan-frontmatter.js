@@ -27,6 +27,86 @@ function getValidator() {
   return _validator;
 }
 
+function lineNumberAt(text, index) {
+  return text.slice(0, index).split(/\r?\n/).length;
+}
+
+function hasNamedFileOrPattern(line) {
+  return /`[^`]+`/.test(line)
+    || /\b(?:from|in|at)\s+[\w./*{}-]+\.(?:js|jsx|ts|tsx|mjs|cjs|py|rb|go|rs|java|kt|swift|md|json|ya?ml|toml|sh|ps1)\b/i.test(line);
+}
+
+function extractActionBlocks(text) {
+  const blocks = [];
+  const re = /<action>([\s\S]*?)<\/action>/gi;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    blocks.push({
+      text: match[1],
+      start: match.index,
+    });
+  }
+  return blocks;
+}
+
+function validatePlanBodyContract(text) {
+  const errors = [];
+  const actionBlocks = extractActionBlocks(text);
+
+  for (const block of actionBlocks) {
+    const blockHasVerification = /^>\s*verification:/im.test(block.text);
+    const lines = block.text.split(/\r?\n/);
+    let offset = 0;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const absoluteIndex = block.start + offset;
+      const lineNumber = lineNumberAt(text, absoluteIndex);
+
+      if (trimmed.startsWith('|')) {
+        offset += line.length + 1;
+        continue;
+      }
+
+      if (/\bimplement as appropriate\b/i.test(line)) {
+        errors.push({
+          instancePath: '/body',
+          keyword: 'decisionComplete',
+          message: `line ${lineNumber}: vague action phrase "implement as appropriate" is forbidden`,
+        });
+      }
+
+      if (/\bverify manually\b/i.test(line)) {
+        errors.push({
+          instancePath: '/body',
+          keyword: 'decisionComplete',
+          message: `line ${lineNumber}: "verify manually" is not a deterministic verification command`,
+        });
+      }
+
+      if (/\buse existing helpers\b/i.test(line) && !hasNamedFileOrPattern(line)) {
+        errors.push({
+          instancePath: '/body',
+          keyword: 'decisionComplete',
+          message: `line ${lineNumber}: "use existing helpers" must name the helper file, symbol, or grep-able pattern`,
+        });
+      }
+
+      if (/\badd tests\b/i.test(line) && (!hasNamedFileOrPattern(line) || !blockHasVerification)) {
+        errors.push({
+          instancePath: '/body',
+          keyword: 'decisionComplete',
+          message: `line ${lineNumber}: "add tests" must name test path(s) and include verification command expectations`,
+        });
+      }
+
+      offset += line.length + 1;
+    }
+  }
+
+  return errors;
+}
+
 function validatePlanFile(filePath) {
   let text;
   try { text = fs.readFileSync(filePath, 'utf8'); } catch (e) {
@@ -43,8 +123,9 @@ function validatePlanFile(filePath) {
   } catch (e) {
     return { valid: false, errors: [{ message: e.message }] };
   }
-  const valid = validate(fm);
-  return { valid, errors: validate.errors || [], file: filePath };
+  const schemaValid = validate(fm);
+  const errors = [...(validate.errors || []), ...validatePlanBodyContract(text)];
+  return { valid: schemaValid && errors.length === 0, errors, file: filePath };
 }
 
 function findPlanFiles(dir) {
@@ -109,4 +190,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { validatePlanFile, validatePlanDir, findPlanFiles };
+module.exports = { validatePlanFile, validatePlanDir, findPlanFiles, validatePlanBodyContract };

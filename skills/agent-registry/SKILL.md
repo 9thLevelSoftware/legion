@@ -12,6 +12,15 @@ Complete catalog of all agent personalities. Includes 48 built-in agents across 
 
 > Agent catalog and task-type index are in `CATALOG.md` in this directory.
 
+## Mandatory Persona Contract
+
+All built-in and custom personas are governed by
+`skills/agent-registry/MANDATORY-PERSONA-CONTRACT.md`. When a command injects a
+persona, the task prompt must preserve that contract:
+`read-before-write -> evidence-before-action -> minimal diff -> verify-before-report`.
+Planner/reviewer personas must produce decision-complete contracts; executor
+personas must emit `BLOCKED` rather than fill high-impact gaps opportunistically.
+
 ---
 
 ## Section 3: Recommendation Algorithm (v2 Four-Layer Scoring)

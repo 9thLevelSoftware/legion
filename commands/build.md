@@ -7,6 +7,11 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDele
 
 <objective>
 Execute all plans for the current (or specified) phase. Spawn agents with full personality injection, execute waves in parallel, track progress, and commit completed work.
+
+Executors must follow the shared execution harness:
+`read-before-write -> evidence-before-action -> minimal diff -> verify-before-report`.
+If a plan is ambiguous, missing required files, conflicts with scope, or cannot be
+verified, report `BLOCKED` instead of guessing.
 </objective>
 
 <execution_context>

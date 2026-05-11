@@ -8,7 +8,7 @@ summary: "Breaks down roadmap phases into dependency-ordered implementation plan
 
 # Phase Decomposer
 
-Engine for `/legion:plan`. Takes a ROADMAP.md phase entry and transforms it into executable, wave-structured plan files with per-plan agent recommendations. The full flow: analyze phase, decompose into plans, recommend agents, present for confirmation, generate plan files.
+Engine for `/legion:plan`. Takes a ROADMAP.md phase entry and transforms it into decision-complete implementation contracts with per-plan agent recommendations. The full flow: analyze phase, resolve design decisions, decompose into independently verifiable plans, recommend agents, present for confirmation, generate plan files.
 
 ---
 
@@ -17,13 +17,14 @@ Engine for `/legion:plan`. Takes a ROADMAP.md phase entry and transforms it into
 1. **Max tasks per plan comes from settings** — read `settings.json` key `planning.max_tasks_per_plan` (default: 3). If a plan needs more work than that limit, split it into additional plans. Plans stay focused and reviewable.
 2. **Wave-structured execution** — Wave 1 plans have no internal dependencies. Wave 2 plans depend on Wave 1 outputs. Parallel within waves, sequential between waves.
 3. **Per-plan agent assignment** — different plans in the same phase may use different agents. A frontend plan gets a frontend agent; a testing plan gets a testing agent.
-4. **Self-contained plans** — each plan must be executable with only its `<context>` references. An agent should never need to read a file not listed in context.
+4. **Self-contained plans** — each plan must be executable with only its `<context>` and `<execution_contract>` references. An agent should never need to read a file not listed in the contract.
 5. **Concrete verification** — every task has BOTH:
    - `> verification:` inline lines after the task description — machine-checkable commands that can be extracted and run automatically by the wave-executor
    - A `<verify>` block with the same commands in executable form
    No "manually check" or "visually inspect" instructions. If you cannot script the check, the task is too vague.
-6. **Fewer plans over more** — 2 focused plans beats 4 thin ones. Combine related work when it fits within the configured task limit. Only create additional plans when dependency ordering or agent specialization requires separation.
+6. **Smallest independently verifiable plan** — choose the smallest plan that can be executed and verified on its own. `planning.max_tasks_per_plan` is a cap, not a compression goal; do not combine work just to reduce plan count when it leaves the executor making design decisions.
 7. **No planned-work deferrals** — every planned task must be written so execution ends in one of three states: completed, blocked with evidence, or escalated through the blocker escalation protocol. Do not tell executors to leave planned work for later, move it to a future phase, or mark it deferred unless the task itself is to create a user-approved follow-up artifact.
+8. **Decision-complete implementation contracts** — every plan must name exact read targets, write targets, implementation sequence, required interfaces or content structure, edge/error cases, forbidden files, verification commands, and `BLOCKED` conditions. If a planner cannot decide an API, path, validation behavior, helper, or test location, planning is not done.
 
 ---
 
@@ -269,6 +270,9 @@ How to break a phase's requirements into plans and tasks.
 1. LIST all concrete deliverables implied by the phase requirements
    - Each requirement may produce 1-3 deliverables (files, features, configs)
    - Group deliverables by dependency: which ones need others to exist first?
+   - Carry forward any spec decisions: API/type contracts, file placement,
+     data/control flow, compatibility constraints, failure modes, and
+     acceptance checks. Do not re-open resolved spec choices during planning.
 
 2. IDENTIFY dependency layers
    - Layer 0: Deliverables with no dependencies (new files, foundations)
@@ -284,12 +288,21 @@ How to break a phase's requirements into plans and tasks.
    - Max {max_tasks_per_plan} tasks per plan (from settings, default 3)
    - Group by: same file being modified, same skill/pattern, same agent specialty
    - Name plans by their primary output: "Create {X} skill", "Update {Y} command"
+   - Split plans whenever a combined plan would require the executor to choose
+     architecture, infer file paths, identify unnamed helpers, invent test
+     locations, or decide validation behavior.
 
 5. VALIDATE plan structure
    - Every requirement from ROADMAP.md is covered by at least one task
    - No circular dependencies between waves
    - Each plan can be executed independently of other plans in the same wave
-   - Total plan count matches or is close to ROADMAP.md estimate
+   - Total plan count is justified by independent verification boundaries.
+     ROADMAP.md plan counts are estimates, not caps.
+   - Each plan has an execution harness contract:
+     read-before-write -> evidence-before-action -> minimal diff -> verify-before-report
+   - Each plan declares exact read targets, write targets, implementation
+     sequence, required interfaces/content structure, edge/error cases,
+     forbidden files, verification commands, and BLOCKED stop conditions.
 ```
 
 ### Grouping Heuristics
@@ -641,14 +654,69 @@ Relevant source files:
 {@files that need to be read for context}
 </context>
 
+<execution_contract>
+Harness: read-before-write -> evidence-before-action -> minimal diff -> verify-before-report
+
+Role: {primary executor role and any reviewer/coordinator role}
+Task: {exact deliverable and requirement IDs this plan satisfies}
+Scope:
+- Read targets: {exact files/directories the executor must inspect before editing}
+- Write targets: {exact files from files_modified that may be created or changed}
+- Forbidden targets: {exact files/directories from files_forbidden that must not change}
+Allowed tools/actions:
+- {allowed reads/searches/edits/test commands for this plan}
+Forbidden actions:
+- Do not modify files outside files_modified.
+- Do not add unplanned dependencies.
+- Do not change public APIs, schemas, migrations, auth, CI, or deployment unless explicitly listed in this plan.
+- Do not self-defer planned work.
+Implementation sequence:
+1. {read and confirm source context}
+2. {first exact edit}
+3. {second exact edit}
+Required interfaces/content structure:
+- {function signatures, exported types, markdown headings, config keys, output shape, or UI states}
+Edge/error cases:
+- {named boundary, failure, empty, permission, compatibility, or rollback cases}
+Verification criteria:
+- {task-level and plan-level commands that must pass}
+Final result format:
+- Status: Complete | Partial | Failed | BLOCKED
+- Files changed
+- Verification commands and outputs
+- Decisions made
+- Issues/errors
+</execution_contract>
+
+<stop_gates>
+Emit `BLOCKED` and stop instead of guessing when:
+- A read target listed in `<context>` or `<execution_contract>` is missing or unreadable.
+- Required source evidence contradicts the plan.
+- Completing the task requires a file not listed in `files_modified`.
+- Any instruction conflicts with `files_forbidden`, authority boundaries, control mode, or user_setup.
+- An API/type/schema/validation/architecture decision is not specified.
+- A required helper, pattern, or test location is named vaguely or cannot be found.
+- Verification commands are missing, non-deterministic, fail after one focused fix attempt, or cannot run in the environment.
+</stop_gates>
+
+<recovery>
+After compaction, interruption, or context loss:
+1. Re-read this PLAN.md, the phase CONTEXT.md, and any RESULT/SUMMARY artifact for this plan.
+2. Run `git diff --stat` and inspect `git diff` for every file already changed.
+3. Compare changed files against `files_modified` and `files_forbidden`; if any unapproved change exists, emit `BLOCKED`.
+4. Re-run completed task verification commands before continuing.
+5. Continue only from the next unverified task; do not rely on memory-only claims.
+</recovery>
+
 <tasks>
 
 <task type="auto">
   <name>Task {N}: {descriptive name}</name>
   <files>{files to create or modify}</files>
   <action>
-{Detailed, unambiguous instructions for what to do.
-Include format examples, specific content guidance,
+{Decision-complete, unambiguous instructions for what to do.
+Include exact read targets, exact write targets, implementation sequence,
+format examples, required interfaces/content structure, edge/error cases,
 and enough detail that the executor does not need to guess.
 Do not include "leave for later", "future phase", or self-deferral instructions
 for any in-scope planned work. If permission or scope may block completion,
@@ -710,6 +778,9 @@ After completion, create `.planning/phases/{NN}-{phase-slug}/{NN}-{PP}-SUMMARY.m
 | `expected_artifacts` | Structured list of output files this plan produces. Each entry has `path` (file path), `provides` (1-sentence description of what it delivers), and `required` (true/false — true means plan fails without this artifact). This is the **contract** — it declares what outputs exist after execution. Distinct from `must_haves.artifacts` which declares quality checks (min_lines, contains) on those outputs. |
 | `verification_commands` | **Mandatory** array of bash commands that prove plan-level success. Each command must return exit code 0 on success, be self-contained (no variables or prior setup), and run from repository root. These are plan-level aggregation checks — they may echo task-level `> verification:` lines but should also include integration checks (e.g., "all generated files exist", "no regressions in test suite"). Plan-critique flags plans missing this field as BLOCKER. |
 | `<verify>` inside tasks | Bash commands only — `wc -l`, `grep`, `test -f`, etc. |
+| `<execution_contract>` | Markdown-only harness contract consumed by executors. Must include role, task, scope, read targets, write targets, allowed tools/actions, forbidden actions, implementation sequence, required interfaces/content structure, edge/error cases, verification criteria, and final result format. |
+| `<stop_gates>` | Markdown-only list of conditions that force `BLOCKED` instead of guessing. Missing read targets, unlisted write targets, conflicting instructions, forbidden operations, unresolved decisions, vague helper/test references, and unverifiable success must appear here when relevant. |
+| `<recovery>` | Markdown-only compaction/interruption recovery protocol. Must tell the executor to re-read the plan/result artifact, inspect `git diff`, compare changed files against `files_modified`/`files_forbidden`, rerun verification, and continue only from unverified work. |
 | `<verification>` | Checklist of all conditions for plan completion |
 | `<success_criteria>` | Bulleted testable outcomes |
 
@@ -734,14 +805,21 @@ Both should reference the same files, but serve different validation stages.
 Task `<action>` blocks must be detailed enough for an executor (agent or autonomous) to complete without guessing. Include:
 
 - **What to create/modify** — exact file paths
+- **What to read first** — exact source, spec, test, schema, or pattern files
+- **Implementation sequence** — ordered steps with no hidden design choices
 - **Format/structure** — headings, sections, YAML frontmatter if applicable
+- **Interfaces/contracts** — function signatures, exported types, request/response shapes, content structure, config keys, or UI states
 - **Content guidance** — what each section should contain, with examples
-- **References** — which existing files to read for patterns or data
+- **References** — which existing files to read for patterns or data; do not say "use existing helpers" unless the helper file, symbol, or grep-able pattern is named
+- **Edge/error cases** — null/empty/max/error/permission/compatibility behavior when applicable
 - **Constraints** — line counts, required strings, formatting rules
+- **Forbidden files** — explicit files/directories this task must not touch
+- **BLOCKED conditions** — exact missing evidence or unresolved decisions that halt execution
 - **Completion contract** — each planned task must end as completed, blocked with evidence, or escalated; never instruct the executor to defer planned work on its own authority
 
 Bad action: "Create the authentication module."
-Good action: "Create `src/auth/jwt.ts`. Export two functions: `generateToken(userId: string): string` and `verifyToken(token: string): { userId: string } | null`. Use the `jose` library. Tokens expire in 24 hours. Include the refresh token rotation pattern from `@docs/auth-spec.md` Section 3."
+Bad action: "Use existing helpers and add tests as appropriate."
+Good action: "Read `docs/auth-spec.md` Section 3 and `src/auth/session.ts`. Create `src/auth/jwt.ts`. Export `generateToken(userId: string): string` and `verifyToken(token: string): { userId: string } | null`. Use existing helper `readSecret()` from `src/auth/session.ts`; do not touch `src/auth/oauth.ts`. Tokens expire in 24 hours. Add tests in `tests/auth/jwt.test.ts` covering valid token, expired token, malformed token, and missing secret. If `readSecret()` is absent, emit `BLOCKED`."
 
 ### Prohibited Deferral Language
 
@@ -990,10 +1068,12 @@ This skill completes when ALL conditions are met:
 1. `.planning/phases/{NN}/` directory exists for the target phase
 2. At least one plan file `NN-PP-{slug}.md` written to that directory, each with valid frontmatter (`phase`, `plan`, `wave`, `agents`, `expected_artifacts`, `verification_commands`, `files_modified`)
 3. Every plan has non-placeholder `verification_commands` that exit zero when the plan succeeds
-4. Plans are grouped into waves (`wave: 1`, `wave: 2`, ...); wave-level file-overlap detection has run and no unresolved overlaps remain
-5. User confirmation captured via `AskUserQuestion` (proceed / swap agent / adjust / cancel) with "proceed" recorded before any plan files are written
-6. If cancelled: no partial plan files on disk (clean rollback)
-7. No generated task delegates planned in-scope work to an agent-authored deferred state; any unresolved planned work is represented as blocked evidence or a blocker escalation path
+4. Every plan includes `<execution_contract>`, `<stop_gates>`, and `<recovery>` sections containing the harness terms `read-before-write`, `evidence-before-action`, `minimal diff`, `verify-before-report`, and `BLOCKED`
+5. Each task names exact read targets, write targets, implementation sequence, required interfaces/content structure, edge/error cases, forbidden files, verification commands, and BLOCKED conditions
+6. Plans are grouped into waves (`wave: 1`, `wave: 2`, ...); wave-level file-overlap detection has run and no unresolved overlaps remain
+7. User confirmation captured via `AskUserQuestion` (proceed / swap agent / adjust / cancel) with "proceed" recorded before any plan files are written
+8. If cancelled: no partial plan files on disk (clean rollback)
+9. No generated task delegates planned in-scope work to an agent-authored deferred state; any unresolved planned work is represented as blocked evidence or a blocker escalation path
 
 If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.
 

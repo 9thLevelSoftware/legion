@@ -7,6 +7,10 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 
 <objective>
 Decompose a roadmap phase into wave-structured plans using `settings.planning.max_tasks_per_plan` (default 3). Recommend agents from the registry for each plan and get user confirmation. Generate plan files to `.planning/phases/{NN}-{slug}/`.
+
+Every generated plan must be a decision-complete implementation contract that
+follows the shared execution harness:
+`read-before-write -> evidence-before-action -> minimal diff -> verify-before-report`.
 </objective>
 
 <execution_context>

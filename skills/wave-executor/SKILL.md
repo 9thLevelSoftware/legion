@@ -48,6 +48,7 @@ These rules govern all execution decisions. Do not deviate from them.
 11. **Agents report via adapter.collect_results** — spawned agents send their structured completion summary per the adapter's result collection method. This keeps the coordinator's context window small.
 12. **Verification-gated completion** — after each task, the agent MUST run all `> verification:` commands from the task's action block. If any verification command returns a non-zero exit code, the task is marked as failed and the agent must report the failure. Do not proceed to the next task until all verifications pass.
 13. **No agent self-deferrals** — agents must attempt every in-scope planned task. They may complete it, fail it with evidence, or raise a blocker escalation for human resolution. They must never mark planned work as deferred on their own authority, treat deferred work as complete, or move in-scope planned work to a later phase without an explicit user decision.
+14. **Execution harness contract** — every executor prompt enforces `read-before-write -> evidence-before-action -> minimal diff -> verify-before-report`. Agents must read listed context before editing, prove source evidence before acting, keep diffs inside `files_modified`, run verification before reporting, and emit `BLOCKED` instead of guessing on ambiguity, missing files, conflicting instructions, forbidden operations, or unverifiable success.
 
 ---
 
@@ -214,7 +215,16 @@ Step 5: Validate the plan structure
      and fuzzy matches. Run /legion:update to reinstall agent files."
      This step prevents the most common execution failure: hallucinating that agent
      files are missing and silently degrading to personality-less autonomous execution.
-  If validation fails on (a), (b), (c), (e), or (f): stop and report the error. Do not execute.
+  g) MANDATORY — Verify plan harness sections before execution:
+     - `<execution_contract>`, `<stop_gates>`, and `<recovery>` exist.
+     - All read targets named in `<context>` and `<execution_contract>` exist or
+       are explicitly marked optional.
+     - `files_modified` covers every write target named in the contract.
+     - `files_forbidden` does not conflict with any write target.
+     - `<stop_gates>` contains `BLOCKED` conditions for ambiguity, missing files,
+       forbidden operations, and unverifiable success.
+     If any check fails: STOP and mark the plan `BLOCKED`; do not execute.
+  If validation fails on (a), (b), (c), (e), (f), or (g): stop and report the error. Do not execute.
 
 Step 6: Report discovery results
   Before executing, show a discovery summary:
@@ -521,7 +531,12 @@ Step 4: Construct the agent execution prompt
   {PLAN_CONTENT}
 
   ## Important
+  - Harness: read-before-write -> evidence-before-action -> minimal diff -> verify-before-report
+  - Before editing, read every required file listed in <context> and <execution_contract>; if any required read target is missing or unreadable, emit BLOCKED
+  - Before acting on an instruction, cite or summarize the source evidence that supports it; if evidence conflicts with the plan, emit BLOCKED
   - Execute each task in the order listed
+  - You may only create, edit, or delete files listed in this plan's files_modified field
+  - Do not touch files_forbidden, unlisted files, public APIs, schemas, migrations, auth, CI, deployment config, or dependencies unless this plan explicitly lists the change
   - Run the <verify> commands after each task to confirm completion before moving on
   - CRITICAL: Extract all `> verification:` lines from each task's <action> block and run them as bash commands
   - Each `> verification:` line is a bash command that must return exit code 0
@@ -538,10 +553,9 @@ Step 4: Construct the agent execution prompt
   - If permission, scope, dependencies, API/schema/infrastructure decisions, or quality
     gates prevent completion, emit a blocker <escalation> block and mark the plan
     Failed or Partial based on the completed evidence. Do not self-defer the work.
-  - Do NOT modify files outside of the plan's files_modified list unless the task
-    explicitly requires it (e.g., updating an import in a file that uses the new file)
-  - If a task is ambiguous, apply your specialist expertise to resolve the ambiguity
-    and document the decision in your summary
+  - If a task is ambiguous, missing a path/API/helper/test command, conflicts with
+    another instruction, requires forbidden work, or cannot be verified, stop and
+    emit BLOCKED instead of choosing the approach yourself
 
   ## Reporting Results (adapter-conditional)
   When all tasks and verification are complete, report your results:
@@ -557,7 +571,7 @@ Step 4: Construct the agent execution prompt
   2. The coordinator will read this file after your execution completes
 
   Your summary MUST include these fields:
-  - **Status**: Complete | Partial | Complete with Warnings | Failed
+  - **Status**: Complete | Partial | Complete with Warnings | Failed | BLOCKED
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
   - **Verification Commands Run**: count of `> verification:` commands executed
@@ -566,6 +580,7 @@ Step 4: Construct the agent execution prompt
   - **Decisions**: key implementation decisions made
   - **Issues**: any problems or warnings encountered (or "None")
   - **Errors**: error details if failed (or "None")
+  - **Blocked Reason**: required only for BLOCKED; name the missing evidence, conflicting instruction, forbidden action, or unverifiable command
   """
 
 Step 4.9: Estimate prompt size and warn if approaching adapter limit
@@ -615,7 +630,12 @@ For autonomous plans (autonomous: true):
   {PLAN_CONTENT}
 
   ## Important
+  - Harness: read-before-write -> evidence-before-action -> minimal diff -> verify-before-report
+  - Before editing, read every required file listed in <context> and <execution_contract>; if any required read target is missing or unreadable, emit BLOCKED
+  - Before acting on an instruction, cite or summarize the source evidence that supports it; if evidence conflicts with the plan, emit BLOCKED
   - Execute each task in the order listed
+  - You may only create, edit, or delete files listed in this plan's files_modified field
+  - Do not touch files_forbidden, unlisted files, public APIs, schemas, migrations, auth, CI, deployment config, or dependencies unless this plan explicitly lists the change
   - Run the <verify> commands after each task to confirm completion
   - CRITICAL: Extract all `> verification:` lines from each task's <action> block and run them as bash commands
   - Each `> verification:` line is a bash command that must return exit code 0
@@ -632,6 +652,9 @@ For autonomous plans (autonomous: true):
   - If permission, scope, dependencies, API/schema/infrastructure decisions, or quality
     gates prevent completion, emit a blocker <escalation> block and mark the plan
     Failed or Partial based on the completed evidence. Do not self-defer the work.
+  - If a task is ambiguous, missing a path/API/helper/test command, conflicts with
+    another instruction, requires forbidden work, or cannot be verified, stop and
+    emit BLOCKED instead of choosing the approach yourself.
 
   ## Reporting Results (adapter-conditional)
   When all tasks and verification are complete, report your results:
@@ -647,7 +670,7 @@ For autonomous plans (autonomous: true):
   2. The coordinator will read this file after your execution completes
 
   Your summary MUST include these fields:
-  - **Status**: Complete | Partial | Complete with Warnings | Failed
+  - **Status**: Complete | Partial | Complete with Warnings | Failed | BLOCKED
   - **Files**: list of files created/modified with brief descriptions
   - **Verification**: outputs from <verify> commands
   - **Verification Commands Run**: count of `> verification:` commands executed
@@ -656,6 +679,7 @@ For autonomous plans (autonomous: true):
   - **Decisions**: key implementation decisions made
   - **Issues**: any problems or warnings encountered (or "None")
   - **Errors**: error details if failed (or "None")
+  - **Blocked Reason**: required only for BLOCKED; name the missing evidence, conflicting instruction, forbidden action, or unverifiable command
   """
 
   Step 4: Spawn the agent per adapter protocol

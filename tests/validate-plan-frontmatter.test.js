@@ -41,11 +41,22 @@ describe('validate-plan-frontmatter', () => {
       `expected additionalProperties error, got: ${JSON.stringify(r.errors)}`);
   });
 
+  test('invalid-vague-action fails decision-complete body validation', () => {
+    const r = validatePlanFile(path.join(FIXTURES, 'invalid-vague-action.md'));
+    assert.equal(r.valid, false);
+    assert.ok(r.errors.some(e => e.keyword === 'decisionComplete' && /implement as appropriate/i.test(e.message)),
+      `expected implement-as-appropriate error, got: ${JSON.stringify(r.errors)}`);
+    assert.ok(r.errors.some(e => e.keyword === 'decisionComplete' && /use existing helpers/i.test(e.message)),
+      `expected existing-helpers error, got: ${JSON.stringify(r.errors)}`);
+    assert.ok(r.errors.some(e => e.keyword === 'decisionComplete' && /add tests/i.test(e.message)),
+      `expected add-tests error, got: ${JSON.stringify(r.errors)}`);
+  });
+
   test('validatePlanDir aggregates results', () => {
     const r = validatePlanDir(FIXTURES);
-    // 5 fixtures: 2 valid, 3 invalid
-    assert.equal(r.totalFiles, 5);
-    assert.equal(r.invalidFiles.length, 3);
+    // 6 fixtures: 2 valid, 4 invalid
+    assert.equal(r.totalFiles, 6);
+    assert.equal(r.invalidFiles.length, 4);
   });
 
   // Live-state check skipped until Task 9 migration. Real plans currently
