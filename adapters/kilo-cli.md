@@ -11,8 +11,9 @@ capabilities:
   read_only_agents: true
   supports_extended_thinking: false
 detection:
-  primary: ".kilo/command/legion-start.md exists in CWD or ~/.config/kilo/command/legion-start.md exists"
-  secondary: ".kilo/agent/legion-orchestrator.md exists in CWD or ~/.config/kilo/agent/legion-orchestrator.md exists"
+  primary: ".kilo/commands/legion-start.md exists in CWD or ~/.config/kilo/commands/legion-start.md exists"
+  secondary: ".kilo/agents/legion-orchestrator.md exists in CWD or ~/.config/kilo/agents/legion-orchestrator.md exists"
+  tertiary: ".kilo/skills/code-polish/SKILL.md exists in CWD or ~/.kilo/skills/code-polish/SKILL.md exists"
 max_prompt_size: 180000
 known_quirks:
   - "no-parallel-subagents"
@@ -23,7 +24,9 @@ known_quirks:
 
 # Kilo CLI Adapter
 
-Kilo CLI supports native custom commands (`.kilo/command/*.md`), custom agents (`.kilo/agent/*.md`), and skills (`.kilo/skill/*/SKILL.md`). Subagent spawning via the `task` tool is available but executes synchronously — the parent session pauses entirely while a subagent runs. There is no native parallel execution, no team/task queue, and no structured messaging between agents. Legion installs flat command entry points such as `/legion-start` plus a `legion-orchestrator` subagent. Coordination still happens through `.planning/` artifacts rather than runtime mailboxes.
+Kilo Code (the VS Code extension and the Kilo CLI, which is a fork of [OpenCode](https://opencode.ai/)) supports native workflows at `.kilo/commands/*.md`, custom modes/agents at `.kilo/agents/*.md` (or `.kilo/agent/*.md`), and [Agent Skills](https://agentskills.io/) at `.kilo/skills/<name>/SKILL.md`. Configuration lives in `kilo.jsonc` (or `opencode.jsonc`). Subagent spawning via the `task` tool is available but executes synchronously — the parent session pauses entirely while a subagent runs. There is no native parallel execution, no team/task queue, and no structured messaging between agents. Legion installs flat command entry points such as `/legion-start`, a `legion-orchestrator` subagent, and copies of every Legion skill into `.kilo/skills/<name>/` so Kilo's hardwired Skills loader discovers them on session start. Coordination still happens through `.planning/` artifacts rather than runtime mailboxes.
+
+Because Kilo CLI is an OpenCode fork, it also loads agents and config from `.opencode/`. Avoid installing both `--opencode` and `--kilo` at the same local scope — `.opencode/` is a Kilo compatibility directory and the two installs would shadow each other.
 
 ## Tool Mappings
 
@@ -40,8 +43,9 @@ Kilo CLI supports native custom commands (`.kilo/command/*.md`), custom agents (
 | `model_planning` | User-configured model (e.g., `anthropic/claude-sonnet-4`, `gpt-5.3-codex`) |
 | `model_execution` | User-configured model (e.g., `anthropic/claude-sonnet-4`, `gpt-5.3-codex`) |
 | `model_check` | User-configured model (e.g., `anthropic/claude-haiku-4`, `o3-mini`) |
-| `global_config_dir` | `~/.config/kilo/command/` plus `~/.config/kilo/agent/` |
-| `plugin_discovery_glob` | `.kilo/command/legion-start.md` and `.kilo/agent/legion-orchestrator.md`, or the matching paths under `~/.config/kilo/` |
+| `global_config_dir` | `~/.config/kilo/commands/` plus `~/.config/kilo/agents/` (and `~/.kilo/skills/` for skills) |
+| `plugin_discovery_glob` | `.kilo/commands/legion-*.md` and `.kilo/agents/legion-orchestrator.md`, or the matching paths under `~/.config/kilo/` |
+| `agent_skills_dir` | `.kilo/skills/<name>/SKILL.md` (project) or `~/.kilo/skills/<name>/SKILL.md` (global). Each `SKILL.md` `name:` field is normalized to match its parent directory (lowercase letters/digits/hyphens only). |
 | `commit_signature` | `Co-Authored-By: Kilo <noreply@kilo.ai>` |
 
 ## Interaction Protocol
