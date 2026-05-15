@@ -1173,7 +1173,7 @@
                 </div>
                 <div class="feature-card">
                     <h3>Native Wrappers</h3>
-                    <p>Installs flat <code>/legion-start</code> commands to <code>.kilo/command/</code> and a <code>legion-orchestrator</code> subagent to <code>.kilo/agent/</code>. Same pattern as OpenCode but with Kilo-specific frontmatter.</p>
+                    <p>Installs flat <code>/legion-start</code> workflows to <code>.kilo/commands/</code>, a <code>legion-orchestrator</code> subagent to <code>.kilo/agents/</code>, and Agent-Skills-formatted copies of every Legion skill to <code>.kilo/skills/&lt;name&gt;/SKILL.md</code> for Kilo's native skill loader.</p>
                 </div>
                 <div class="feature-card">
                     <h3>10 Runtimes</h3>
@@ -1181,7 +1181,7 @@
                 </div>
                 <div class="feature-card">
                     <h3>Detection Protocol</h3>
-                    <p>Kilo CLI added to <code>workflow-common</code> Step 1 probe. Primary detection via <code>.kilo/command/legion-start.md</code>; secondary via <code>.kilo/agent/legion-orchestrator.md</code>.</p>
+                    <p>Kilo CLI added to <code>workflow-common</code> Step 1 probe. Primary detection via <code>.kilo/commands/legion-start.md</code>; secondary via <code>.kilo/agents/legion-orchestrator.md</code>; tertiary via <code>.kilo/skills/code-polish/SKILL.md</code>.</p>
                 </div>
             </div>
         </section>

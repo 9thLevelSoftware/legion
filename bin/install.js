@@ -432,6 +432,21 @@ function rewriteAgentPathResolution(content, manifestFile) {
 }
 
 /**
+ * Normalize a SKILL.md frontmatter `name:` field to the Agent Skills spec
+ * (lowercase letters/digits/hyphens only, max 64 chars, must match the
+ * containing directory name). Used when installing into runtimes such as Kilo
+ * Code that enforce the spec at load time.
+ */
+function normalizeAgentSkillName(content, directoryName) {
+  const safe = directoryName
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64);
+  return content.replace(/^(name:\s*).+$/m, `$1${safe}`);
+}
+
+/**
  * Compose all transforms for a command file.
  */
 function transformCommand(content, runtimeKey, installedSkillsDir, installedAgentsDir) {
@@ -553,9 +568,13 @@ agent: legion-orchestrator
 subtask: true
 ---
 
-${legionRuntimeWrapperPreamble('Kilo CLI', commandName, paths)}
+${legionRuntimeWrapperPreamble('Kilo Code', commandName, paths)}
 
-Treat user-provided arguments after the slash command as extra clarification for the workflow.
+Kilo Code workflows discover this file under \`.kilo/commands/\` (project) or
+\`~/.config/kilo/commands/\` (global). Kilo supports \`$ARGUMENTS\` (and
+positional \`$1\`, \`$2\`, ...) substitution — when the user includes extra text
+after \`/legion-${commandName}\`, treat \`$ARGUMENTS\` as additional clarification
+for the workflow.
 `;
 }
 
@@ -565,10 +584,13 @@ description: "Coordinate Legion workflows using the installed Legion bundle"
 mode: subagent
 ---
 
-You are Legion's orchestrator for Kilo CLI.
+You are Legion's orchestrator for Kilo Code (VS Code extension and Kilo CLI).
 
 - Use \`${paths.manifestFile}\` to find the installed Legion bundle.
 - Read only the matching command file under \`${paths.commandsDir}\`.
+- Native discovery paths: workflows at \`.kilo/commands/\` (or \`~/.config/kilo/commands/\`),
+  this agent at \`.kilo/agents/\` (or \`~/.config/kilo/agents/\`), and skills at
+  \`.kilo/skills/<name>/SKILL.md\` (or \`~/.kilo/skills/<name>/SKILL.md\`).
 - Route legacy \`/legion:*\` aliases to the corresponding flat Kilo commands such as \`/legion-start\`.
 - Coordinate through artifacts in \`.planning/\`; do not assume direct inter-agent messaging.
 `;
@@ -1031,6 +1053,32 @@ function install(runtimeKey, scope, verify = false) {
         break;
       }
 
+      case 'kilo-skills': {
+        const skillSrcDirs = listDirs(src.skillsSrc);
+        for (const skillSrc of skillSrcDirs) {
+          const skillName = path.basename(skillSrc);
+          const destSkillDir = joinPath(surface.path, skillName);
+          ensureDirs([destSkillDir]);
+          for (const entry of fs.readdirSync(skillSrc)) {
+            const srcPath = joinPath(skillSrc, entry);
+            const destPath = joinPath(destSkillDir, entry);
+            if (fs.statSync(srcPath).isDirectory()) {
+              copyDirRecursive(srcPath, destPath);
+            } else if (entry === 'SKILL.md') {
+              const raw = fs.readFileSync(srcPath, 'utf8');
+              const rewritten = normalizeAgentSkillName(raw, skillName);
+              writeManagedFile(destPath, rewritten, nativeArtifacts);
+            } else {
+              fs.copyFileSync(srcPath, destPath);
+              nativeArtifacts.push({ path: destPath });
+            }
+          }
+          nativeArtifacts.push({ path: destSkillDir, kind: 'dir' });
+        }
+        console.log(`  ${surface.key}: ${skillSrcDirs.length} skills -> ${surface.path}`);
+        break;
+      }
+
       case 'copilot-skills': {
         for (const [commandName, commandContent] of transformedCommands.entries()) {
           const skillDir = joinPath(surface.path, `legion-${commandName}`);
@@ -1274,18 +1322,34 @@ function uninstall(runtimeKey, scope) {
 
   let removedNativeArtifacts = 0;
   let restoredNativeBackups = 0;
-  for (const artifact of nativeArtifacts) {
+  // Process files first, then directories — so file unlinks don't race with
+  // their parent directory being removed recursively.
+  const fileArtifacts = nativeArtifacts.filter((a) => a.kind !== 'dir');
+  const dirArtifacts = nativeArtifacts.filter((a) => a.kind === 'dir');
+  for (const artifact of fileArtifacts) {
     const artifactPath = artifact.path;
     if (!artifactPath) continue;
     if (fs.existsSync(artifactPath)) {
-      fs.unlinkSync(artifactPath);
-      removedNativeArtifacts++;
+      try {
+        fs.unlinkSync(artifactPath);
+        removedNativeArtifacts++;
+      } catch {
+        // File may have already been removed by a recursive dir removal below.
+      }
     }
     const backupPath = artifactPath + '.bak';
     if (fs.existsSync(backupPath)) {
       fs.renameSync(backupPath, artifactPath);
       restoredNativeBackups++;
       console.log(`  Restored native backup: ${artifactPath}`);
+    }
+  }
+  for (const artifact of dirArtifacts) {
+    const artifactPath = artifact.path;
+    if (!artifactPath) continue;
+    if (fs.existsSync(artifactPath)) {
+      fs.rmSync(artifactPath, { recursive: true, force: true });
+      removedNativeArtifacts++;
     }
   }
   if (removedNativeArtifacts > 0) {

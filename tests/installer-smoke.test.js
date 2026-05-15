@@ -102,6 +102,11 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
       case 'kilo-agent':
         expected.push(surfacePath);
         break;
+      case 'kilo-skills':
+        expected.push(path.join(surfacePath, 'code-polish', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'workflow-common', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'phase-decomposer', 'SKILL.md'));
+        break;
       default:
         throw new Error(`Unhandled native surface type in tests: ${surface.type}`);
     }
@@ -169,6 +174,25 @@ function assertKiloCommandUsesSubtask(commandFile) {
   );
 }
 
+function assertKiloSkillNameNormalized(skillsDir) {
+  const codePolishSkill = path.join(skillsDir, 'code-polish', 'SKILL.md');
+  assert.ok(
+    fs.existsSync(codePolishSkill),
+    `kilo: code-polish skill should be installed at ${codePolishSkill}`
+  );
+  const content = fs.readFileSync(codePolishSkill, 'utf8');
+  assert.match(
+    content,
+    /^name:\s+code-polish\s*$/m,
+    `kilo: code-polish SKILL.md name must be normalized to "code-polish" (Agent Skills spec: lowercase letters/digits/hyphens, must match parent dir)`
+  );
+  assert.doesNotMatch(
+    content,
+    /^name:\s+legion:code-polish\s*$/m,
+    `kilo: code-polish SKILL.md name must not retain the spec-invalid "legion:" prefix`
+  );
+}
+
 test('installer local mode installs runtime-native artifacts for every supported runtime', async (t) => {
   const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-local-smoke-'));
   const homeDir = path.join(sandboxRoot, 'home');
@@ -199,8 +223,9 @@ test('installer local mode installs runtime-native artifacts for every supported
         assert.ok(fs.existsSync(filePath), `${runtimeKey}: expected native artifact missing at ${filePath}`);
       }
       if (runtimeKey === 'kilo') {
-        assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'command', 'legion-start.md'));
-        assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'command', 'legion-update.md'));
+        assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'commands', 'legion-start.md'));
+        assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'commands', 'legion-update.md'));
+        assertKiloSkillNameNormalized(path.join(projectDir, '.kilo', 'skills'));
       }
 
       const uninstallResult = runInstaller([runtime.flag, '--local', '--uninstall'], projectDir, homeDir);
@@ -237,8 +262,9 @@ test('installer global mode installs runtime-native artifacts for every globally
         assert.ok(fs.existsSync(filePath), `${runtimeKey}: expected global native artifact missing at ${filePath}`);
       }
       if (runtimeKey === 'kilo') {
-        assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'command', 'legion-start.md'));
-        assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'command', 'legion-update.md'));
+        assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-start.md'));
+        assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-update.md'));
+        assertKiloSkillNameNormalized(path.join(homeDir, '.kilo', 'skills'));
       }
 
       const uninstallResult = runInstaller([runtime.flag, '--global', '--uninstall'], projectDir, homeDir);

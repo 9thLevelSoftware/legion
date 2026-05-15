@@ -5,6 +5,24 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.7.0] - 2026-05-15
+
+### Changed
+- **Kilo Code discovery realignment** — `--kilo` now installs to the paths Kilo Code (VS Code extension and Kilo CLI) actually scans:
+  - Workflows: `.kilo/commands/` (was `.kilo/command/`) and `~/.config/kilo/commands/` (was `~/.config/kilo/command/`).
+  - Custom agents: `.kilo/agents/legion-orchestrator.md` (was `.kilo/agent/`) and `~/.config/kilo/agents/legion-orchestrator.md`.
+- **Workflow wrapper bodies** now document Kilo's `$ARGUMENTS` / positional substitution and reference the OpenCode fork lineage for shared `.opencode/` compatibility paths.
+
+### Added
+- **Kilo Skills native install** — every Legion skill is now copied into `.kilo/skills/<name>/SKILL.md` (project) or `~/.kilo/skills/<name>/SKILL.md` (global) so Kilo's hardwired Agent Skills loader discovers them on session start.
+- **Agent Skills name normalization** — at install time, each `SKILL.md` `name:` field is rewritten to match its parent directory and conform to the Agent Skills spec (lowercase letters/digits/hyphens, max 64 chars). Fixes the spec-invalid `legion:code-polish` source name without mutating the bundle copy used by other runtimes.
+- **Uninstall directory artifacts** — `nativeArtifacts` now supports `{ kind: 'dir' }` entries cleared via `fs.rmSync(..., { recursive: true })`, so `.kilo/skills/<name>/` directories are fully removed on uninstall and the parent `.kilo/skills/` and `.kilo/` directories are pruned when empty.
+- **Detection extended** — `workflow-common/SKILL.md` Step 1 probe and `adapters/kilo-cli.md` detection block now include the new Kilo paths (commands, agents, skills) as primary/secondary/tertiary signals.
+- **Certification checklist** — `docs/runtime-certification-checklists.md` Kilo CLI section adds a verification step that `.kilo/skills/code-polish/SKILL.md` exists with the normalized `name: code-polish` frontmatter.
+
+### Fixed
+- Kilo runtime evidence now points at the verified Kilo Code Workflows, Skills, and Custom Modes docs instead of the placeholder `https://kilo.ai/docs` URL.
+
 ## [7.6.3] - 2026-05-11
 
 ### Fixed
