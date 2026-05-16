@@ -43,11 +43,11 @@ Step 1: Tool probe (primary detection)
     - Kiro CLI: `.kiro/agents/legion-orchestrator.md`, `~/.kiro/agents/legion-orchestrator.md`, `.kiro/steering/legion.md`, or `~/.kiro/steering/AGENTS.md` exists
     - Windsurf: `.windsurf/rules/legion.md` exists
     - OpenCode: `.opencode/command/legion-start.md`, `~/.config/opencode/command/legion-start.md`, `.opencode/agent/legion-orchestrator.md`, or `~/.config/opencode/agent/legion-orchestrator.md` exists
+    - Kilo Code Plugin: `.kilocodemodes` contains `slug: legion` or `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml` contains `slug: legion`
     - Kilo CLI: `.kilo/commands/legion-start.md`, `~/.config/kilo/commands/legion-start.md`, `.kilo/agents/legion-orchestrator.md`, `~/.config/kilo/agents/legion-orchestrator.md`, `.kilo/skills/code-polish/SKILL.md`, or `~/.kilo/skills/code-polish/SKILL.md` exists
-    - Kilo Code Plugin: `.kilocode/skills/legion/SKILL.md`, `.kilocodemodes`, `~/.kilocode/skills/legion/SKILL.md`, or `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml` exists
     - Aider: `.aider.conf.yml`, `AGENTS.md`, or `CONVENTIONS.md` exists
   - If exactly one primary matches: use that adapter
-  - If multiple match: use the first match in the order above (Claude Code wins ties)
+  - If multiple match: use the first match in the order above (Claude Code wins ties; Kilo Code wins over Kilo CLI when the Kilo Code mode bridge is installed because both targets may share workflow/skill paths)
 
 Step 2: Secondary detection (fallback)
   - If no primary matched, check each adapter's detection.secondary field

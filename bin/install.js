@@ -580,6 +580,24 @@ for the workflow.
 `;
 }
 
+function generateKiloCodeWorkflow(paths, commandName, commandContent) {
+  const description = extractFrontmatterValue(commandContent, 'description')
+    || `Run the Legion ${commandName} workflow`;
+  return `---
+description: ${JSON.stringify(description)}
+agent: legion
+---
+
+${legionRuntimeWrapperPreamble('Kilo Code', commandName, paths)}
+
+Kilo Code workflows discover this file under \`.kilo/commands/\` (project) or
+\`~/.config/kilo/commands/\` (global). This workflow runs through the single
+\`Legion\` mode bridge and leaves model selection to Kilo Code sticky models or
+user settings. Treat \`$ARGUMENTS\` as additional clarification when the user
+includes extra text after \`/legion-${commandName}\`.
+`;
+}
+
 function generateKiloAgent(paths) {
   return `---
 description: "Coordinate Legion workflows using the installed Legion bundle"
@@ -610,7 +628,7 @@ description: Route Legion requests and /legion:* intents to the installed Legion
 
 # Legion for Kilo Code
 
-Use this skill when the user asks to work with Legion, refers to \`/legion:*\` commands, or asks for phase planning, build, review, status, ship, retro, portfolio, or advisory workflows through Legion.
+Use this skill when the user asks to work with Legion, refers to \`/legion:*\` commands, or asks for phase planning, build, review, board, status, ship, retro, portfolio, or advisory workflows through Legion.
 
 ## Native Mapping
 
@@ -622,12 +640,13 @@ ${mappingLines}
 2. Read only the matching Legion command file under \`${paths.commandsDir}\`.
 3. Load only the files named in that command's \`<execution_context>\` and \`<context>\`.
 4. Use the current project's \`.planning/PROJECT.md\`, \`.planning/ROADMAP.md\`, and \`.planning/STATE.md\` when the workflow expects project state.
-5. Treat Kilo Code custom modes and skills as the native plugin surface; do not look for Kilo CLI command wrappers unless the user explicitly asks for the CLI.
+5. Prefer the native Kilo workflow files \`/legion-start\`, \`/legion-plan\`, \`/legion-board\`, and related \`/legion-*\` commands when the user wants an explicit workflow entry point.
+6. Treat Kilo Code workflows, Agent Skills, and the single Legion mode as the native plugin surface; do not look for old Kilo CLI command wrappers unless the user explicitly asks for the CLI.
 
 ## Guardrails
 
 - Do not claim Kilo Code exposes native \`/legion:*\` slash commands.
-- Prefer the selected Legion mode for coordination, and use this skill as the on-demand routing reference.
+- Prefer the selected Legion mode for coordination, use Kilo workflows for user-facing commands, and use skills as on-demand internals.
 - Keep model choice in Kilo Code; this skill does not pin or override models.
 `;
 }
@@ -655,7 +674,9 @@ function generateKiloCodeMode(paths, scope) {
       `Read the matching workflow file under ${paths.commandsDir} before acting.`,
       'Load only the files named by that workflow in <execution_context> and <context>.',
       'Use .planning/PROJECT.md, .planning/ROADMAP.md, and .planning/STATE.md when the workflow expects project state.',
-      'Treat Kilo Code custom modes and skills as the plugin surface; do not assume Kilo CLI command wrappers are present.',
+      'Use native Kilo workflows such as /legion-start, /legion-plan, /legion-board, and /legion-review as user-facing command entry points.',
+      'Use installed Agent Skills for reusable internals such as planning, wave execution, review panels, board governance, and memory.',
+      'Treat the single Legion mode as the coordinator bridge; do not create one mode per Legion command or personality.',
       'Leave model selection to Kilo Code sticky models or user settings; do not pin a model from this mode.'
     ].join('\n'),
     groups: ['read', 'edit', 'command', 'mcp'],
@@ -1256,7 +1277,9 @@ function install(runtimeKey, scope, verify = false) {
       case 'kilo-commands': {
         for (const [commandName, commandContent] of transformedCommands.entries()) {
           const commandPath = joinPath(surface.path, `legion-${commandName}.md`);
-          const wrapped = generateKiloCommand(paths, commandName, commandContent);
+          const wrapped = runtimeKey === 'kilocode'
+            ? generateKiloCodeWorkflow(paths, commandName, commandContent)
+            : generateKiloCommand(paths, commandName, commandContent);
           const backedUp = writeManagedFile(commandPath, wrapped, nativeArtifacts);
           if (backedUp) {
             console.log(`  ${surface.key}: backed up ${path.basename(commandPath)}.bak`);
@@ -1298,7 +1321,9 @@ function install(runtimeKey, scope, verify = false) {
               copyDirRecursive(srcPath, destPath);
             } else if (entry === 'SKILL.md') {
               const raw = fs.readFileSync(srcPath, 'utf8');
-              const rewritten = normalizeAgentSkillName(raw, skillName);
+              const rewritten = runtimeKey === 'kilocode' && skillName === 'legion'
+                ? generateKiloCodeSkill(paths)
+                : normalizeAgentSkillName(raw, skillName);
               writeManagedFile(destPath, rewritten, nativeArtifacts);
             } else {
               fs.copyFileSync(srcPath, destPath);
@@ -1418,7 +1443,7 @@ ${'='.repeat(48)}
   }
 
   if (runtimeKey === 'kilocode') {
-    console.log('  Restart Kilo Code or reload the IDE window to pick up the Legion mode and skill.');
+    console.log('  Restart Kilo Code or reload the IDE window to pick up the Legion mode, workflows, and skills.');
     console.log(`  Native Legion entry point: ${rt.entrypoints[scope]}`);
     console.log();
     return;

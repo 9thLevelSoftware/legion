@@ -14,7 +14,7 @@ Claude Code remains the control runtime. Every other runtime below was re-audite
 | Windsurf | Experimental | Rules-only | Yes | No | `.windsurf/rules/legion.md` | Plain-language Legion requests |
 | OpenCode | Beta | Commands and subagent | Yes | Yes | `.opencode/command/`, `.opencode/agent/`, `~/.config/opencode/command/`, `~/.config/opencode/agent/` | `/legion-start` |
 | Kilo CLI | Beta | Workflows, subagent, and Agent Skills | Yes | Yes | `.kilo/commands/`, `.kilo/agents/`, `.kilo/skills/<name>/`, `~/.config/kilo/commands/`, `~/.config/kilo/agents/`, `~/.kilo/skills/<name>/` | `/legion-start` |
-| Kilo Code Plugin | Beta | Plugin mode and skill | Yes | Yes | `.kilocode/skills/legion/SKILL.md`, `.kilocodemodes`, `~/.kilocode/skills/legion/SKILL.md`, `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml` | Select `Legion` mode or use the `legion` skill |
+| Kilo Code Plugin | Beta | Mode, workflows, and Agent Skills | Yes | Yes | `.kilo/commands/`, `.kilo/skills/<name>/`, `.kilocode/skills/legion/SKILL.md`, `.kilocodemodes`, `~/.config/kilo/commands/`, `~/.kilo/skills/<name>/`, `~/.kilocode/skills/legion/SKILL.md`, `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml` | Select `Legion` mode or run `/legion-start` |
 | Aider | Experimental | Manual-only | No | No | None | None |
 
 ## Evidence
@@ -76,6 +76,7 @@ Claude Code remains the control runtime. Every other runtime below was re-audite
 
 ### Kilo Code Plugin
 
+- [Kilo Code workflows](https://kilo.ai/docs/customize/workflows)
 - [Kilo Code custom modes](https://kilo.ai/docs/customize/custom-modes)
 - [Kilo Code skills](https://kilo.ai/docs/customize/skills)
 

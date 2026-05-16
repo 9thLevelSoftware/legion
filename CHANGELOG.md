@@ -5,6 +5,16 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.1] - 2026-05-16
+
+### Changed
+- **Kilo Code install surface completion** — `--kilo-code` now installs native Kilo workflow files and all Legion Agent Skills alongside the single `Legion` mode bridge, so the Workflows and Skills UI surfaces are populated instead of relying on one routing skill.
+- Kilo Code workflow wrappers now route through `agent: legion` without `subtask: true`, keeping the single Legion mode as the coordinator and leaving model choice to Kilo Code sticky/user settings.
+- The generated Kilo Code bridge skill now maps all Legion commands, including board, ship, retro, learn, polish, and validate.
+
+### Fixed
+- `--kilo-code --uninstall` now covers Legion-managed workflow files and skill directories while preserving user-created workflows, skills, modes, and mode-file comments.
+
 ## [8.0.0] - 2026-05-16
 
 ### Added

@@ -98,6 +98,8 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
         break;
       case 'kilo-commands':
         expected.push(path.join(surfacePath, 'legion-start.md'));
+        expected.push(path.join(surfacePath, 'legion-plan.md'));
+        expected.push(path.join(surfacePath, 'legion-board.md'));
         expected.push(path.join(surfacePath, 'legion-update.md'));
         break;
       case 'kilo-agent':
@@ -111,6 +113,8 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
         expected.push(path.join(surfacePath, 'code-polish', 'SKILL.md'));
         expected.push(path.join(surfacePath, 'workflow-common', 'SKILL.md'));
         expected.push(path.join(surfacePath, 'phase-decomposer', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'board-of-directors', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'wave-executor', 'SKILL.md'));
         break;
       default:
         throw new Error(`Unhandled native surface type in tests: ${surface.type}`);
@@ -179,6 +183,21 @@ function assertKiloCommandUsesSubtask(commandFile) {
   );
 }
 
+function assertKiloCodeWorkflow(commandFile) {
+  const content = fs.readFileSync(commandFile, 'utf8');
+  assert.match(content, /^agent:\s+legion$/m, `${commandFile}: should route through the single Legion mode`);
+  assert.doesNotMatch(
+    content,
+    /^subtask:\s+true$/m,
+    `${commandFile}: Kilo Code workflows should use the primary Legion mode, not subtask routing`
+  );
+  assert.match(
+    content,
+    /single\s+`Legion`\s+mode bridge/,
+    `${commandFile}: should describe the Kilo Code Legion mode bridge`
+  );
+}
+
 function readYaml(filePath) {
   return YAML.parse(fs.readFileSync(filePath, 'utf8'));
 }
@@ -192,6 +211,9 @@ function assertKiloCodeSkill(skillFile, manifestFile) {
     `${skillFile}: should describe Legion request routing`
   );
   assert.ok(content.includes(manifestFile.split(path.sep).join('/')), `${skillFile}: should reference the install manifest`);
+  assert.match(content, /\/legion:board/, `${skillFile}: should map the board workflow`);
+  assert.match(content, /\/legion:validate/, `${skillFile}: should map the validate workflow`);
+  assert.match(content, /native Kilo workflow files/, `${skillFile}: should mention native Kilo workflows`);
 }
 
 function assertKiloCodeMode(modeFile, expectedSource) {
@@ -222,6 +244,27 @@ function assertKiloSkillNameNormalized(skillsDir) {
     /^name:\s+legion:code-polish\s*$/m,
     `kilo: code-polish SKILL.md name must not retain the spec-invalid "legion:" prefix`
   );
+}
+
+function assertRepresentativeKiloSkills(skillsDir) {
+  const skillNames = [
+    'workflow-common',
+    'phase-decomposer',
+    'board-of-directors',
+    'wave-executor',
+    'code-polish',
+  ];
+
+  for (const skillName of skillNames) {
+    const skillPath = path.join(skillsDir, skillName, 'SKILL.md');
+    assert.ok(fs.existsSync(skillPath), `expected Kilo skill missing at ${skillPath}`);
+    const content = fs.readFileSync(skillPath, 'utf8');
+    assert.match(
+      content,
+      new RegExp(`^name:\\s+${skillName}\\s*$`, 'm'),
+      `${skillPath}: skill name should be normalized to its directory name`
+    );
+  }
 }
 
 test('installer lazy-loads YAML support for Kilo Code mode merging', () => {
@@ -275,6 +318,15 @@ test('installer local mode installs runtime-native artifacts for every supported
           path.join(projectDir, '.kilocode', 'skills', 'legion', 'SKILL.md'),
           manifestFile
         );
+        assertKiloCodeSkill(
+          path.join(projectDir, '.kilo', 'skills', 'legion', 'SKILL.md'),
+          manifestFile
+        );
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-start.md'));
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-plan.md'));
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-board.md'));
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-update.md'));
+        assertRepresentativeKiloSkills(path.join(projectDir, '.kilo', 'skills'));
         assertKiloCodeMode(path.join(projectDir, '.kilocodemodes'), 'project');
       }
 
@@ -321,6 +373,15 @@ test('installer global mode installs runtime-native artifacts for every globally
           path.join(homeDir, '.kilocode', 'skills', 'legion', 'SKILL.md'),
           manifestFile
         );
+        assertKiloCodeSkill(
+          path.join(homeDir, '.kilo', 'skills', 'legion', 'SKILL.md'),
+          manifestFile
+        );
+        assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-start.md'));
+        assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-plan.md'));
+        assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-board.md'));
+        assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-update.md'));
+        assertRepresentativeKiloSkills(path.join(homeDir, '.kilo', 'skills'));
         assertKiloCodeMode(
           path.join(homeDir, '.kilocode', 'globalStorage', 'kilocode.kilo-code', 'settings', 'custom_modes.yaml'),
           'global'
@@ -343,7 +404,13 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
   const projectDir = path.join(sandboxRoot, 'project');
   const modeFile = path.join(homeDir, '.kilocode', 'globalStorage', 'kilocode.kilo-code', 'settings', 'custom_modes.yaml');
   const skillFile = path.join(homeDir, '.kilocode', 'skills', 'legion', 'SKILL.md');
+  const workflowsDir = path.join(homeDir, '.config', 'kilo', 'commands');
+  const skillsDir = path.join(homeDir, '.kilo', 'skills');
+  const unrelatedWorkflow = path.join(workflowsDir, 'user-workflow.md');
+  const unrelatedSkill = path.join(skillsDir, 'user-skill', 'SKILL.md');
   fs.mkdirSync(path.dirname(modeFile), { recursive: true });
+  fs.mkdirSync(workflowsDir, { recursive: true });
+  fs.mkdirSync(path.dirname(unrelatedSkill), { recursive: true });
   fs.mkdirSync(projectDir, { recursive: true });
 
   fs.writeFileSync(modeFile, [
@@ -367,12 +434,32 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     '    source: global',
     '',
   ].join('\n'));
+  fs.writeFileSync(unrelatedWorkflow, [
+    '---',
+    'description: User workflow',
+    '---',
+    '',
+    'Preserve this user workflow.',
+    '',
+  ].join('\n'));
+  fs.writeFileSync(unrelatedSkill, [
+    '---',
+    'name: user-skill',
+    'description: User skill',
+    '---',
+    '',
+    'Preserve this user skill.',
+    '',
+  ].join('\n'));
 
   try {
     const installResult = runInstaller(['--kilo-code', '--global'], projectDir, homeDir);
     assertRunOk(installResult, 'kilo-code global install');
     const { manifestFile } = assertManifest('kilocode', 'global', projectDir, homeDir);
     assertKiloCodeSkill(skillFile, manifestFile);
+    assertKiloCodeWorkflow(path.join(workflowsDir, 'legion-start.md'));
+    assertKiloCodeWorkflow(path.join(workflowsDir, 'legion-board.md'));
+    assertRepresentativeKiloSkills(skillsDir);
     assertKiloCodeMode(modeFile, 'global');
 
     let modes = readYaml(modeFile).customModes;
@@ -383,6 +470,8 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     assert.match(modeText, /# User Kilo Code modes/, 'install should preserve top-level user comments');
     assert.match(modeText, /# Preserve this planning note/, 'install should preserve comments before existing modes');
     assert.match(modeText, /# Preserve this simplifier note/, 'install should preserve comments between existing modes');
+    assert.equal(fs.existsSync(unrelatedWorkflow), true, 'install should preserve unrelated user workflows');
+    assert.equal(fs.existsSync(unrelatedSkill), true, 'install should preserve unrelated user skills');
 
     const reinstallResult = runInstaller(['--kilocode', '--global'], projectDir, homeDir);
     assertRunOk(reinstallResult, 'kilocode alias global reinstall');
@@ -394,6 +483,8 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     assert.match(modeText, /# User Kilo Code modes/, 'reinstall should preserve top-level user comments');
     assert.match(modeText, /# Preserve this planning note/, 'reinstall should preserve comments before existing modes');
     assert.match(modeText, /# Preserve this simplifier note/, 'reinstall should preserve comments between existing modes');
+    assert.equal(fs.existsSync(unrelatedWorkflow), true, 'reinstall should preserve unrelated user workflows');
+    assert.equal(fs.existsSync(unrelatedSkill), true, 'reinstall should preserve unrelated user skills');
 
     const uninstallResult = runInstaller(['--kilo-code', '--global', '--uninstall'], projectDir, homeDir);
     assertRunOk(uninstallResult, 'kilo-code global uninstall');
@@ -406,6 +497,12 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     assert.match(modeText, /# Preserve this planning note/, 'uninstall should preserve comments before existing modes');
     assert.match(modeText, /# Preserve this simplifier note/, 'uninstall should preserve comments between existing modes');
     assert.equal(fs.existsSync(skillFile), false, 'uninstall should remove the Legion Kilo Code skill');
+    assert.equal(fs.existsSync(path.join(workflowsDir, 'legion-start.md')), false, 'uninstall should remove Legion workflow files');
+    assert.equal(fs.existsSync(path.join(workflowsDir, 'legion-board.md')), false, 'uninstall should remove Legion board workflow file');
+    assert.equal(fs.existsSync(path.join(skillsDir, 'board-of-directors')), false, 'uninstall should remove Legion skill directories');
+    assert.equal(fs.existsSync(path.join(skillsDir, 'wave-executor')), false, 'uninstall should remove Legion skill directories');
+    assert.equal(fs.existsSync(unrelatedWorkflow), true, 'uninstall should preserve unrelated user workflows');
+    assert.equal(fs.existsSync(unrelatedSkill), true, 'uninstall should preserve unrelated user skills');
   } finally {
     fs.rmSync(sandboxRoot, { recursive: true, force: true });
   }
