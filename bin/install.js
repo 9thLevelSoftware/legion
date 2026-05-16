@@ -591,10 +591,12 @@ agent: legion
 ${legionRuntimeWrapperPreamble('Kilo Code', commandName, paths)}
 
 Kilo Code workflows discover this file under \`.kilo/commands/\` (project) or
-\`~/.config/kilo/commands/\` (global). This workflow runs through the single
+\`~/.config/kilo/commands/\` (global) in CLI-backed builds, and under
+\`.kilocode/workflows/\` (project) or \`~/.kilocode/workflows/\` (global) in
+the plugin/legacy workflow surface. This workflow runs through the single
 \`Legion\` mode bridge and leaves model selection to Kilo Code sticky models or
 user settings. Treat \`$ARGUMENTS\` as additional clarification when the user
-includes extra text after \`/legion-${commandName}\`.
+includes extra text after \`/legion-${commandName}\` or \`/legion-${commandName}.md\`.
 `;
 }
 
@@ -640,8 +642,9 @@ ${mappingLines}
 2. Read only the matching Legion command file under \`${paths.commandsDir}\`.
 3. Load only the files named in that command's \`<execution_context>\` and \`<context>\`.
 4. Use the current project's \`.planning/PROJECT.md\`, \`.planning/ROADMAP.md\`, and \`.planning/STATE.md\` when the workflow expects project state.
-5. Prefer the native Kilo workflow files \`/legion-start\`, \`/legion-plan\`, \`/legion-board\`, and related \`/legion-*\` commands when the user wants an explicit workflow entry point.
-6. Treat Kilo Code workflows, Agent Skills, and the single Legion mode as the native plugin surface; do not look for old Kilo CLI command wrappers unless the user explicitly asks for the CLI.
+5. Prefer the native Kilo workflow files \`/legion-start\`, \`/legion-plan\`, \`/legion-board\`, and related \`/legion-*\` commands when the CLI-backed surface is available.
+6. On the plugin/legacy workflow surface, use the matching \`/legion-start.md\`, \`/legion-plan.md\`, \`/legion-board.md\`, and related \`/legion-*.md\` workflow entries.
+7. Treat Kilo Code workflows, Agent Skills, and the single Legion mode as the native plugin surface; do not look for old Kilo CLI command wrappers unless the user explicitly asks for the CLI.
 
 ## Guardrails
 
@@ -674,7 +677,8 @@ function generateKiloCodeMode(paths, scope) {
       `Read the matching workflow file under ${paths.commandsDir} before acting.`,
       'Load only the files named by that workflow in <execution_context> and <context>.',
       'Use .planning/PROJECT.md, .planning/ROADMAP.md, and .planning/STATE.md when the workflow expects project state.',
-      'Use native Kilo workflows such as /legion-start, /legion-plan, /legion-board, and /legion-review as user-facing command entry points.',
+      'Use native Kilo workflows such as /legion-start, /legion-plan, /legion-board, and /legion-review as user-facing command entry points when the CLI-backed surface is available.',
+      'Use /legion-start.md, /legion-plan.md, /legion-board.md, and /legion-review.md when Kilo Code exposes the plugin/legacy workflow surface.',
       'Use installed Agent Skills for reusable internals such as planning, wave execution, review panels, board governance, and memory.',
       'Treat the single Legion mode as the coordinator bridge; do not create one mode per Legion command or personality.',
       'Leave model selection to Kilo Code sticky models or user settings; do not pin a model from this mode.'
@@ -913,25 +917,31 @@ function dumpYamlDocument(document) {
   });
 }
 
-function legacyKiloCodeCustomModesPath(filePath) {
-  const currentSegment = '/globalStorage/kilocode.kilo-code/';
-  if (!filePath.includes(currentSegment)) return null;
-  return filePath.replace(currentSegment, '/globalStorage/kilo code.kilo-code/');
+function alternateKiloCodeCustomModesPath(filePath) {
+  const spacedSegment = '/globalStorage/kilo code.kilo-code/';
+  const marketplaceSegment = '/globalStorage/kilocode.kilo-code/';
+  if (filePath.includes(spacedSegment)) {
+    return filePath.replace(spacedSegment, marketplaceSegment);
+  }
+  if (filePath.includes(marketplaceSegment)) {
+    return filePath.replace(marketplaceSegment, spacedSegment);
+  }
+  return null;
 }
 
-function seedKiloCodeCustomModesFromLegacyPath(filePath) {
+function seedKiloCodeCustomModesFromAlternatePath(filePath) {
   if (fs.existsSync(filePath)) return false;
 
-  const legacyPath = legacyKiloCodeCustomModesPath(filePath);
-  if (!legacyPath || !fs.existsSync(legacyPath)) return false;
+  const alternatePath = alternateKiloCodeCustomModesPath(filePath);
+  if (!alternatePath || !fs.existsSync(alternatePath)) return false;
 
   ensureDirs([dirnamePath(filePath)]);
-  fs.copyFileSync(legacyPath, filePath);
+  fs.copyFileSync(alternatePath, filePath);
   return true;
 }
 
 function writeKiloCodeCustomMode(filePath, modeEntry, nativeArtifacts) {
-  const seededFromLegacyPath = seedKiloCodeCustomModesFromLegacyPath(filePath);
+  const seededFromAlternatePath = seedKiloCodeCustomModesFromAlternatePath(filePath);
   const document = parseYamlDocument(filePath);
   const customModes = getKiloCodeCustomModes(document, filePath);
 
@@ -954,7 +964,7 @@ function writeKiloCodeCustomMode(filePath, modeEntry, nativeArtifacts) {
     backupCreated,
     kind: 'kilocode-custom-mode',
     slug: modeEntry.slug,
-    seededFromLegacyPath,
+    seededFromAlternatePath,
   });
   return backupCreated;
 }

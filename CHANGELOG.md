@@ -9,11 +9,13 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - **Kilo Code install surface completion** — `--kilo-code` now installs native Kilo workflow files and all Legion Agent Skills alongside the single `Legion` mode bridge, so the Workflows and Skills UI surfaces are populated instead of relying on one routing skill.
-- Kilo Code workflow wrappers now route through `agent: legion` without `subtask: true`, keeping the single Legion mode as the coordinator and leaving model choice to Kilo Code sticky/user settings.
+- Kilo Code installs now populate both the plugin/legacy discovery paths (`.kilocode/workflows/`, `.kilocode/skills/`) and the CLI-backed discovery paths (`.kilo/commands/`, `.kilo/skills/`, `~/.config/kilo/commands/`, `~/.kilo/skills/`) to cover the extension transition.
+- Kilo Code workflow wrappers now route through `agent: legion` without `subtask: true`, keeping the single Legion mode as the coordinator and leaving model choice to Kilo Code sticky/user settings where supported.
 - The generated Kilo Code bridge skill now maps all Legion commands, including board, ship, retro, learn, polish, and validate.
 
 ### Fixed
-- `--kilo-code --uninstall` now covers Legion-managed workflow files and skill directories while preserving user-created workflows, skills, modes, and mode-file comments.
+- `--kilo-code --uninstall` now covers Legion-managed workflow files and skill directories across both Kilo Code discovery layouts while preserving user-created workflows, skills, modes, and mode-file comments.
+- Kilo Code custom mode installs now target the observed extension settings path `~/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml`; the no-space `kilocode.kilo-code` path is used only as a compatibility seed when needed.
 
 ## [8.0.0] - 2026-05-16
 

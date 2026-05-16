@@ -196,6 +196,11 @@ function assertKiloCodeWorkflow(commandFile) {
     /single\s+`Legion`\s+mode bridge/,
     `${commandFile}: should describe the Kilo Code Legion mode bridge`
   );
+  assert.match(
+    content,
+    /\.kilocode\/workflows/,
+    `${commandFile}: should document the plugin workflow discovery path`
+  );
 }
 
 function readYaml(filePath) {
@@ -322,10 +327,15 @@ test('installer local mode installs runtime-native artifacts for every supported
           path.join(projectDir, '.kilo', 'skills', 'legion', 'SKILL.md'),
           manifestFile
         );
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilocode', 'workflows', 'legion-start.md'));
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilocode', 'workflows', 'legion-plan.md'));
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilocode', 'workflows', 'legion-board.md'));
+        assertKiloCodeWorkflow(path.join(projectDir, '.kilocode', 'workflows', 'legion-update.md'));
         assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-start.md'));
         assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-plan.md'));
         assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-board.md'));
         assertKiloCodeWorkflow(path.join(projectDir, '.kilo', 'commands', 'legion-update.md'));
+        assertRepresentativeKiloSkills(path.join(projectDir, '.kilocode', 'skills'));
         assertRepresentativeKiloSkills(path.join(projectDir, '.kilo', 'skills'));
         assertKiloCodeMode(path.join(projectDir, '.kilocodemodes'), 'project');
       }
@@ -377,13 +387,18 @@ test('installer global mode installs runtime-native artifacts for every globally
           path.join(homeDir, '.kilo', 'skills', 'legion', 'SKILL.md'),
           manifestFile
         );
+        assertKiloCodeWorkflow(path.join(homeDir, '.kilocode', 'workflows', 'legion-start.md'));
+        assertKiloCodeWorkflow(path.join(homeDir, '.kilocode', 'workflows', 'legion-plan.md'));
+        assertKiloCodeWorkflow(path.join(homeDir, '.kilocode', 'workflows', 'legion-board.md'));
+        assertKiloCodeWorkflow(path.join(homeDir, '.kilocode', 'workflows', 'legion-update.md'));
         assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-start.md'));
         assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-plan.md'));
         assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-board.md'));
         assertKiloCodeWorkflow(path.join(homeDir, '.config', 'kilo', 'commands', 'legion-update.md'));
+        assertRepresentativeKiloSkills(path.join(homeDir, '.kilocode', 'skills'));
         assertRepresentativeKiloSkills(path.join(homeDir, '.kilo', 'skills'));
         assertKiloCodeMode(
-          path.join(homeDir, '.kilocode', 'globalStorage', 'kilocode.kilo-code', 'settings', 'custom_modes.yaml'),
+          path.join(homeDir, '.kilocode', 'globalStorage', 'kilo code.kilo-code', 'settings', 'custom_modes.yaml'),
           'global'
         );
       }
@@ -402,15 +417,21 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
   const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-kilocode-merge-'));
   const homeDir = path.join(sandboxRoot, 'home');
   const projectDir = path.join(sandboxRoot, 'project');
-  const modeFile = path.join(homeDir, '.kilocode', 'globalStorage', 'kilocode.kilo-code', 'settings', 'custom_modes.yaml');
+  const modeFile = path.join(homeDir, '.kilocode', 'globalStorage', 'kilo code.kilo-code', 'settings', 'custom_modes.yaml');
   const skillFile = path.join(homeDir, '.kilocode', 'skills', 'legion', 'SKILL.md');
-  const workflowsDir = path.join(homeDir, '.config', 'kilo', 'commands');
-  const skillsDir = path.join(homeDir, '.kilo', 'skills');
+  const workflowsDir = path.join(homeDir, '.kilocode', 'workflows');
+  const skillsDir = path.join(homeDir, '.kilocode', 'skills');
+  const cliWorkflowsDir = path.join(homeDir, '.config', 'kilo', 'commands');
+  const cliSkillsDir = path.join(homeDir, '.kilo', 'skills');
   const unrelatedWorkflow = path.join(workflowsDir, 'user-workflow.md');
   const unrelatedSkill = path.join(skillsDir, 'user-skill', 'SKILL.md');
+  const unrelatedCliWorkflow = path.join(cliWorkflowsDir, 'user-workflow.md');
+  const unrelatedCliSkill = path.join(cliSkillsDir, 'user-skill', 'SKILL.md');
   fs.mkdirSync(path.dirname(modeFile), { recursive: true });
   fs.mkdirSync(workflowsDir, { recursive: true });
   fs.mkdirSync(path.dirname(unrelatedSkill), { recursive: true });
+  fs.mkdirSync(cliWorkflowsDir, { recursive: true });
+  fs.mkdirSync(path.dirname(unrelatedCliSkill), { recursive: true });
   fs.mkdirSync(projectDir, { recursive: true });
 
   fs.writeFileSync(modeFile, [
@@ -451,6 +472,23 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     'Preserve this user skill.',
     '',
   ].join('\n'));
+  fs.writeFileSync(unrelatedCliWorkflow, [
+    '---',
+    'description: User CLI-backed workflow',
+    '---',
+    '',
+    'Preserve this user CLI workflow.',
+    '',
+  ].join('\n'));
+  fs.writeFileSync(unrelatedCliSkill, [
+    '---',
+    'name: user-skill',
+    'description: User CLI-backed skill',
+    '---',
+    '',
+    'Preserve this user CLI skill.',
+    '',
+  ].join('\n'));
 
   try {
     const installResult = runInstaller(['--kilo-code', '--global'], projectDir, homeDir);
@@ -460,6 +498,9 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     assertKiloCodeWorkflow(path.join(workflowsDir, 'legion-start.md'));
     assertKiloCodeWorkflow(path.join(workflowsDir, 'legion-board.md'));
     assertRepresentativeKiloSkills(skillsDir);
+    assertKiloCodeWorkflow(path.join(cliWorkflowsDir, 'legion-start.md'));
+    assertKiloCodeWorkflow(path.join(cliWorkflowsDir, 'legion-board.md'));
+    assertRepresentativeKiloSkills(cliSkillsDir);
     assertKiloCodeMode(modeFile, 'global');
 
     let modes = readYaml(modeFile).customModes;
@@ -472,6 +513,8 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     assert.match(modeText, /# Preserve this simplifier note/, 'install should preserve comments between existing modes');
     assert.equal(fs.existsSync(unrelatedWorkflow), true, 'install should preserve unrelated user workflows');
     assert.equal(fs.existsSync(unrelatedSkill), true, 'install should preserve unrelated user skills');
+    assert.equal(fs.existsSync(unrelatedCliWorkflow), true, 'install should preserve unrelated CLI-backed user workflows');
+    assert.equal(fs.existsSync(unrelatedCliSkill), true, 'install should preserve unrelated CLI-backed user skills');
 
     const reinstallResult = runInstaller(['--kilocode', '--global'], projectDir, homeDir);
     assertRunOk(reinstallResult, 'kilocode alias global reinstall');
@@ -485,6 +528,8 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     assert.match(modeText, /# Preserve this simplifier note/, 'reinstall should preserve comments between existing modes');
     assert.equal(fs.existsSync(unrelatedWorkflow), true, 'reinstall should preserve unrelated user workflows');
     assert.equal(fs.existsSync(unrelatedSkill), true, 'reinstall should preserve unrelated user skills');
+    assert.equal(fs.existsSync(unrelatedCliWorkflow), true, 'reinstall should preserve unrelated CLI-backed user workflows');
+    assert.equal(fs.existsSync(unrelatedCliSkill), true, 'reinstall should preserve unrelated CLI-backed user skills');
 
     const uninstallResult = runInstaller(['--kilo-code', '--global', '--uninstall'], projectDir, homeDir);
     assertRunOk(uninstallResult, 'kilo-code global uninstall');
@@ -501,26 +546,24 @@ test('Kilo Code custom mode merge preserves user modes across install, reinstall
     assert.equal(fs.existsSync(path.join(workflowsDir, 'legion-board.md')), false, 'uninstall should remove Legion board workflow file');
     assert.equal(fs.existsSync(path.join(skillsDir, 'board-of-directors')), false, 'uninstall should remove Legion skill directories');
     assert.equal(fs.existsSync(path.join(skillsDir, 'wave-executor')), false, 'uninstall should remove Legion skill directories');
+    assert.equal(fs.existsSync(path.join(cliWorkflowsDir, 'legion-start.md')), false, 'uninstall should remove Legion CLI-backed workflow files');
+    assert.equal(fs.existsSync(path.join(cliWorkflowsDir, 'legion-board.md')), false, 'uninstall should remove Legion CLI-backed board workflow file');
+    assert.equal(fs.existsSync(path.join(cliSkillsDir, 'board-of-directors')), false, 'uninstall should remove Legion CLI-backed skill directories');
+    assert.equal(fs.existsSync(path.join(cliSkillsDir, 'wave-executor')), false, 'uninstall should remove Legion CLI-backed skill directories');
     assert.equal(fs.existsSync(unrelatedWorkflow), true, 'uninstall should preserve unrelated user workflows');
     assert.equal(fs.existsSync(unrelatedSkill), true, 'uninstall should preserve unrelated user skills');
+    assert.equal(fs.existsSync(unrelatedCliWorkflow), true, 'uninstall should preserve unrelated CLI-backed user workflows');
+    assert.equal(fs.existsSync(unrelatedCliSkill), true, 'uninstall should preserve unrelated CLI-backed user skills');
   } finally {
     fs.rmSync(sandboxRoot, { recursive: true, force: true });
   }
 });
 
-test('Kilo Code global install seeds official extension storage from the legacy observed path', () => {
-  const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-kilocode-legacy-path-'));
+test('Kilo Code global install seeds spaced extension storage from no-space compatibility path', () => {
+  const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-kilocode-spaced-path-'));
   const homeDir = path.join(sandboxRoot, 'home');
   const projectDir = path.join(sandboxRoot, 'project');
-  const officialModeFile = path.join(
-    homeDir,
-    '.kilocode',
-    'globalStorage',
-    'kilocode.kilo-code',
-    'settings',
-    'custom_modes.yaml'
-  );
-  const legacyModeFile = path.join(
+  const spacedModeFile = path.join(
     homeDir,
     '.kilocode',
     'globalStorage',
@@ -528,11 +571,19 @@ test('Kilo Code global install seeds official extension storage from the legacy 
     'settings',
     'custom_modes.yaml'
   );
-  fs.mkdirSync(path.dirname(legacyModeFile), { recursive: true });
+  const compatibilityModeFile = path.join(
+    homeDir,
+    '.kilocode',
+    'globalStorage',
+    'kilocode.kilo-code',
+    'settings',
+    'custom_modes.yaml'
+  );
+  fs.mkdirSync(path.dirname(compatibilityModeFile), { recursive: true });
   fs.mkdirSync(projectDir, { recursive: true });
 
-  fs.writeFileSync(legacyModeFile, [
-    '# Existing observed Kilo Code storage',
+  fs.writeFileSync(compatibilityModeFile, [
+    '# Existing Kilo Code compatibility storage',
     'customModes:',
     '  - slug: project-research',
     '    name: Project Research',
@@ -544,22 +595,22 @@ test('Kilo Code global install seeds official extension storage from the legacy 
 
   try {
     const installResult = runInstaller(['--kilo-code', '--global'], projectDir, homeDir);
-    assertRunOk(installResult, 'kilo-code global install with legacy storage seed');
+    assertRunOk(installResult, 'kilo-code global install with compatibility storage seed');
 
-    const officialModes = readYaml(officialModeFile).customModes;
-    assert.ok(officialModes.some((entry) => entry.slug === 'project-research'), 'install should seed existing user modes into the official extension path');
-    assert.ok(officialModes.some((entry) => entry.slug === 'legion'), 'install should add Legion to the official extension path');
+    const spacedModes = readYaml(spacedModeFile).customModes;
+    assert.ok(spacedModes.some((entry) => entry.slug === 'project-research'), 'install should seed existing user modes into the spaced extension path');
+    assert.ok(spacedModes.some((entry) => entry.slug === 'legion'), 'install should add Legion to the spaced extension path');
     assert.match(
-      fs.readFileSync(officialModeFile, 'utf8'),
-      /# Existing observed Kilo Code storage/,
-      'legacy seed should preserve user comments in the official extension path'
+      fs.readFileSync(spacedModeFile, 'utf8'),
+      /# Existing Kilo Code compatibility storage/,
+      'compatibility seed should preserve user comments in the spaced extension path'
     );
 
-    const legacyModes = readYaml(legacyModeFile).customModes;
+    const compatibilityModes = readYaml(compatibilityModeFile).customModes;
     assert.deepEqual(
-      legacyModes.map((entry) => entry.slug),
+      compatibilityModes.map((entry) => entry.slug),
       ['project-research'],
-      'install should not mutate the legacy observed path while seeding the official path'
+      'install should not mutate the no-space compatibility path while seeding the spaced extension path'
     );
   } finally {
     fs.rmSync(sandboxRoot, { recursive: true, force: true });

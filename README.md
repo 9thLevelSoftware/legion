@@ -45,7 +45,7 @@ Replace `--claude` with your runtime of choice:
 | Kiro CLI (formerly Amazon Q Developer CLI) | Beta | Native `@legion-orchestrator` custom agent plus steering files |
 | OpenCode | Beta | Native `/legion-start` custom commands plus a Legion subagent |
 | Kilo CLI | Beta | Native `/legion-start` custom commands plus a Legion subagent |
-| Kilo Code Plugin | Beta | Native `Legion` custom mode plus Legion workflows and Agent Skills; use `--kilo-code` instead of `--kilo` |
+| Kilo Code Plugin | Beta | Native `Legion` custom mode plus Legion workflows and Agent Skills in both `.kilocode/` and CLI-backed `.kilo/` paths; use `--kilo-code` instead of `--kilo` |
 | Cursor | Experimental | Local-only rules install in `.cursor/rules/`; plain-language Legion requests only |
 | Windsurf | Experimental | Local-only rules install in `.windsurf/rules/`; plain-language Legion requests only |
 | Aider | Experimental | Manual-only fallback; automated native install is intentionally disabled |
@@ -90,7 +90,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 | Kiro CLI | `@legion-orchestrator` | `@legion-orchestrator` |
 | OpenCode | `/legion-start` | `/legion-start` |
 | Kilo CLI | `/legion-start` | `/legion-start` |
-| Kilo Code Plugin | Select `Legion` mode or run `/legion-start` | Select `Legion` mode or run `/legion-start` |
+| Kilo Code Plugin | Select `Legion` mode or run `/legion-start.md` or `/legion-start` | Select `Legion` mode or run `/legion-start.md` or `/legion-start` |
 | Cursor | Plain-language request after local rules install | Not supported |
 | Windsurf | Plain-language request after local rules install | Not supported |
 | Aider | Manual-only | Manual-only |
@@ -108,7 +108,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 
 ## Commands
 
-These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot, OpenCode, Kilo CLI, and Kilo Code Plugin use flat `/legion-start`; Kilo Code also installs a single `Legion` mode bridge and individual Agent Skills; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Eighteen commands total.
+These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot, OpenCode, and Kilo CLI use flat `/legion-start`; Kilo Code Plugin installs both plugin workflows such as `/legion-start.md` and CLI-backed workflows such as `/legion-start`, plus a single `Legion` mode bridge and individual Agent Skills; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Eighteen commands total.
 
 | Command | Description | Usage |
 |---------|-------------|-------|
