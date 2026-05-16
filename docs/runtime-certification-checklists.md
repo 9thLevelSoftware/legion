@@ -69,12 +69,14 @@ Use these checklists for manual verification when CI cannot prove runtime-native
 
 ## Kilo Code Plugin
 
-- Confirm `.kilo/commands/legion-start.md`, `.kilo/commands/legion-board.md`, `~/.config/kilo/commands/legion-start.md`, or `~/.config/kilo/commands/legion-board.md` exists for the expected scope.
+- Confirm `.kilocode/workflows/legion-start.md`, `.kilocode/workflows/legion-board.md`, `~/.kilocode/workflows/legion-start.md`, or `~/.kilocode/workflows/legion-board.md` exists for the plugin workflow surface.
+- Confirm `.kilo/commands/legion-start.md`, `.kilo/commands/legion-board.md`, `~/.config/kilo/commands/legion-start.md`, or `~/.config/kilo/commands/legion-board.md` exists for the CLI-backed workflow surface.
+- Confirm `.kilocode/skills/board-of-directors/SKILL.md` or `~/.kilocode/skills/board-of-directors/SKILL.md` exists, and representative skill frontmatter names match their directory names.
 - Confirm `.kilo/skills/board-of-directors/SKILL.md` or `~/.kilo/skills/board-of-directors/SKILL.md` exists, and representative skill frontmatter names match their directory names.
-- Confirm `.kilocode/skills/legion/SKILL.md` or `~/.kilocode/skills/legion/SKILL.md` exists.
-- Confirm `.kilocodemodes` or `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml` contains `slug: legion`.
-- Restart Kilo Code or reload the IDE window and verify the `Legion` custom mode, `/legion-start` workflow, and Legion skills are available.
-- Run `/legion-start` or `/legion-board` and confirm the workflow routes through the single `Legion` mode and reads the authoritative command file in `.legion/commands/legion/`.
+- Confirm `.kilocode/skills/legion/SKILL.md` or `~/.kilocode/skills/legion/SKILL.md` exists as the bridge/index skill.
+- Confirm `.kilocodemodes` or `~/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml` contains `slug: legion`.
+- Restart Kilo Code or reload the IDE window and verify the `Legion` custom mode, `/legion-start.md` or `/legion-start` workflow, and Legion skills are available.
+- Run `/legion-start.md`, `/legion-start`, `/legion-board.md`, or `/legion-board` and confirm the workflow routes through the single `Legion` mode and reads the authoritative command file in `.legion/commands/legion/`.
 
 ## Aider
 

@@ -1163,16 +1163,16 @@
             <h2>v8.0.1 &mdash; Kilo Code Plugin Surface</h2>
             <p class="intro-text" style="margin-bottom: 1.5rem;">
                 Kilo Code plugin support now installs one <code>Legion</code> mode bridge plus native
-                <code>/legion-*</code> workflows and the full Legion Agent Skills collection.
+                <code>/legion-*.md</code> and <code>/legion-*</code> workflows and the full Legion Agent Skills collection.
             </p>
             <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
                 <div class="feature-card">
                     <h3>Native Workflows</h3>
-                    <p><code>--kilo-code</code> populates Kilo's workflows surface with <code>/legion-start</code>, <code>/legion-plan</code>, <code>/legion-board</code>, and the rest of the Legion command set.</p>
+                    <p><code>--kilo-code</code> populates both <code>.kilocode/workflows/</code> and <code>.kilo/commands/</code> with <code>legion-start.md</code>, <code>legion-plan.md</code>, <code>legion-board.md</code>, and the rest of the Legion command set.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Agent Skills</h3>
-                    <p>Reusable Legion internals such as planning, wave execution, board governance, and review panels are installed as Kilo Agent Skills.</p>
+                    <p>Reusable Legion internals such as planning, wave execution, board governance, and review panels are installed in both <code>.kilocode/skills/</code> and <code>.kilo/skills/</code>.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Single Mode Bridge</h3>
