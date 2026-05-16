@@ -938,7 +938,7 @@ These activate automatically when their prerequisites are met:
 
 ## Requirements
 
-- Node.js 18+ (install-time only; the installer uses `js-yaml` for safe Kilo Code mode merges)
+- Node.js 18+ (install-time only; the installer lazy-loads `yaml` for safe Kilo Code mode merges)
 - One of the 10 supported AI CLI runtimes or the Kilo Code plugin:
   Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, Kilo CLI, Aider, or Kilo Code Plugin
 

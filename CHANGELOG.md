@@ -5,15 +5,35 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [7.6.4] - 2026-05-15
+## [7.8.0] - 2026-05-16
 
 ### Added
 - **Kilo Code plugin adapter** — separate `--kilo-code` / `--kilocode` installer target for the VS Code / JetBrains Kilo Code plugin, distinct from the existing Kilo CLI `--kilo` target.
 - Kilo Code native surfaces install a `Legion` custom mode plus a `legion` skill under `.kilocode` / `.kilocodemodes`, leaving Kilo Code sticky model selection untouched.
-- YAML merge support for Kilo Code custom modes using `js-yaml`, preserving non-Legion user modes and upserting only `slug: legion`.
+- Comment-preserving YAML merge support for Kilo Code custom modes using a lazy-loaded `yaml` parser, preserving non-Legion user modes and user comments while upserting only `slug: legion`.
 
 ### Fixed
 - Kilo Code installs no longer write plugin artifacts into the Kilo CLI `~/.config/kilo` command/agent directories.
+- Kilo Code global custom modes now target the Marketplace extension id path `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml`.
+- Kilo Code global installs seed the official mode file from the previously observed `kilo code.kilo-code` storage folder when present, preserving existing modes and comments without mutating that legacy file.
+
+## [7.7.0] - 2026-05-15
+
+### Changed
+- **Kilo Code discovery realignment** — `--kilo` now installs to the paths Kilo Code (VS Code extension and Kilo CLI) actually scans:
+  - Workflows: `.kilo/commands/` (was `.kilo/command/`) and `~/.config/kilo/commands/` (was `~/.config/kilo/command/`).
+  - Custom agents: `.kilo/agents/legion-orchestrator.md` (was `.kilo/agent/`) and `~/.config/kilo/agents/legion-orchestrator.md`.
+- **Workflow wrapper bodies** now document Kilo's `$ARGUMENTS` / positional substitution and reference the OpenCode fork lineage for shared `.opencode/` compatibility paths.
+
+### Added
+- **Kilo Skills native install** — every Legion skill is now copied into `.kilo/skills/<name>/SKILL.md` (project) or `~/.kilo/skills/<name>/SKILL.md` (global) so Kilo's hardwired Agent Skills loader discovers them on session start.
+- **Agent Skills name normalization** — at install time, each `SKILL.md` `name:` field is rewritten to match its parent directory and conform to the Agent Skills spec (lowercase letters/digits/hyphens, max 64 chars). Fixes the spec-invalid `legion:code-polish` source name without mutating the bundle copy used by other runtimes.
+- **Uninstall directory artifacts** — `nativeArtifacts` now supports `{ kind: 'dir' }` entries cleared via `fs.rmSync(..., { recursive: true })`, so `.kilo/skills/<name>/` directories are fully removed on uninstall and the parent `.kilo/skills/` and `.kilo/` directories are pruned when empty.
+- **Detection extended** — `workflow-common/SKILL.md` Step 1 probe and `adapters/kilo-cli.md` detection block now include the new Kilo paths (commands, agents, skills) as primary/secondary/tertiary signals.
+- **Certification checklist** — `docs/runtime-certification-checklists.md` Kilo CLI section adds a verification step that `.kilo/skills/code-polish/SKILL.md` exists with the normalized `name: code-polish` frontmatter.
+
+### Fixed
+- Kilo runtime evidence now points at the verified Kilo Code Workflows, Skills, and Custom Modes docs instead of the placeholder `https://kilo.ai/docs` URL.
 
 ## [7.6.3] - 2026-05-11
 

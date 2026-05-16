@@ -60,15 +60,17 @@ Use these checklists for manual verification when CI cannot prove runtime-native
 
 ## Kilo CLI
 
-- Confirm `.kilo/command/legion-start.md` or `~/.config/kilo/command/legion-start.md` exists.
-- Confirm `.kilo/agent/legion-orchestrator.md` or `~/.config/kilo/agent/legion-orchestrator.md` exists.
-- Restart Kilo CLI and verify `/legion-start` is available.
+- Confirm `.kilo/commands/legion-start.md` or `~/.config/kilo/commands/legion-start.md` exists.
+- Confirm `.kilo/agents/legion-orchestrator.md` or `~/.config/kilo/agents/legion-orchestrator.md` exists.
+- Confirm `.kilo/skills/code-polish/SKILL.md` (or `~/.kilo/skills/code-polish/SKILL.md`) exists and its frontmatter `name:` field reads exactly `code-polish` (the spec-invalid `legion:code-polish` source name must be normalized at install time).
+- Confirm at least three other skill folders exist under `.kilo/skills/` (e.g., `workflow-common`, `phase-decomposer`, `review-loop`).
+- Restart Kilo CLI and verify `/legion-start` is available in the slash-command picker.
 - Confirm the installed `legion-orchestrator` agent can execute the authoritative workflow file in `.legion/commands/legion/start.md`.
 
 ## Kilo Code Plugin
 
 - Confirm `.kilocode/skills/legion/SKILL.md` or `~/.kilocode/skills/legion/SKILL.md` exists.
-- Confirm `.kilocodemodes` or `~/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml` contains `slug: legion`.
+- Confirm `.kilocodemodes` or `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml` contains `slug: legion`.
 - Restart Kilo Code or reload the IDE window and verify the `Legion` custom mode is available.
 - Ask Kilo Code to use the `legion` skill and confirm it routes to the authoritative workflow file in `.legion/commands/legion/start.md`.
 

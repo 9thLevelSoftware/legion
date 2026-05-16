@@ -11,7 +11,7 @@ capabilities:
   read_only_agents: true
   supports_extended_thinking: false
 detection:
-  primary: ".kilocode/skills/legion/SKILL.md, .kilocodemodes, ~/.kilocode/skills/legion/SKILL.md, or ~/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml exists"
+  primary: ".kilocode/skills/legion/SKILL.md, .kilocodemodes, ~/.kilocode/skills/legion/SKILL.md, or ~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml exists"
   secondary: "Kilo Code custom mode slug legion exists in custom_modes.yaml or .kilocodemodes"
 max_prompt_size: 180000
 known_quirks:
@@ -40,8 +40,8 @@ Kilo Code plugin support is distinct from the Kilo CLI adapter. Legion installs 
 | `model_planning` | User-selected or sticky Kilo Code model for the Legion mode. |
 | `model_execution` | User-selected or sticky Kilo Code model for the Legion mode. |
 | `model_check` | User-selected or sticky Kilo Code model for the Legion mode. |
-| `global_config_dir` | `~/.kilocode/skills/legion/` plus `~/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml`. |
-| `plugin_discovery_glob` | `.kilocode/skills/legion/SKILL.md`, `.kilocodemodes`, `~/.kilocode/skills/legion/SKILL.md`, or `~/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml`. |
+| `global_config_dir` | `~/.kilocode/skills/legion/` plus `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml`. |
+| `plugin_discovery_glob` | `.kilocode/skills/legion/SKILL.md`, `.kilocodemodes`, `~/.kilocode/skills/legion/SKILL.md`, or `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml`. |
 | `commit_signature` | `Co-Authored-By: Kilo Code <noreply@kilo.ai>` |
 
 ## Interaction Protocol

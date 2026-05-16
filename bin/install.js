@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const readline = require('readline');
-const yaml = require('js-yaml');
 const {
   LEGION_COMMANDS,
   RUNTIME_METADATA,
@@ -435,6 +434,21 @@ function rewriteAgentPathResolution(content, manifestFile) {
 }
 
 /**
+ * Normalize a SKILL.md frontmatter `name:` field to the Agent Skills spec
+ * (lowercase letters/digits/hyphens only, max 64 chars, must match the
+ * containing directory name). Used when installing into runtimes such as Kilo
+ * Code that enforce the spec at load time.
+ */
+function normalizeAgentSkillName(content, directoryName) {
+  const safe = directoryName
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64);
+  return content.replace(/^(name:\s*).+$/m, `$1${safe}`);
+}
+
+/**
  * Compose all transforms for a command file.
  */
 function transformCommand(content, runtimeKey, installedSkillsDir, installedAgentsDir) {
@@ -556,9 +570,13 @@ agent: legion-orchestrator
 subtask: true
 ---
 
-${legionRuntimeWrapperPreamble('Kilo CLI', commandName, paths)}
+${legionRuntimeWrapperPreamble('Kilo Code', commandName, paths)}
 
-Treat user-provided arguments after the slash command as extra clarification for the workflow.
+Kilo Code workflows discover this file under \`.kilo/commands/\` (project) or
+\`~/.config/kilo/commands/\` (global). Kilo supports \`$ARGUMENTS\` (and
+positional \`$1\`, \`$2\`, ...) substitution — when the user includes extra text
+after \`/legion-${commandName}\`, treat \`$ARGUMENTS\` as additional clarification
+for the workflow.
 `;
 }
 
@@ -568,10 +586,13 @@ description: "Coordinate Legion workflows using the installed Legion bundle"
 mode: subagent
 ---
 
-You are Legion's orchestrator for Kilo CLI.
+You are Legion's orchestrator for Kilo Code (VS Code extension and Kilo CLI).
 
 - Use \`${paths.manifestFile}\` to find the installed Legion bundle.
 - Read only the matching command file under \`${paths.commandsDir}\`.
+- Native discovery paths: workflows at \`.kilo/commands/\` (or \`~/.config/kilo/commands/\`),
+  this agent at \`.kilo/agents/\` (or \`~/.config/kilo/agents/\`), and skills at
+  \`.kilo/skills/<name>/SKILL.md\` (or \`~/.kilo/skills/<name>/SKILL.md\`).
 - Route legacy \`/legion:*\` aliases to the corresponding flat Kilo commands such as \`/legion-start\`.
 - Coordinate through artifacts in \`.planning/\`; do not assume direct inter-agent messaging.
 `;
@@ -798,45 +819,110 @@ function writeManagedFile(filePath, content, nativeArtifacts) {
   return backupCreated;
 }
 
-function parseYamlFile(filePath) {
-  if (!fs.existsSync(filePath)) return {};
-  const content = fs.readFileSync(filePath, 'utf8');
-  if (!content.trim()) return {};
+let yamlLibrary = null;
 
-  const parsed = yaml.safeLoad(content);
-  if (parsed === null || typeof parsed === 'undefined') return {};
-  if (typeof parsed !== 'object' || Array.isArray(parsed)) {
+function loadYamlLibrary() {
+  if (yamlLibrary) return yamlLibrary;
+  try {
+    yamlLibrary = require('yaml');
+    return yamlLibrary;
+  } catch (error) {
+    const message = 'Kilo Code custom mode merging requires the `yaml` package. Run `npm install` in this checkout or use the published npm package.';
+    error.message = `${message}\n${error.message}`;
+    throw error;
+  }
+}
+
+function parseYamlDocument(filePath) {
+  const YAML = loadYamlLibrary();
+  if (!fs.existsSync(filePath)) {
+    return YAML.parseDocument('{}');
+  }
+  const content = fs.readFileSync(filePath, 'utf8');
+  const document = YAML.parseDocument(content.trim() ? content : '{}', {
+    keepSourceTokens: true,
+  });
+
+  if (document.errors && document.errors.length > 0) {
+    const details = document.errors.map((err) => err.message).join('; ');
+    throw new Error(`Cannot safely update ${filePath}: ${details}`);
+  }
+
+  if (!document.contents) {
+    document.contents = document.createNode({});
+  }
+
+  if (!YAML.isMap(document.contents)) {
     throw new Error(`Cannot safely update ${filePath}: expected a YAML object at the document root.`);
   }
-  return parsed;
+
+  return document;
+}
+
+function getYamlKey(pair) {
+  if (!pair || !pair.key) return undefined;
+  return typeof pair.key === 'object' && Object.prototype.hasOwnProperty.call(pair.key, 'value')
+    ? pair.key.value
+    : pair.key;
+}
+
+function getKiloCodeCustomModes(document, filePath, createIfMissing = true) {
+  const YAML = loadYamlLibrary();
+  let customModes = document.get('customModes', true);
+  if (typeof customModes === 'undefined') {
+    if (!createIfMissing) return null;
+    customModes = document.createNode([]);
+    document.set('customModes', customModes);
+  }
+  if (!YAML.isSeq(customModes)) {
+    throw new Error(`Cannot safely update ${filePath}: customModes must be a YAML list.`);
+  }
+  return customModes;
+}
+
+function yamlModeSlug(modeNode) {
+  const YAML = loadYamlLibrary();
+  if (!YAML.isMap(modeNode)) return undefined;
+  return modeNode.get('slug');
 }
 
 function dumpYamlDocument(document) {
-  return yaml.safeDump(document, {
+  return document.toString({
     lineWidth: 120,
-    noRefs: true,
-    sortKeys: false,
   });
 }
 
-function writeKiloCodeCustomMode(filePath, modeEntry, nativeArtifacts) {
-  const document = parseYamlFile(filePath);
-  if (!Array.isArray(document.customModes)) {
-    if (typeof document.customModes === 'undefined') {
-      document.customModes = [];
-    } else {
-      throw new Error(`Cannot safely update ${filePath}: customModes must be a YAML list.`);
-    }
-  }
+function legacyKiloCodeCustomModesPath(filePath) {
+  const currentSegment = '/globalStorage/kilocode.kilo-code/';
+  if (!filePath.includes(currentSegment)) return null;
+  return filePath.replace(currentSegment, '/globalStorage/kilo code.kilo-code/');
+}
 
-  const existingIndex = document.customModes.findIndex((entry) => {
-    return entry && typeof entry === 'object' && entry.slug === modeEntry.slug;
+function seedKiloCodeCustomModesFromLegacyPath(filePath) {
+  if (fs.existsSync(filePath)) return false;
+
+  const legacyPath = legacyKiloCodeCustomModesPath(filePath);
+  if (!legacyPath || !fs.existsSync(legacyPath)) return false;
+
+  ensureDirs([dirnamePath(filePath)]);
+  fs.copyFileSync(legacyPath, filePath);
+  return true;
+}
+
+function writeKiloCodeCustomMode(filePath, modeEntry, nativeArtifacts) {
+  const seededFromLegacyPath = seedKiloCodeCustomModesFromLegacyPath(filePath);
+  const document = parseYamlDocument(filePath);
+  const customModes = getKiloCodeCustomModes(document, filePath);
+
+  const existingIndex = customModes.items.findIndex((entry) => {
+    return yamlModeSlug(entry) === modeEntry.slug;
   });
 
+  const modeNode = document.createNode(modeEntry);
   if (existingIndex >= 0) {
-    document.customModes[existingIndex] = modeEntry;
+    customModes.items[existingIndex] = modeNode;
   } else {
-    document.customModes.push(modeEntry);
+    customModes.add(modeNode);
   }
 
   const content = dumpYamlDocument(document);
@@ -847,6 +933,7 @@ function writeKiloCodeCustomMode(filePath, modeEntry, nativeArtifacts) {
     backupCreated,
     kind: 'kilocode-custom-mode',
     slug: modeEntry.slug,
+    seededFromLegacyPath,
   });
   return backupCreated;
 }
@@ -854,19 +941,20 @@ function writeKiloCodeCustomMode(filePath, modeEntry, nativeArtifacts) {
 function removeKiloCodeCustomMode(filePath, slug) {
   if (!fs.existsSync(filePath)) return false;
 
-  const document = parseYamlFile(filePath);
-  if (!Array.isArray(document.customModes)) return false;
+  const document = parseYamlDocument(filePath);
+  const customModes = getKiloCodeCustomModes(document, filePath, false);
+  if (!customModes) return false;
 
-  const beforeCount = document.customModes.length;
-  document.customModes = document.customModes.filter((entry) => {
-    return !(entry && typeof entry === 'object' && entry.slug === slug);
+  const beforeCount = customModes.items.length;
+  customModes.items = customModes.items.filter((entry) => {
+    return yamlModeSlug(entry) !== slug;
   });
 
-  if (document.customModes.length === beforeCount) return false;
+  if (customModes.items.length === beforeCount) return false;
 
-  const hasOnlyEmptyCustomModes = Object.keys(document).every((key) => {
-    return key === 'customModes' || typeof document[key] === 'undefined';
-  }) && document.customModes.length === 0;
+  const hasOnlyEmptyCustomModes = document.contents.items.every((pair) => {
+    return getYamlKey(pair) === 'customModes' || !pair.value;
+  }) && customModes.items.length === 0;
 
   if (hasOnlyEmptyCustomModes) {
     fs.unlinkSync(filePath);
@@ -1197,6 +1285,32 @@ function install(runtimeKey, scope, verify = false) {
         break;
       }
 
+      case 'kilo-skills': {
+        const skillSrcDirs = listDirs(src.skillsSrc);
+        for (const skillSrc of skillSrcDirs) {
+          const skillName = path.basename(skillSrc);
+          const destSkillDir = joinPath(surface.path, skillName);
+          ensureDirs([destSkillDir]);
+          for (const entry of fs.readdirSync(skillSrc)) {
+            const srcPath = joinPath(skillSrc, entry);
+            const destPath = joinPath(destSkillDir, entry);
+            if (fs.statSync(srcPath).isDirectory()) {
+              copyDirRecursive(srcPath, destPath);
+            } else if (entry === 'SKILL.md') {
+              const raw = fs.readFileSync(srcPath, 'utf8');
+              const rewritten = normalizeAgentSkillName(raw, skillName);
+              writeManagedFile(destPath, rewritten, nativeArtifacts);
+            } else {
+              fs.copyFileSync(srcPath, destPath);
+              nativeArtifacts.push({ path: destPath });
+            }
+          }
+          nativeArtifacts.push({ path: destSkillDir, kind: 'dir' });
+        }
+        console.log(`  ${surface.key}: ${skillSrcDirs.length} skills -> ${surface.path}`);
+        break;
+      }
+
       case 'copilot-skills': {
         for (const [commandName, commandContent] of transformedCommands.entries()) {
           const skillDir = joinPath(surface.path, `legion-${commandName}`);
@@ -1447,7 +1561,11 @@ function uninstall(runtimeKey, scope) {
 
   let removedNativeArtifacts = 0;
   let restoredNativeBackups = 0;
-  for (const artifact of nativeArtifacts) {
+  // Process files first, then directories — so file unlinks don't race with
+  // their parent directory being removed recursively.
+  const fileArtifacts = nativeArtifacts.filter((a) => a.kind !== 'dir');
+  const dirArtifacts = nativeArtifacts.filter((a) => a.kind === 'dir');
+  for (const artifact of fileArtifacts) {
     const artifactPath = artifact.path;
     if (!artifactPath) continue;
     if (artifact.kind === 'kilocode-custom-mode') {
@@ -1457,14 +1575,26 @@ function uninstall(runtimeKey, scope) {
       continue;
     }
     if (fs.existsSync(artifactPath)) {
-      fs.unlinkSync(artifactPath);
-      removedNativeArtifacts++;
+      try {
+        fs.unlinkSync(artifactPath);
+        removedNativeArtifacts++;
+      } catch {
+        // File may have already been removed by a recursive dir removal below.
+      }
     }
     const backupPath = artifactPath + '.bak';
     if (fs.existsSync(backupPath)) {
       fs.renameSync(backupPath, artifactPath);
       restoredNativeBackups++;
       console.log(`  Restored native backup: ${artifactPath}`);
+    }
+  }
+  for (const artifact of dirArtifacts) {
+    const artifactPath = artifact.path;
+    if (!artifactPath) continue;
+    if (fs.existsSync(artifactPath)) {
+      fs.rmSync(artifactPath, { recursive: true, force: true });
+      removedNativeArtifacts++;
     }
   }
   if (removedNativeArtifacts > 0) {

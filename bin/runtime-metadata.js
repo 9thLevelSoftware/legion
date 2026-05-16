@@ -425,15 +425,22 @@ const RUNTIME_METADATA = {
         key: 'kilo-commands',
         type: 'kilo-commands',
         pathKind: 'dir',
-        localPath: '$PROJECT/.kilo/command',
-        globalPath: '$HOME/.config/kilo/command',
+        localPath: '$PROJECT/.kilo/commands',
+        globalPath: '$HOME/.config/kilo/commands',
       },
       {
         key: 'kilo-agent',
         type: 'kilo-agent',
         pathKind: 'file',
-        localPath: '$PROJECT/.kilo/agent/legion-orchestrator.md',
-        globalPath: '$HOME/.config/kilo/agent/legion-orchestrator.md',
+        localPath: '$PROJECT/.kilo/agents/legion-orchestrator.md',
+        globalPath: '$HOME/.config/kilo/agents/legion-orchestrator.md',
+      },
+      {
+        key: 'kilo-skills',
+        type: 'kilo-skills',
+        pathKind: 'dir',
+        localPath: '$PROJECT/.kilo/skills',
+        globalPath: '$HOME/.kilo/skills',
       },
     ],
     entrypoints: {
@@ -442,8 +449,18 @@ const RUNTIME_METADATA = {
     },
     evidence: [
       {
-        title: 'Kilo CLI custom commands',
-        url: 'https://kilo.ai/docs',
+        title: 'Kilo Code workflows (slash commands)',
+        url: 'https://kilocode.ai/docs/customize/workflows',
+        verifiedOn: '2026-03-11',
+      },
+      {
+        title: 'Kilo Code skills (Agent Skills format)',
+        url: 'https://landing.kilocode.ai/docs/customize/skills',
+        verifiedOn: '2026-03-11',
+      },
+      {
+        title: 'Kilo Code custom modes (agents)',
+        url: 'https://kilo.ai/docs/customize/custom-modes',
         verifiedOn: '2026-03-11',
       },
     ],
@@ -474,7 +491,7 @@ const RUNTIME_METADATA = {
         type: 'kilocode-modes',
         pathKind: 'file',
         localPath: '$PROJECT/.kilocodemodes',
-        globalPath: '$HOME/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml',
+        globalPath: '$HOME/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml',
       },
     ],
     entrypoints: {
