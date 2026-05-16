@@ -5,7 +5,7 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [7.8.0] - 2026-05-16
+## [8.0.0] - 2026-05-16
 
 ### Added
 - **Kilo Code plugin adapter** — separate `--kilo-code` / `--kilocode` installer target for the VS Code / JetBrains Kilo Code plugin, distinct from the existing Kilo CLI `--kilo` target.
