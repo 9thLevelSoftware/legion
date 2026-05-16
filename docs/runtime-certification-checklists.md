@@ -67,6 +67,13 @@ Use these checklists for manual verification when CI cannot prove runtime-native
 - Restart Kilo CLI and verify `/legion-start` is available in the slash-command picker.
 - Confirm the installed `legion-orchestrator` agent can execute the authoritative workflow file in `.legion/commands/legion/start.md`.
 
+## Kilo Code Plugin
+
+- Confirm `.kilocode/skills/legion/SKILL.md` or `~/.kilocode/skills/legion/SKILL.md` exists.
+- Confirm `.kilocodemodes` or `~/.kilocode/globalStorage/kilocode.kilo-code/settings/custom_modes.yaml` contains `slug: legion`.
+- Restart Kilo Code or reload the IDE window and verify the `Legion` custom mode is available.
+- Ask Kilo Code to use the `legion` skill and confirm it routes to the authoritative workflow file in `.legion/commands/legion/start.md`.
+
 ## Aider
 
 - Confirm Legion does not offer an automated native install for Aider.

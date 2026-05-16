@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legion | My Name Is Legion, For We Are Many</title>
-    <meta name="description" content="Orchestrate 49 AI specialist personalities across 10 AI CLI runtimes. Plan, build, review, and polish with personality-first agents across 9 divisions.">
+    <meta name="description" content="Orchestrate 49 AI specialist personalities across 10 AI CLI runtimes plus the Kilo Code plugin. Plan, build, review, and polish with personality-first agents across 9 divisions.">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -740,8 +740,8 @@
                     <div class="label">Skills</div>
                 </div>
                 <div class="stat">
-                    <div class="num">0</div>
-                    <div class="label">Dependencies</div>
+                    <div class="num">1</div>
+                    <div class="label">Installer Dependency</div>
                 </div>
             </div>
         </section>
@@ -761,7 +761,7 @@
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--codex</span>      <span class="comment"># OpenAI Codex CLI</span>
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--cursor</span>     <span class="comment"># Cursor</span>
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--gemini</span>     <span class="comment"># Google Gemini CLI</span>
-<span class="comment"># + copilot, kiro, windsurf, opencode, kilo, aider</span>
+<span class="comment"># + copilot, kiro, windsurf, opencode, kilo, kilo-code, aider</span>
 
 <span class="comment"># Then, in any project directory:</span>
 <span class="command">/project:legion-start</span>    <span class="comment"># Codex local install</span>
@@ -982,8 +982,8 @@
                     <p>GitHub integration, memory, brownfield analysis, marketing workflows, design workflows, panels, critique &mdash; all opt-in. The core loop works without any of them.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Zero Runtime Dependencies</h3>
-                    <p>No custom CLI. No MCP server. No shell hooks. Zero runtime dependencies — npm is install-time only. Skills, commands, agents. Install with npx and go.</p>
+                    <h3>Light Installer Surface</h3>
+                    <p>No custom CLI. No MCP server. No shell hooks. One lazy-loaded installer dependency for safe YAML merges. Skills, commands, agents. Install with npx and go.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Plan Contracts</h3>
@@ -1152,6 +1152,32 @@
                 <div class="feature-card">
                     <h3>Dynamic Knowledge Index</h3>
                     <p>Compressed directory index in AGENTS.md maps all 49 agents and 33 skills by division. &ldquo;Prefer retrieval-led reasoning&rdquo; directive eliminates LLM laziness during agent spawning. Based on <a href="https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals" target="_blank" rel="noopener">Vercel&rsquo;s Context Engineering research</a> (100% tool-use vs. 53&ndash;79% for skills).</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"><div class="divider-line"></div></div>
+
+        <!-- ===== v7.6.4 ===== -->
+        <section class="reveal-section">
+            <h2>v7.6.4 &mdash; Kilo Code Plugin Support</h2>
+            <p class="intro-text" style="margin-bottom: 1.5rem;">
+                Kilo Code plugin support is now separate from Kilo CLI. Use <code>--kilo-code</code>
+                to install a <code>Legion</code> custom mode and a <code>legion</code> skill without
+                writing CLI command wrappers into <code>~/.config/kilo</code>.
+            </p>
+            <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
+                <div class="feature-card">
+                    <h3>Kilo Code Adapter</h3>
+                    <p>Beta-tier plugin adapter with mode and skill routing for VS Code and JetBrains Kilo Code users.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Safe Mode Merge</h3>
+                    <p>The installer parses <code>custom_modes.yaml</code>, upserts only <code>slug: legion</code>, and preserves user modes and comments.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Sticky Models Preserved</h3>
+                    <p>Generated Kilo Code mode files do not pin a model, leaving Kilo Code model selection under user control.</p>
                 </div>
             </div>
         </section>
@@ -1334,7 +1360,7 @@
                 "My name is Legion, for we are many."
             </p>
             <p style="margin-top: 0.5rem; color: #444; font-size: 0.8rem;">
-                49 agents &middot; 9 divisions &middot; 10 CLIs &middot; 18 commands &middot; 33 skills &middot; Zero runtime dependencies
+                49 agents &middot; 9 divisions &middot; 10 CLIs + Kilo Code &middot; 18 commands &middot; 33 skills &middot; 1 installer dependency
             </p>
         </footer>
     </div>
