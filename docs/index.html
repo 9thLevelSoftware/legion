@@ -1158,26 +1158,25 @@
 
         <div class="divider"><div class="divider-line"></div></div>
 
-        <!-- ===== v7.6.4 ===== -->
+        <!-- ===== v8.0.1 ===== -->
         <section class="reveal-section">
-            <h2>v7.6.4 &mdash; Kilo Code Plugin Support</h2>
+            <h2>v8.0.1 &mdash; Kilo Code Plugin Surface</h2>
             <p class="intro-text" style="margin-bottom: 1.5rem;">
-                Kilo Code plugin support is now separate from Kilo CLI. Use <code>--kilo-code</code>
-                to install a <code>Legion</code> custom mode and a <code>legion</code> skill without
-                writing CLI command wrappers into <code>~/.config/kilo</code>.
+                Kilo Code plugin support now installs one <code>Legion</code> mode bridge plus native
+                <code>/legion-*</code> workflows and the full Legion Agent Skills collection.
             </p>
             <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
                 <div class="feature-card">
-                    <h3>Kilo Code Adapter</h3>
-                    <p>Beta-tier plugin adapter with mode and skill routing for VS Code and JetBrains Kilo Code users.</p>
+                    <h3>Native Workflows</h3>
+                    <p><code>--kilo-code</code> populates Kilo's workflows surface with <code>/legion-start</code>, <code>/legion-plan</code>, <code>/legion-board</code>, and the rest of the Legion command set.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Safe Mode Merge</h3>
-                    <p>The installer parses <code>custom_modes.yaml</code>, upserts only <code>slug: legion</code>, and preserves user modes and comments.</p>
+                    <h3>Agent Skills</h3>
+                    <p>Reusable Legion internals such as planning, wave execution, board governance, and review panels are installed as Kilo Agent Skills.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Sticky Models Preserved</h3>
-                    <p>Generated Kilo Code mode files do not pin a model, leaving Kilo Code model selection under user control.</p>
+                    <h3>Single Mode Bridge</h3>
+                    <p>The installer still creates only one <code>Legion</code> mode and preserves sticky model selection, user modes, comments, workflows, and skills.</p>
                 </div>
             </div>
         </section>

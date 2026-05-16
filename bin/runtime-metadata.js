@@ -12,7 +12,13 @@ const LEGION_COMMANDS = [
   'milestone',
   'agent',
   'explore',
+  'board',
+  'retro',
+  'ship',
+  'learn',
+  'polish',
   'update',
+  'validate',
 ];
 
 const SUPPORT_TIERS = ['certified', 'beta', 'experimental', 'community-contributed'];
@@ -472,13 +478,27 @@ const RUNTIME_METADATA = {
     label: 'Kilo Code Plugin',
     adapterFile: 'kilo-code.md',
     supportTier: 'beta',
-    disposition: 'plugin-mode-and-skill',
-    installSurface: 'Kilo Code custom mode plus a Legion skill',
+    disposition: 'plugin-mode-workflows-and-skills',
+    installSurface: 'Kilo Code Legion mode plus native workflows and Agent Skills',
     scopeSupport: { local: true, global: true },
     storageLayout: 'legion',
     allowedTools: null,
     supportsAtRefs: false,
     nativeSurfaces: [
+      {
+        key: 'kilocode-workflows',
+        type: 'kilo-commands',
+        pathKind: 'dir',
+        localPath: '$PROJECT/.kilo/commands',
+        globalPath: '$HOME/.config/kilo/commands',
+      },
+      {
+        key: 'kilocode-skills',
+        type: 'kilo-skills',
+        pathKind: 'dir',
+        localPath: '$PROJECT/.kilo/skills',
+        globalPath: '$HOME/.kilo/skills',
+      },
       {
         key: 'kilocode-skill',
         type: 'kilocode-skill',
@@ -495,10 +515,15 @@ const RUNTIME_METADATA = {
       },
     ],
     entrypoints: {
-      local: 'select the Legion mode or ask Kilo Code to use the legion skill',
-      global: 'select the Legion mode or ask Kilo Code to use the legion skill',
+      local: 'select the Legion mode or run /legion-start',
+      global: 'select the Legion mode or run /legion-start',
     },
     evidence: [
+      {
+        title: 'Kilo Code workflows',
+        url: 'https://kilo.ai/docs/customize/workflows',
+        verifiedOn: '2026-03-11',
+      },
       {
         title: 'Kilo Code custom modes',
         url: 'https://kilo.ai/docs/customize/custom-modes',
