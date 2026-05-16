@@ -169,6 +169,8 @@ function checkRuntimeSupportTable() {
     'Kiro CLI (formerly Amazon Q Developer CLI)',
     'Windsurf',
     'OpenCode',
+    'Kilo CLI',
+    'Kilo Code Plugin',
     'Aider',
   ];
 

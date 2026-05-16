@@ -5,6 +5,16 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.6.4] - 2026-05-15
+
+### Added
+- **Kilo Code plugin adapter** — separate `--kilo-code` / `--kilocode` installer target for the VS Code / JetBrains Kilo Code plugin, distinct from the existing Kilo CLI `--kilo` target.
+- Kilo Code native surfaces install a `Legion` custom mode plus a `legion` skill under `.kilocode` / `.kilocodemodes`, leaving Kilo Code sticky model selection untouched.
+- YAML merge support for Kilo Code custom modes using `js-yaml`, preserving non-Legion user modes and upserting only `slug: legion`.
+
+### Fixed
+- Kilo Code installs no longer write plugin artifacts into the Kilo CLI `~/.config/kilo` command/agent directories.
+
 ## [7.6.3] - 2026-05-11
 
 ### Fixed

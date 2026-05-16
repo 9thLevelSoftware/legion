@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const readline = require('readline');
+const yaml = require('js-yaml');
 const {
   LEGION_COMMANDS,
   RUNTIME_METADATA,
@@ -94,6 +95,8 @@ Runtime (pick one):
   --windsurf    Windsurf
   --opencode    OpenCode
   --kilo        Kilo CLI
+  --kilo-code   Kilo Code Plugin
+  --kilocode    Alias for --kilo-code
   --aider       Aider (manual-only guidance; native install disabled)
 
   If no runtime flag is given, you'll be prompted to select one.
@@ -574,6 +577,71 @@ You are Legion's orchestrator for Kilo CLI.
 `;
 }
 
+function generateKiloCodeSkill(paths) {
+  const mappingLines = LEGION_COMMANDS
+    .map((commandName) => `- \`/legion:${commandName}\` -> \`${legionCommandFile(paths, commandName)}\``)
+    .join('\n');
+
+  return `---
+name: legion
+description: Route Legion requests and /legion:* intents to the installed Legion workflow bundle in Kilo Code.
+---
+
+# Legion for Kilo Code
+
+Use this skill when the user asks to work with Legion, refers to \`/legion:*\` commands, or asks for phase planning, build, review, status, ship, retro, portfolio, or advisory workflows through Legion.
+
+## Native Mapping
+
+${mappingLines}
+
+## How To Use
+
+1. Read \`${paths.manifestFile}\` if installed paths need to be resolved.
+2. Read only the matching Legion command file under \`${paths.commandsDir}\`.
+3. Load only the files named in that command's \`<execution_context>\` and \`<context>\`.
+4. Use the current project's \`.planning/PROJECT.md\`, \`.planning/ROADMAP.md\`, and \`.planning/STATE.md\` when the workflow expects project state.
+5. Treat Kilo Code custom modes and skills as the native plugin surface; do not look for Kilo CLI command wrappers unless the user explicitly asks for the CLI.
+
+## Guardrails
+
+- Do not claim Kilo Code exposes native \`/legion:*\` slash commands.
+- Prefer the selected Legion mode for coordination, and use this skill as the on-demand routing reference.
+- Keep model choice in Kilo Code; this skill does not pin or override models.
+`;
+}
+
+function generateKiloCodeMode(paths, scope) {
+  const modeSource = scope === 'global' ? 'global' : 'project';
+  return {
+    slug: 'legion',
+    name: 'Legion',
+    roleDefinition: [
+      'You are Legion\'s coordinator inside Kilo Code.',
+      '',
+      'You route Legion requests to the installed Legion workflow bundle and execute the matching workflow faithfully. Legion workflows live as markdown command files, with supporting agents, skills, adapters, and project state resolved through the install manifest.',
+      '',
+      'You do not invent alternate orchestration rules. Read the matching workflow first, then load only the explicitly referenced supporting files.'
+    ].join('\n'),
+    whenToUse: [
+      'Use this mode when the user asks for Legion, /legion:* workflows, phase planning, phase build execution, review cycles, status routing, shipping, retrospectives, portfolio work, or Legion advisory sessions.',
+      '',
+      'Do not use this mode for ordinary Kilo Code coding tasks that do not mention Legion or its workflow concepts.'
+    ].join('\n'),
+    description: 'Coordinate Legion workflows from the installed Legion bundle',
+    customInstructions: [
+      `Read ${paths.manifestFile} if you need installed paths.`,
+      `Read the matching workflow file under ${paths.commandsDir} before acting.`,
+      'Load only the files named by that workflow in <execution_context> and <context>.',
+      'Use .planning/PROJECT.md, .planning/ROADMAP.md, and .planning/STATE.md when the workflow expects project state.',
+      'Treat Kilo Code custom modes and skills as the plugin surface; do not assume Kilo CLI command wrappers are present.',
+      'Leave model selection to Kilo Code sticky models or user settings; do not pin a model from this mode.'
+    ].join('\n'),
+    groups: ['read', 'edit', 'command', 'mcp'],
+    source: modeSource,
+  };
+}
+
 function generateCopilotSkill(paths, commandName, commandContent) {
   const description = extractFrontmatterValue(commandContent, 'description')
     || `Run the Legion ${commandName} workflow`;
@@ -728,6 +796,85 @@ function writeManagedFile(filePath, content, nativeArtifacts) {
   fs.writeFileSync(filePath, content);
   nativeArtifacts.push({ path: filePath, backupCreated });
   return backupCreated;
+}
+
+function parseYamlFile(filePath) {
+  if (!fs.existsSync(filePath)) return {};
+  const content = fs.readFileSync(filePath, 'utf8');
+  if (!content.trim()) return {};
+
+  const parsed = yaml.safeLoad(content);
+  if (parsed === null || typeof parsed === 'undefined') return {};
+  if (typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`Cannot safely update ${filePath}: expected a YAML object at the document root.`);
+  }
+  return parsed;
+}
+
+function dumpYamlDocument(document) {
+  return yaml.safeDump(document, {
+    lineWidth: 120,
+    noRefs: true,
+    sortKeys: false,
+  });
+}
+
+function writeKiloCodeCustomMode(filePath, modeEntry, nativeArtifacts) {
+  const document = parseYamlFile(filePath);
+  if (!Array.isArray(document.customModes)) {
+    if (typeof document.customModes === 'undefined') {
+      document.customModes = [];
+    } else {
+      throw new Error(`Cannot safely update ${filePath}: customModes must be a YAML list.`);
+    }
+  }
+
+  const existingIndex = document.customModes.findIndex((entry) => {
+    return entry && typeof entry === 'object' && entry.slug === modeEntry.slug;
+  });
+
+  if (existingIndex >= 0) {
+    document.customModes[existingIndex] = modeEntry;
+  } else {
+    document.customModes.push(modeEntry);
+  }
+
+  const content = dumpYamlDocument(document);
+  const backupCreated = backupIfChanged(filePath, content);
+  fs.writeFileSync(filePath, content);
+  nativeArtifacts.push({
+    path: filePath,
+    backupCreated,
+    kind: 'kilocode-custom-mode',
+    slug: modeEntry.slug,
+  });
+  return backupCreated;
+}
+
+function removeKiloCodeCustomMode(filePath, slug) {
+  if (!fs.existsSync(filePath)) return false;
+
+  const document = parseYamlFile(filePath);
+  if (!Array.isArray(document.customModes)) return false;
+
+  const beforeCount = document.customModes.length;
+  document.customModes = document.customModes.filter((entry) => {
+    return !(entry && typeof entry === 'object' && entry.slug === slug);
+  });
+
+  if (document.customModes.length === beforeCount) return false;
+
+  const hasOnlyEmptyCustomModes = Object.keys(document).every((key) => {
+    return key === 'customModes' || typeof document[key] === 'undefined';
+  }) && document.customModes.length === 0;
+
+  if (hasOnlyEmptyCustomModes) {
+    fs.unlinkSync(filePath);
+  } else {
+    fs.writeFileSync(filePath, dumpYamlDocument(document));
+  }
+
+  return true;
 }
 
 function copyDirRecursive(src, dest) {
@@ -1031,6 +1178,25 @@ function install(runtimeKey, scope, verify = false) {
         break;
       }
 
+      case 'kilocode-skill': {
+        const backedUp = writeManagedFile(surface.path, generateKiloCodeSkill(paths), nativeArtifacts);
+        if (backedUp) {
+          console.log(`  ${surface.key}: backed up ${path.basename(surface.path)}.bak`);
+        }
+        console.log(`  ${surface.key}: ${surface.path}`);
+        break;
+      }
+
+      case 'kilocode-modes': {
+        const modeEntry = generateKiloCodeMode(paths, scope);
+        const backedUp = writeKiloCodeCustomMode(surface.path, modeEntry, nativeArtifacts);
+        if (backedUp) {
+          console.log(`  ${surface.key}: backed up ${path.basename(surface.path)}.bak`);
+        }
+        console.log(`  ${surface.key}: ${surface.path} (slug: ${modeEntry.slug})`);
+        break;
+      }
+
       case 'copilot-skills': {
         for (const [commandName, commandContent] of transformedCommands.entries()) {
           const skillDir = joinPath(surface.path, `legion-${commandName}`);
@@ -1133,6 +1299,13 @@ ${'='.repeat(48)}
     console.log(`  Restart Codex to pick up the Legion prompt files and bridge skill.`);
     console.log(`  Native prompt entry point: ${codexPromptInvocation(paths, 'start')}`);
     console.log('  Legacy /legion:* aliases remain bridge-only fallbacks.');
+    console.log();
+    return;
+  }
+
+  if (runtimeKey === 'kilocode') {
+    console.log('  Restart Kilo Code or reload the IDE window to pick up the Legion mode and skill.');
+    console.log(`  Native Legion entry point: ${rt.entrypoints[scope]}`);
     console.log();
     return;
   }
@@ -1277,6 +1450,12 @@ function uninstall(runtimeKey, scope) {
   for (const artifact of nativeArtifacts) {
     const artifactPath = artifact.path;
     if (!artifactPath) continue;
+    if (artifact.kind === 'kilocode-custom-mode') {
+      if (removeKiloCodeCustomMode(artifactPath, artifact.slug || 'legion')) {
+        removedNativeArtifacts++;
+      }
+      continue;
+    }
     if (fs.existsSync(artifactPath)) {
       fs.unlinkSync(artifactPath);
       removedNativeArtifacts++;

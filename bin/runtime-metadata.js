@@ -448,6 +448,52 @@ const RUNTIME_METADATA = {
       },
     ],
   },
+  kilocode: {
+    key: 'kilocode',
+    flag: '--kilo-code',
+    aliases: ['--kilocode'],
+    label: 'Kilo Code Plugin',
+    adapterFile: 'kilo-code.md',
+    supportTier: 'beta',
+    disposition: 'plugin-mode-and-skill',
+    installSurface: 'Kilo Code custom mode plus a Legion skill',
+    scopeSupport: { local: true, global: true },
+    storageLayout: 'legion',
+    allowedTools: null,
+    supportsAtRefs: false,
+    nativeSurfaces: [
+      {
+        key: 'kilocode-skill',
+        type: 'kilocode-skill',
+        pathKind: 'file',
+        localPath: '$PROJECT/.kilocode/skills/legion/SKILL.md',
+        globalPath: '$HOME/.kilocode/skills/legion/SKILL.md',
+      },
+      {
+        key: 'kilocode-modes',
+        type: 'kilocode-modes',
+        pathKind: 'file',
+        localPath: '$PROJECT/.kilocodemodes',
+        globalPath: '$HOME/.kilocode/globalStorage/kilo code.kilo-code/settings/custom_modes.yaml',
+      },
+    ],
+    entrypoints: {
+      local: 'select the Legion mode or ask Kilo Code to use the legion skill',
+      global: 'select the Legion mode or ask Kilo Code to use the legion skill',
+    },
+    evidence: [
+      {
+        title: 'Kilo Code custom modes',
+        url: 'https://kilo.ai/docs/customize/custom-modes',
+        verifiedOn: '2026-03-11',
+      },
+      {
+        title: 'Kilo Code skills',
+        url: 'https://kilo.ai/docs/customize/skills',
+        verifiedOn: '2026-03-11',
+      },
+    ],
+  },
   aider: {
     key: 'aider',
     flag: '--aider',
@@ -501,6 +547,7 @@ const RUNTIME_ORDER = [
   'windsurf',
   'opencode',
   'kilo',
+  'kilocode',
   'aider',
 ];
 

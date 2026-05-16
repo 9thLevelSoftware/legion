@@ -6,6 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const yaml = require('js-yaml');
 const { RUNTIME_METADATA, RUNTIME_ORDER } = require('../bin/runtime-metadata');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -102,6 +103,10 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
       case 'kilo-agent':
         expected.push(surfacePath);
         break;
+      case 'kilocode-skill':
+      case 'kilocode-modes':
+        expected.push(surfacePath);
+        break;
       default:
         throw new Error(`Unhandled native surface type in tests: ${surface.type}`);
     }
@@ -169,6 +174,32 @@ function assertKiloCommandUsesSubtask(commandFile) {
   );
 }
 
+function readYaml(filePath) {
+  return yaml.safeLoad(fs.readFileSync(filePath, 'utf8'));
+}
+
+function assertKiloCodeSkill(skillFile, manifestFile) {
+  const content = fs.readFileSync(skillFile, 'utf8');
+  assert.match(content, /^name:\s+legion$/m, `${skillFile}: should define the legion skill`);
+  assert.match(
+    content,
+    /Route Legion requests and \/legion:\* intents/,
+    `${skillFile}: should describe Legion request routing`
+  );
+  assert.ok(content.includes(manifestFile.split(path.sep).join('/')), `${skillFile}: should reference the install manifest`);
+}
+
+function assertKiloCodeMode(modeFile, expectedSource) {
+  const modes = readYaml(modeFile);
+  assert.ok(Array.isArray(modes.customModes), `${modeFile}: customModes should be a list`);
+  const legionMode = modes.customModes.find((entry) => entry.slug === 'legion');
+  assert.ok(legionMode, `${modeFile}: should contain the Legion custom mode`);
+  assert.equal(legionMode.name, 'Legion', `${modeFile}: Legion mode name mismatch`);
+  assert.equal(legionMode.source, expectedSource, `${modeFile}: Legion mode source mismatch`);
+  assert.deepEqual(legionMode.groups, ['read', 'edit', 'command', 'mcp'], `${modeFile}: Legion mode groups mismatch`);
+  assert.equal(legionMode.model, undefined, `${modeFile}: Legion mode must not pin a model`);
+}
+
 test('installer local mode installs runtime-native artifacts for every supported runtime', async (t) => {
   const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-local-smoke-'));
   const homeDir = path.join(sandboxRoot, 'home');
@@ -201,6 +232,13 @@ test('installer local mode installs runtime-native artifacts for every supported
       if (runtimeKey === 'kilo') {
         assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'command', 'legion-start.md'));
         assertKiloCommandUsesSubtask(path.join(projectDir, '.kilo', 'command', 'legion-update.md'));
+      }
+      if (runtimeKey === 'kilocode') {
+        assertKiloCodeSkill(
+          path.join(projectDir, '.kilocode', 'skills', 'legion', 'SKILL.md'),
+          manifestFile
+        );
+        assertKiloCodeMode(path.join(projectDir, '.kilocodemodes'), 'project');
       }
 
       const uninstallResult = runInstaller([runtime.flag, '--local', '--uninstall'], projectDir, homeDir);
@@ -240,6 +278,16 @@ test('installer global mode installs runtime-native artifacts for every globally
         assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'command', 'legion-start.md'));
         assertKiloCommandUsesSubtask(path.join(homeDir, '.config', 'kilo', 'command', 'legion-update.md'));
       }
+      if (runtimeKey === 'kilocode') {
+        assertKiloCodeSkill(
+          path.join(homeDir, '.kilocode', 'skills', 'legion', 'SKILL.md'),
+          manifestFile
+        );
+        assertKiloCodeMode(
+          path.join(homeDir, '.kilocode', 'globalStorage', 'kilo code.kilo-code', 'settings', 'custom_modes.yaml'),
+          'global'
+        );
+      }
 
       const uninstallResult = runInstaller([runtime.flag, '--global', '--uninstall'], projectDir, homeDir);
       assertRunOk(uninstallResult, `${runtimeKey} global uninstall`);
@@ -248,6 +296,66 @@ test('installer global mode installs runtime-native artifacts for every globally
         assert.ok(!fs.existsSync(filePath), `${runtimeKey}: global native artifact should be removed after uninstall: ${filePath}`);
       }
     });
+  }
+});
+
+test('Kilo Code custom mode merge preserves user modes across install, reinstall, and uninstall', () => {
+  const sandboxRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'legion-kilocode-merge-'));
+  const homeDir = path.join(sandboxRoot, 'home');
+  const projectDir = path.join(sandboxRoot, 'project');
+  const modeFile = path.join(homeDir, '.kilocode', 'globalStorage', 'kilo code.kilo-code', 'settings', 'custom_modes.yaml');
+  const skillFile = path.join(homeDir, '.kilocode', 'skills', 'legion', 'SKILL.md');
+  fs.mkdirSync(path.dirname(modeFile), { recursive: true });
+  fs.mkdirSync(projectDir, { recursive: true });
+
+  const seededModes = {
+    customModes: [
+      {
+        slug: 'plan-mode',
+        name: 'Plan Mode',
+        description: 'User planning mode',
+        groups: ['read', 'command'],
+        source: 'global',
+      },
+      {
+        slug: 'code-simplifier',
+        name: 'Code Simplifier',
+        description: 'User simplification mode',
+        groups: ['read', 'edit'],
+        source: 'global',
+      },
+    ],
+  };
+  fs.writeFileSync(modeFile, yaml.safeDump(seededModes, { lineWidth: 120, noRefs: true }));
+
+  try {
+    const installResult = runInstaller(['--kilo-code', '--global'], projectDir, homeDir);
+    assertRunOk(installResult, 'kilo-code global install');
+    const { manifestFile } = assertManifest('kilocode', 'global', projectDir, homeDir);
+    assertKiloCodeSkill(skillFile, manifestFile);
+    assertKiloCodeMode(modeFile, 'global');
+
+    let modes = readYaml(modeFile).customModes;
+    assert.equal(modes.filter((entry) => entry.slug === 'legion').length, 1, 'install should add exactly one Legion mode');
+    assert.ok(modes.some((entry) => entry.slug === 'plan-mode'), 'install should preserve plan-mode');
+    assert.ok(modes.some((entry) => entry.slug === 'code-simplifier'), 'install should preserve code-simplifier');
+
+    const reinstallResult = runInstaller(['--kilocode', '--global'], projectDir, homeDir);
+    assertRunOk(reinstallResult, 'kilocode alias global reinstall');
+    modes = readYaml(modeFile).customModes;
+    assert.equal(modes.filter((entry) => entry.slug === 'legion').length, 1, 'reinstall should upsert, not duplicate');
+    assert.ok(modes.some((entry) => entry.slug === 'plan-mode'), 'reinstall should preserve plan-mode');
+    assert.ok(modes.some((entry) => entry.slug === 'code-simplifier'), 'reinstall should preserve code-simplifier');
+
+    const uninstallResult = runInstaller(['--kilo-code', '--global', '--uninstall'], projectDir, homeDir);
+    assertRunOk(uninstallResult, 'kilo-code global uninstall');
+    modes = readYaml(modeFile).customModes;
+    assert.equal(modes.some((entry) => entry.slug === 'legion'), false, 'uninstall should remove only Legion mode');
+    assert.ok(modes.some((entry) => entry.slug === 'plan-mode'), 'uninstall should preserve plan-mode');
+    assert.ok(modes.some((entry) => entry.slug === 'code-simplifier'), 'uninstall should preserve code-simplifier');
+    assert.equal(fs.existsSync(skillFile), false, 'uninstall should remove the Legion Kilo Code skill');
+  } finally {
+    fs.rmSync(sandboxRoot, { recursive: true, force: true });
   }
 });
 
