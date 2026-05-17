@@ -18,6 +18,8 @@ const AGENTS_DIR = path.join(ROOT, 'agents');
 const CATALOG_PATH = path.join(ROOT, 'skills', 'agent-registry', 'CATALOG.md');
 const PACKAGE_PATH = path.join(ROOT, 'package.json');
 const CODEX_PLUGIN_MANIFEST_PATH = path.join(ROOT, '.codex-plugin', 'plugin.json');
+const LEGION_SKILL_PATH = path.join(ROOT, 'skills', 'legion', 'SKILL.md');
+const { LEGION_COMMANDS } = require('../bin/runtime-metadata');
 
 function listCommandFiles() {
   return fs.readdirSync(COMMANDS_DIR).filter((f) => f.endsWith('.md')).sort();
@@ -126,6 +128,16 @@ test.describe('Cross-reference validation: repo-native Codex plugin wiring', () 
       pluginManifest.version,
       pkg.version,
       '.codex-plugin/plugin.json version should stay in sync with package.json'
+    );
+  });
+
+  test('legion bridge skill and runtime metadata include map command', () => {
+    const bridgeSkill = fs.readFileSync(LEGION_SKILL_PATH, 'utf8');
+
+    assert.ok(LEGION_COMMANDS.includes('map'), 'runtime metadata should include the map command');
+    assert.ok(
+      bridgeSkill.includes('/legion:map') && bridgeSkill.includes('commands/map.md'),
+      'repo-native legion bridge should route /legion:map to commands/map.md'
     );
   });
 });

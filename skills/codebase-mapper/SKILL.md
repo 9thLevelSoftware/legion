@@ -1,50 +1,62 @@
 ---
 name: codebase-mapper
-description: "Analyzes an existing codebase to map architecture, detect frameworks, assess risks, graph dependencies, measure test coverage, catalog API surfaces, and generate a structured CODEBASE.md consumed by /legion:start, /plan, /build, /review, and /status. Use when the user asks to analyze an existing codebase, understand a legacy project, audit code architecture, onboard to a project, or generate a CODEBASE.md file."
+description: "Engine for /legion:map. Analyzes an existing codebase, generates CODEBASE.md for backward-compatible architecture context, and writes .planning/codebase/ index artifacts consumed by /legion:start, /plan, /build, /review, /status, and /quick."
 triggers: [codebase, analyze, brownfield, architecture, map, existing, analyze existing code, legacy code, code audit, understand project, onboard, map architecture]
 token_cost: high
-summary: "Analyzes existing codebases to produce structured CODEBASE.md. Maps architecture, frameworks, patterns, risks, dependency graphs, test coverage, API surface, and config/environment. Supports monorepo detection and standalone re-analysis."
+summary: "Generates the Legion codebase map dataset: CODEBASE.md plus semantic index, symbols, search protocol, and directory mappings. Supports freshness checks, refreshes, scoped maps, and query/readback."
 ---
 
 # Codebase Mapper
 
-Brownfield codebase analysis engine for Legion. Analyzes existing codebases to produce a structured map of architecture, patterns, frameworks, risk areas, dependency graphs, test coverage, API surface, config/environment, and code patterns. The output artifact is `.planning/CODEBASE.md`, consumed by 5 commands: `/legion:start` (brownfield detection), `/legion:plan` (context injection + risk cross-reference via plan-critique), `/legion:build` (agent prompt enrichment), `/legion:review` (convention checking), and `/legion:status` (staleness detection). Standalone re-analysis is available via `/legion:quick analyze codebase`.
+Codebase mapping engine for Legion. `/legion:map` is the canonical entry point. It analyzes existing codebases to produce a structured map of architecture, functionality, ownership, patterns, frameworks, risk areas, dependency graphs, test coverage, API surface, config/environment, and code patterns.
 
-All operations use Read, Bash, Glob, and Grep -- no external dependencies, no custom scripts, no MCP servers. The analysis is Claude reading and reasoning over files using a structured protocol.
+The backward-compatible human artifact remains `.planning/CODEBASE.md`. The full map dataset also includes machine-readable retrieval artifacts under `.planning/codebase/`:
+- `.planning/codebase/index.jsonl` — chunk-level semantic index for LLM-assisted search.
+- `.planning/codebase/symbols.json` — coarse symbols, entry points, APIs, tests, config, dependencies, and ownership areas.
+- `.planning/codebase/search.md` — consumer protocol for semantic search/readback.
+- `.planning/config/directory-mappings.yaml` — directory placement and validation mappings.
+
+Consumers include `/legion:start` (pre-start map freshness check), `/legion:plan` (relevant map chunk retrieval and risk cross-reference), `/legion:build` (agent prompt enrichment), `/legion:review` (convention and risk checking), `/legion:status` (freshness detection), and `/legion:quick` (routing codebase-analysis requests to `/legion:map`).
+
+All operations use Read, Bash, Glob, and Grep -- no external dependencies, no custom scripts, no MCP servers. The analysis is the host model reading and reasoning over files using a structured protocol.
 
 References:
 - State File Locations from `workflow-common.md` (state paths, degradation pattern)
-- Brownfield Conventions from `workflow-common.md` (lifecycle, paths, integration points)
-- `/legion:start` in `start.md` (brownfield detection trigger, user opt-in)
-- `/legion:plan` in `plan.md` (CODEBASE.md context injection during phase decomposition)
+- Codebase Map Conventions from `workflow-common.md` (lifecycle, paths, integration points)
+- `/legion:map` in `map.md` (canonical command entry point)
+- `/legion:start` in `start.md` (source detection and user-approved map pre-flight)
+- `/legion:plan` in `plan.md` (map retrieval and CODEBASE.md context injection during phase decomposition)
 - `/legion:build` in `build.md` (agent context injection via wave-executor Step 3.5)
 - `/legion:review` in `review.md` (convention checking via review-loop Step 2.5)
 - `/legion:plan` (critique) in `skills/plan-critique/SKILL.md` (risk cross-reference)
 - `/legion:status` in `status.md` (staleness detection)
-- `/legion:quick` in `quick.md` (standalone re-analysis routing)
+- `/legion:quick` in `quick.md` (routes analyze-codebase tasks to `/legion:map`)
 
 ---
 
 ## Section 1: Principles & Detection
 
-Core rules governing brownfield analysis and the detection heuristic that determines when to run.
+Core rules governing codebase mapping and the detection heuristic that determines when to run.
 
 ### Principles
 
-1. **Opt-in only** -- brownfield analysis is never automatic. The user is always asked via AskUserQuestion before any analysis begins. No background scanning, no silent analysis.
-2. **Human-readable markdown** -- the output artifact (`.planning/CODEBASE.md`) follows the same structured markdown convention as STATE.md, ROADMAP.md, and all other Legion state files. No JSON, no binary, no databases.
-3. **Graceful degradation** -- every consumer checks for CODEBASE.md existence before using it. If absent, the workflow proceeds identically to greenfield mode. Brownfield analysis is an enhancement, never a requirement.
-4. **Heuristic-based** -- all detection uses file presence and content grep, not AST parsing or LSP analysis. Simple, auditable, and sufficient for planning-time orientation.
-5. **Depth-limited** -- analysis constrains itself to avoid consuming the context window on large codebases. Work with counts and samples, never full enumeration.
-6. **Calibrated scoring** -- risk levels use per-file rates relative to project size, not absolute counts. A 5-file project with 10 TODOs is HIGH; a 500-file project with 10 TODOs is LOW.
+1. **Opt-in only** -- codebase mapping is never automatic outside an explicit `/legion:map` invocation. `/legion:start` always asks via AskUserQuestion before generating or refreshing a map. No background scanning, no silent analysis.
+2. **Backward-compatible markdown** -- `.planning/CODEBASE.md` remains the human-readable architecture document consumed by older workflows.
+3. **Structured retrieval artifacts** -- `.planning/codebase/index.jsonl`, `.planning/codebase/symbols.json`, and `.planning/codebase/search.md` are generated alongside CODEBASE.md so commands can retrieve relevant chunks instead of injecting the whole map.
+4. **No embeddings or external services** -- semantic search is LLM-consumable metadata plus `rg`/Read over JSONL and source files. Do not require API keys, vector databases, or network services.
+5. **Graceful degradation** -- every consumer checks for map artifact existence before using it. If absent, the workflow proceeds identically to greenfield mode. Mapping is an enhancement, never a requirement.
+6. **Heuristic-based** -- all detection uses file presence, content grep, manifest parsing, and sampled reads, not mandatory AST/LSP analysis.
+7. **Depth-limited** -- analysis constrains itself to avoid consuming the context window on large codebases. Work with counts, representative chunks, and summaries instead of full enumeration.
+8. **Calibrated scoring** -- risk levels use per-file rates relative to project size, not absolute counts. A 5-file project with 10 TODOs is HIGH; a 500-file project with 10 TODOs is LOW.
 
 ### When to Run
 
-- Triggered by `/legion:start` when existing source code is detected in the project directory
-- Can be re-triggered manually if the codebase has changed significantly
-- NEVER runs automatically -- always prompted via AskUserQuestion
-- If `.planning/CODEBASE.md` already exists and is <30 days old, skip and inform the user
-- If `.planning/CODEBASE.md` exists but is >30 days old, offer re-analysis
+- Triggered explicitly by `/legion:map`
+- Checked by `/legion:start` when existing source code is detected in the project directory
+- Can be re-triggered manually with `/legion:map --refresh` if the codebase has changed significantly
+- NEVER runs as an unannounced background scan -- `/legion:start` asks via AskUserQuestion before generating or refreshing the map
+- If a complete map dataset exists, is <=30 days old, and its source fingerprint matches, treat it as fresh
+- If CODEBASE.md exists but `.planning/codebase/` artifacts are missing, treat the dataset as partial and recommend `/legion:map --refresh`
 
 ### Source Code Detection Heuristic
 
@@ -64,13 +76,18 @@ Check for non-Legion files in the current directory. Run these checks in order:
 
 **Decision logic:**
 - If ANY of the above are found: existing codebase detected. Proceed to AskUserQuestion.
-- If NONE found: pure greenfield. Skip brownfield flow silently.
-- If ONLY .md files found: content project, not a codebase. Skip brownfield flow silently.
+- If NONE found: pure greenfield. Skip codebase mapping silently.
+- If ONLY .md files found: content project, not a codebase. Skip codebase mapping silently.
 
 ### Constants
 
 ```
 CODEBASE_MAP_PATH = '.planning/CODEBASE.md'
+CODEBASE_INDEX_PATH = '.planning/codebase/index.jsonl'
+CODEBASE_SYMBOLS_PATH = '.planning/codebase/symbols.json'
+CODEBASE_SEARCH_DOC_PATH = '.planning/codebase/search.md'
+DIRECTORY_MAPPINGS_PATH = '.planning/config/directory-mappings.yaml'
+MAP_SCHEMA_VERSION = '2.0'
 MAX_TREE_DEPTH = 2
 MAX_FILE_SAMPLE = 10  (per category — don't enumerate every file)
 STALE_THRESHOLD_DAYS = 30
@@ -78,14 +95,15 @@ STALE_THRESHOLD_DAYS = 30
 
 ### Graceful Degradation
 
-- If CODEBASE.md does not exist: all consumers skip brownfield context silently
-- If CODEBASE.md is stale (>30 days): consumers warn but do not block
-- Never error, never block, never require brownfield analysis for workflow completion
-- All workflows function identically to their pre-brownfield behavior when CODEBASE.md is absent
+- If CODEBASE.md does not exist: all consumers skip map context silently unless the command is `/legion:map --query`
+- If `.planning/codebase/` artifacts are missing but CODEBASE.md exists: fall back to CODEBASE.md only and recommend `/legion:map --refresh`
+- If the map is stale (>30 days or fingerprint mismatch): consumers warn but do not block
+- Never error, never block, never require mapping for workflow completion outside `/legion:map`
+- All workflows function identically to their pre-map behavior when map artifacts are absent
 
 ---
 
-## Section 2: Map Generation (BROWN-01)
+## Section 2: Map Generation (MAP-CORE-01)
 
 Building the structural map of the codebase. This section produces the file tree, language distribution, entry points, and module structure that form the foundation of CODEBASE.md.
 
@@ -248,7 +266,7 @@ packages/api/:
 
 ---
 
-## Section 3: Pattern Detection (BROWN-02)
+## Section 3: Pattern Detection (MAP-CORE-02)
 
 Identifying frameworks, libraries, and conventions used in the codebase. Uses two-stage detection (file presence THEN content grep) to avoid false positives.
 
@@ -404,7 +422,7 @@ Based on directory names and structure, infer the architecture pattern:
 
 ---
 
-## Section 4: Risk Assessment (BROWN-03)
+## Section 4: Risk Assessment (MAP-CORE-03)
 
 Flagging complexity, technical debt, and hotspots to inform planning. All risk levels are relative to project size using per-file rates.
 
@@ -595,7 +613,7 @@ Every subsection degrades independently -- a failure in one check must not block
 
 ## Section 5: CODEBASE.md Format
 
-The exact output format for the `.planning/CODEBASE.md` artifact. This file is the single deliverable of brownfield analysis and the single input for brownfield context injection.
+The exact output format for the `.planning/CODEBASE.md` artifact. This file remains the backward-compatible human-readable map and is generated together with the `.planning/codebase/` retrieval artifacts.
 
 ### Template
 
@@ -603,6 +621,12 @@ The exact output format for the `.planning/CODEBASE.md` artifact. This file is t
 # Codebase Map
 
 **Analyzed:** {YYYY-MM-DD}
+**Generated At:** {YYYY-MM-DDTHH:mm:ssZ}
+**Map Schema Version:** 2.0
+**Analyzed Commit:** {commit_sha_or_unknown}
+**Source File Count:** {count}
+**Source Fingerprint:** {fingerprint}
+**Scope:** {project-root or scoped path}
 **Root:** {absolute_path}
 **Confidence:** {HIGH | MEDIUM | LOW}
 
@@ -642,6 +666,18 @@ This section is the executive summary -- agents read this first for orientation.
 | Type | Path | Evidence |
 |------|------|----------|
 | {type} | {path} | {how detected} |
+
+## Functionality Inventory
+
+| Capability | Primary Files | Summary | Confidence |
+|------------|---------------|---------|------------|
+| {capability} | {paths} | {what the code appears to do} | {HIGH/MEDIUM/LOW} |
+
+## Module Ownership
+
+| Area | Paths | Responsibilities | Downstream Consumers |
+|------|-------|------------------|----------------------|
+| {area} | {paths} | {responsibility summary} | {known consumers or "_Unknown_"} |
 
 ## Risk Areas
 
@@ -728,6 +764,15 @@ If no web framework or routes detected: "No web framework detected or no HTTP ro
 {Section 11 output — config files, env variables, secret exposure warnings.
 If no config patterns detected: "No configuration files or environment variable patterns detected."}
 
+## Setup / Runbook
+
+| Task | Command or File | Notes |
+|------|-----------------|-------|
+| Install dependencies | {command} | {evidence} |
+| Run app | {command} | {evidence} |
+| Run tests | {command} | {evidence} |
+| Build | {command} | {evidence} |
+
 ## Pattern Library
 
 {Section 13 output — max 5 patterns with canonical examples.
@@ -750,6 +795,12 @@ Standard locations for different file categories:
 - **Strictness**: {strict/warn/off}
 - New files should follow these mappings where applicable
 - Exceptions require explicit override
+
+## Retrieval Artifacts
+
+- **Index**: `.planning/codebase/index.jsonl`
+- **Symbols**: `.planning/codebase/symbols.json`
+- **Search protocol**: `.planning/codebase/search.md`
 ```
 
 ### Confidence Scoring
@@ -771,43 +822,51 @@ The overall confidence level in the CODEBASE.md header reflects the quality of d
 
 ## Section 6: Integration Patterns
 
-How callers consume this skill. Each integration point follows the same contract: check existence, use if present, skip if absent.
+How callers consume this skill. Each integration point follows the same contract: check existence, retrieve relevant map context when present, skip if absent.
 
-### 6.1: /legion:start Integration (Brownfield Branch)
+### 6.1: /legion:map Integration (Canonical Entry Point)
 
-After the pre-flight check (Step 1) and before the questioning flow (Step 3):
+`/legion:map` is the only command that generates or refreshes the full map dataset directly.
+
+Supported modes:
+- Default full map: generate when no fresh complete dataset exists; otherwise summarize and ask whether to refresh.
+- `--check`: compute freshness/completeness without writing files.
+- `--refresh`: rebuild all required artifacts.
+- `--scope <path>`: generate a scoped dataset and mark `scope` metadata.
+- `--query <text>`: search existing `index.jsonl` and `symbols.json`, then point to source reads.
+
+Required outputs:
+- `.planning/CODEBASE.md`
+- `.planning/codebase/index.jsonl`
+- `.planning/codebase/symbols.json`
+- `.planning/codebase/search.md`
+- `.planning/config/directory-mappings.yaml`
+
+### 6.2: /legion:start Integration (Map Pre-Flight)
+
+After existing-project pre-flight and before questioning:
 
 ```
 1. Run Source Code Detection Heuristic (Section 1)
 2. If existing source detected:
-   Use AskUserQuestion:
-     "I detected an existing codebase in this directory. Would you like me to analyze it
-      before we start planning? This maps your architecture, frameworks, and risk areas
-      so agents can work with your existing patterns."
-
-     Option 1: "Yes, analyze the codebase first"
-       -> Run Section 2 (Map Generation) to build structural map
-       -> Run Section 3 (Pattern Detection) to identify frameworks and conventions
-       -> Run Section 4 (Risk Assessment) to flag complexity and debt
-       -> Write .planning/CODEBASE.md using Section 5 format
-       -> Display summary to user:
-          "{N} files across {M} languages. Detected: {framework}. {risk_count} risk areas flagged."
-       -> Continue to questioning flow (Step 3)
-
-     Option 2: "No, skip the analysis"
-       -> Proceed directly to questioning (greenfield mode)
-       -> No CODEBASE.md created
-
-     Option 3: "I'll run /legion:plan directly"
-       -> Abort start, let user plan manually
-       -> No CODEBASE.md created
+   Run Section 17 freshness check.
+   If status == fresh:
+     AskUserQuestion:
+       - Use current map
+       - Refresh map first
+       - Continue without map context
+   If status == absent|partial|stale:
+     AskUserQuestion:
+       - Run /legion:map now
+       - Skip mapping for this start
+       - Abort and map manually
 
 3. If no existing source detected:
-   Skip brownfield flow entirely (pure greenfield)
-   Do not mention brownfield analysis to the user
+   Skip map pre-flight entirely (pure greenfield)
+   Do not mention mapping to the user
 ```
 
-### 6.2: /legion:plan Integration (Context Injection)
+### 6.3: /legion:plan Integration (Map Retrieval + Context Injection)
 
 In `plan.md` step 3 (READ PHASE DETAILS), after reading existing state:
 
@@ -815,17 +874,21 @@ In `plan.md` step 3 (READ PHASE DETAILS), after reading existing state:
 1. Check if .planning/CODEBASE.md exists
 2. If yes:
    a. Read .planning/CODEBASE.md
-   b. Check the "Analyzed" date in the header
-      - If >30 days old: warn user:
-        "CODEBASE.md is {N} days old. Consider re-analyzing with /legion:start."
+   b. Check map freshness metadata using Section 17
+      - If stale: warn user:
+        "Codebase map is stale. Consider running /legion:map --refresh."
       - Do NOT auto-re-analyze — let the user decide
       - Do NOT block planning — proceed with existing data
-   c. Extract these sections for phase-decomposer context:
+   c. If .planning/codebase/index.jsonl and symbols.json exist:
+      - Form a query from the phase goal, requirements, affected domains, likely files, and agent specialties
+      - Follow Section 18 to retrieve only relevant chunks
+      - Read original source files for critical evidence before writing plan details
+   d. Extract these sections for phase-decomposer context:
       - Risk Areas: areas that overlap with files the phase will modify
       - Agent Guidance: Preferred/Avoid/Touch-with-care directives
       - Conventions Detected: style rules for task instructions
       - Detected Stack: technology context for agent selection
-   d. Include extracted data in phase-decomposer prompt:
+   e. Include extracted data in phase-decomposer prompt:
       - Risk areas that overlap with the phase's target files
       - Convention rules appended to task action instructions
       - "Touch with care" areas noted in relevant plans
@@ -834,15 +897,17 @@ In `plan.md` step 3 (READ PHASE DETAILS), after reading existing state:
    Do not mention CODEBASE.md to the user
 ```
 
-### 6.3: /legion:build Integration (Agent Context Injection)
+### 6.4: /legion:build Integration (Agent Context Injection)
 
 During `/legion:build` → wave-executor Section 3 (Personality Injection), Step 3.5:
 
 1. Check if `.planning/CODEBASE.md` exists
 2. If yes:
+   - If `.planning/codebase/index.jsonl` exists, retrieve chunks relevant to the current plan using files_modified, task text, expected artifacts, and agent domain
    - Extract Agent Guidance (Preferred/Avoid), Conventions Detected, and Risk Areas
    - Filter Risk Areas to rows overlapping with the current plan's `files_modified`
    - Compose a `## Codebase Context` block with three subsections:
+     - Retrieved Map Chunks (id, path, summary)
      - Conventions (bullet list)
      - Agent Guidance (Preferred/Avoid)
      - Risk Areas (filtered table or "No risk areas overlap")
@@ -852,23 +917,25 @@ During `/legion:build` → wave-executor Section 3 (Personality Injection), Step
 
 The injection applies to both personality-injected and autonomous execution templates.
 
-### 6.4: /legion:review Integration (Convention Checking)
+### 6.5: /legion:review Integration (Convention Checking)
 
 During `/legion:review` → review-loop Section 3 (Review Prompt Construction), Step 2.5:
 
 1. Check if `.planning/CODEBASE.md` exists
 2. If yes:
-   - Extract Detected Stack table and Conventions Detected bullet list
+   - Retrieve map chunks relevant to files changed in the phase when `.planning/codebase/index.jsonl` exists
+   - Extract Detected Stack table, Conventions Detected bullet list, Risk Areas, API Surface, and Test Coverage Map
    - Compose a `## Codebase Conventions (from CODEBASE.md)` block with:
      - Detected Stack table
      - Conventions bullet list
+     - Risk areas and tests relevant to the reviewed files
      - Note: "Non-conformance with established conventions is a WARNING-level finding
        unless the plan explicitly calls for a different pattern."
    - Inject this block into the review prompt after `## Files to Review`
      and before `## Your Review Instructions`
 3. If no: skip silently — review agents receive standard prompts
 
-### 6.5: Plan Critique Integration (Risk Cross-Reference)
+### 6.6: Plan Critique Integration (Risk Cross-Reference)
 
 During `/legion:plan` → plan-critique Section 1 (Pre-Mortem Analysis), Step 1:
 
@@ -884,43 +951,47 @@ Additionally, plan-critique Section 2 (Assumption Hunting) gains a new category
 "e. Codebase assumptions" that checks convention currency, risk area accuracy,
 and stack compatibility when CODEBASE.md exists.
 
-### 6.6: Caller Contract
+### 6.7: Caller Contract
 
-Every command that integrates with brownfield analysis MUST follow this contract:
+Every command that integrates with the map dataset MUST follow this contract:
 
 ```
 1. Check if .planning/CODEBASE.md exists
-2. If yes: use codebase data to enrich the operation
-3. If no: skip silently, proceed with default behavior
+2. If .planning/codebase/index.jsonl exists: retrieve relevant chunks with Section 18
+3. If only CODEBASE.md exists: use CODEBASE.md as a backward-compatible fallback
+4. If no map exists: skip silently, proceed with default behavior
 4. Never error on missing CODEBASE.md
 5. Never block workflow completion on CODEBASE.md
-6. Never require brownfield analysis for any operation
-7. Never auto-trigger analysis without user consent
+6. Never require map analysis for any operation except `/legion:map --query`
+7. Never auto-trigger map generation without user consent
 ```
 
-This is identical to the Memory Conventions and GitHub Conventions degradation pattern -- the three optional integrations (Memory, GitHub, Brownfield) all follow the same contract.
+This is identical to the Memory Conventions and GitHub Conventions degradation pattern -- optional integrations such as Memory, GitHub, and Codebase Map all follow the same contract.
 
 ### References
 
 | Consumer | File | Integration Point |
 |----------|------|------------------|
-| `/legion:start` | `commands/start.md` | Brownfield detection branch after pre-flight (Step 1b) |
-| `/legion:plan` | `commands/plan.md` | Context injection during phase decomposition (Step 3) |
+| `/legion:map` | `commands/map.md` | Canonical map generation, freshness, refresh, scope, and query entry point |
+| `/legion:start` | `commands/start.md` | Source and map pre-flight before project questioning |
+| `/legion:plan` | `commands/plan.md` | Map chunk retrieval and context injection during phase decomposition |
 | `/legion:build` | `commands/build.md` | Agent context injection via wave-executor Step 3.5 |
 | `/legion:review` | `commands/review.md` | Convention checking via review-loop Step 2.5 |
 | `/legion:plan` (critique) | `skills/plan-critique/SKILL.md` | Risk cross-reference during pre-mortem (Step 1) |
 
 ---
 
-## Section 7: Standalone Re-Analysis
+## Section 7: Standalone Map Refresh
 
 Protocols for re-running codebase analysis outside the `/legion:start` flow.
 
 ### 7.1: Triggering
 
-Standalone re-analysis can be triggered via:
-- **`/legion:quick analyze codebase`** — routed by `quick.md` Step 2.5 keyword matching
-- **Staleness detection** — `/legion:status` detects CODEBASE.md age > 30 days and suggests re-analysis
+Standalone map refresh is triggered via:
+- **`/legion:map`** — first-time map generation
+- **`/legion:map --refresh`** — forced rebuild
+- **`/legion:map --scope <path>`** — scoped rebuild for a path
+- **Staleness detection** — `/legion:status` detects stale or partial map datasets and suggests `/legion:map --refresh`
 
 ### 7.2: Re-Analysis Protocol
 
@@ -960,7 +1031,12 @@ Step 4: Execute analysis
   - Section 11 (Config & Environment Surface)
   - Section 13 (Pattern Library Extraction)
   - Section 14 (Monorepo Support) — only if monorepo detected in Section 2.4
-  Write .planning/CODEBASE.md using Section 5 format.
+  Write the full map dataset:
+  - .planning/CODEBASE.md using Section 5 format
+  - .planning/codebase/index.jsonl using Section 17.4 format
+  - .planning/codebase/symbols.json using Section 17.5 format
+  - .planning/codebase/search.md using Section 18.5 format
+  - .planning/config/directory-mappings.yaml using Section 15 format
 
 Step 5: Report results
   Display summary:
@@ -968,12 +1044,13 @@ Step 5: Report results
    - {file_count} files across {language_count} languages
    - Stack: {detected_frameworks}
    - {risk_count} risk areas flagged
-   - Analysis written to .planning/CODEBASE.md"
+   - Analysis written to .planning/CODEBASE.md
+   - Index written to .planning/codebase/index.jsonl"
 ```
 
-### 7.3: Staleness Detection
+### 7.3: Legacy Staleness Detection
 
-Reusable protocol for any command to check CODEBASE.md freshness:
+Legacy protocol for commands that only know about CODEBASE.md. New consumers should use Section 17 freshness checks.
 
 ```
 1. Check if .planning/CODEBASE.md exists
@@ -1005,7 +1082,7 @@ Used by `/legion:status` (Step 2h) and `/legion:quick` (Step 2.5 routing).
 
 ---
 
-## Section 8: Dependency / Import Graph (BROWN-04)
+## Section 8: Dependency / Import Graph (MAP-CORE-04)
 
 Maps file-level import relationships to identify coupling, fan-out hotspots, and dependency chains.
 
@@ -1099,7 +1176,7 @@ No recognized import patterns detected. Import analysis requires source files wi
 
 ---
 
-## Section 9: Test Coverage Map (BROWN-05)
+## Section 9: Test Coverage Map (MAP-CORE-05)
 
 Maps which source files have corresponding test files and which lack test coverage.
 
@@ -1260,7 +1337,7 @@ Ranked table of critical untested files (top 5, sorted by risk score descending)
 
 ---
 
-## Section 10: API Surface Detection (BROWN-06)
+## Section 10: API Surface Detection (MAP-CORE-06)
 
 Identifies HTTP route definitions to map the project's API surface.
 
@@ -1328,7 +1405,7 @@ No web framework detected or no HTTP route definitions found. API surface analys
 
 ---
 
-## Section 11: Config & Environment Surface (BROWN-07)
+## Section 11: Config & Environment Surface (MAP-CORE-07)
 
 Maps configuration files, environment variables, and potential secret exposure risks.
 
@@ -1407,7 +1484,7 @@ No configuration files or environment variable patterns detected.
 
 ---
 
-## Section 12: Change Impact Analysis (BROWN-08)
+## Section 12: Change Impact Analysis (MAP-CORE-08)
 
 Dynamic analysis consumed by `/legion:plan` — NOT stored in CODEBASE.md.
 
@@ -1457,7 +1534,7 @@ Requires Section 8 (Dependency Graph) output in CODEBASE.md.
 
 ---
 
-## Section 13: Pattern Library Extraction (BROWN-09)
+## Section 13: Pattern Library Extraction (MAP-CORE-09)
 
 Identifies recurring code patterns and extracts canonical examples for agent guidance.
 
@@ -1530,7 +1607,7 @@ No recurring code patterns detected in the sampled files. Pattern detection requ
 
 ---
 
-## Section 14: Monorepo Support (BROWN-10)
+## Section 14: Monorepo Support (MAP-CORE-10)
 
 Detects monorepo structure and provides per-package analysis.
 
@@ -1876,7 +1953,7 @@ Format for reporting detected changes:
 
 ### Suggested Actions
 - [ ] Review auto-detected categories
-- [ ] Run `/legion:quick analyze codebase` for full re-analysis
+- [ ] Run `/legion:map --refresh` for full re-analysis
 - [ ] Update mappings: `Directory mappings auto-updated `
 ```
 
@@ -1898,14 +1975,194 @@ autoUpdate:
 ```
 ```
 
+## Section 17: Map Dataset Artifacts (MAP-03)
+
+Defines the full `/legion:map` dataset and freshness protocol.
+
+### 17.1: Required Artifact Set
+
+Every complete map dataset contains:
+
+| Artifact | Purpose |
+|----------|---------|
+| `.planning/CODEBASE.md` | Human-readable architecture, structure, functionality, conventions, risks, and runbook |
+| `.planning/codebase/index.jsonl` | One JSON object per retrievable code/documentation chunk |
+| `.planning/codebase/symbols.json` | Coarse symbols, entry points, routes/APIs, tests, config, dependencies, and ownership areas |
+| `.planning/codebase/search.md` | Instructions for commands to query the map and then read source files |
+| `.planning/config/directory-mappings.yaml` | Directory category mappings for placement validation |
+
+If any artifact is missing, `/legion:map --check` reports `partial`.
+
+### 17.2: Freshness Metadata
+
+Write these fields near the top of `.planning/CODEBASE.md`:
+
+```yaml
+map_schema_version: "2.0"
+generated_at: "YYYY-MM-DDTHH:mm:ssZ"
+analyzed_commit: "{git rev-parse HEAD or unknown}"
+source_file_count: {count}
+source_fingerprint: "{hash-like stable summary}"
+scope: "{project-root or scoped path}"
+```
+
+The same metadata appears in `symbols.json.metadata`.
+
+### 17.3: Source Fingerprint Protocol
+
+Compute a cheap, deterministic fingerprint without external dependencies:
+
+```
+1. List source files included in the map, excluding .git, dependency folders, build outputs, and .planning.
+2. For each file, collect: normalized path, byte size, and modified time when available.
+3. Include root dependency manifests and lockfiles by path/size/mtime.
+4. Sort rows by path.
+5. Hash or summarize the sorted rows using available shell/runtime primitives.
+```
+
+If hashing is unavailable, use a stable text summary with file count, total bytes, and newest modified timestamp. Mark `source_fingerprint_kind: summary`.
+
+### 17.4: `index.jsonl` Schema
+
+Each line is a standalone JSON object:
+
+```json
+{
+  "id": "map:src-auth-service:001",
+  "path": "src/auth/service.ts",
+  "start_line": 1,
+  "end_line": 120,
+  "kind": "module|route|component|test|config|doc|script|data|unknown",
+  "summary": "What this chunk does and why it matters.",
+  "keywords": ["auth", "session", "jwt"],
+  "aliases": ["login flow", "token service"],
+  "symbols": ["AuthService", "createSession"],
+  "related_files": ["src/auth/routes.ts", "tests/auth/service.test.ts"],
+  "risk": "low|medium|high|unknown",
+  "confidence": "low|medium|high"
+}
+```
+
+Rules:
+- Stable ids use normalized path slugs plus a three-digit sequence.
+- Keep summaries short enough for search result display.
+- Prefer path-relative source lines over generated prose when possible.
+- Include documentation chunks for README, architecture docs, and important planning docs when they explain behavior.
+
+### 17.5: `symbols.json` Schema
+
+```json
+{
+  "metadata": {
+    "map_schema_version": "2.0",
+    "generated_at": "YYYY-MM-DDTHH:mm:ssZ",
+    "analyzed_commit": "abc123",
+    "source_file_count": 123,
+    "source_fingerprint": "..."
+  },
+  "entry_points": [],
+  "routes": [],
+  "apis": [],
+  "modules": [],
+  "tests": [],
+  "config": [],
+  "dependencies": [],
+  "ownership": [],
+  "risk_areas": []
+}
+```
+
+Each array item should include at minimum `name`, `path`, `kind`, `summary`, and `related_chunks` when known.
+
+### 17.6: Completeness Check
+
+`/legion:map --check` returns one of:
+
+| Status | Meaning |
+|--------|---------|
+| `fresh` | All required artifacts exist, schema is current, age <= 30 days, fingerprint matches |
+| `stale` | Required artifacts exist but age > 30 days, schema is old, or fingerprint differs |
+| `partial` | CODEBASE.md or some `.planning/codebase/` artifacts exist, but the required set is incomplete |
+| `absent` | No CODEBASE.md and no `.planning/codebase/` dataset exist |
+
+Consumers warn on `stale` or `partial` and continue with best available context.
+
+## Section 18: Semantic Search Protocol (MAP-04)
+
+Legion semantic search is retrieval over map metadata plus source reads. It does not require embeddings, vector databases, API keys, or external services.
+
+### 18.1: Query Planning
+
+Given a natural-language query or a command context:
+
+```
+query = {
+  terms: important nouns, verbs, feature names, and technology names,
+  path_hints: any explicit files/directories,
+  symbol_hints: classes/functions/routes/components mentioned,
+  domain_hints: likely domains such as auth, billing, rendering, persistence
+}
+```
+
+### 18.2: Retrieval Order
+
+1. Search explicit path hints in `index.jsonl` and `symbols.json`.
+2. Search symbol hints in `symbols.json`.
+3. Search terms and aliases in `index.jsonl`.
+4. Search CODEBASE.md section headings for broad architecture context.
+5. Read the original source files for the top matches before writing implementation plans, review findings, or code changes.
+
+### 18.3: Ranking
+
+Rank matches by:
+- Exact path or symbol match.
+- Keyword/alias overlap.
+- Same domain as the command context.
+- Risk level and fan-in relevance.
+- Recency from git hotspot data when available.
+
+Return at most 5 primary chunks and 5 "read next" paths unless a command explicitly requests broader analysis.
+
+### 18.4: Search Result Format
+
+```markdown
+## Map Search Results
+
+| Rank | Chunk | Path | Lines | Kind | Why it matched |
+|------|-------|------|-------|------|----------------|
+| 1 | map:src-auth-service:001 | src/auth/service.ts | 1-120 | module | exact alias "login flow"; symbol AuthService |
+
+### Read Next
+- `src/auth/service.ts` lines 1-120
+- `src/auth/routes.ts` lines 20-90
+```
+
+### 18.5: `search.md` Contents
+
+`.planning/codebase/search.md` must document:
+- Required artifact paths.
+- The query planning steps from Section 18.1.
+- The retrieval order from Section 18.2.
+- The requirement to read original source before acting.
+- Example `/legion:map --query "auth session lifecycle"` output.
+
+### 18.6: Consumer Safety Rules
+
+- Do not treat chunk summaries as source of truth for code edits.
+- Do not cite stale map data as current without checking freshness.
+- Do not load the entire index into an agent prompt when a targeted query is enough.
+- If query results conflict with current source files, current source wins and the map should be refreshed.
+
 ## Completion Gate
 
 This skill completes when ALL conditions are met:
 1. `.planning/CODEBASE.md` exists and is non-empty
-2. All eight required analysis sections are present in the file: Architecture, Frameworks, Risks, Dependency Graph, Test Coverage, API Surface, Config/Environment, Code Patterns (missing sections render an explicit `_No data available_` line rather than being omitted)
+2. All required analysis sections are present in the file: Architecture, Frameworks, Functionality Inventory, Module Ownership, Risks, Dependency Graph, Test Coverage, API Surface, Config/Environment, Setup/Runbook, and Code Patterns (missing sections render an explicit `_No data available_` line rather than being omitted)
 3. Dependency risk analysis populates at least these sub-fields: outdated packages, heavy dependencies, unmaintained packages (or an explicit `_None detected_` line if clean)
 4. Test coverage correlation identifies critical untested files ranked by fan-in and complexity, or states `_No untested critical files detected_`
-5. A `generated_at` timestamp and analyzed commit SHA are written at the top of the file so downstream staleness detection can work
-6. For brownfield invocation from `/legion:start`, the file was written before the start command returns control to the user
+5. A `map_schema_version`, `generated_at` timestamp, analyzed commit SHA, source file count, and source fingerprint are written at the top of the file so downstream staleness detection can work
+6. `.planning/codebase/index.jsonl`, `.planning/codebase/symbols.json`, and `.planning/codebase/search.md` exist and follow Sections 17-18
+7. `.planning/config/directory-mappings.yaml` exists and is valid YAML
+8. For invocation from `/legion:start`, the map generation or skip decision was completed before the start command writes project files
 
 If ANY condition is unmet, the skill is NOT complete — continue working or escalate via `<escalation>` block.

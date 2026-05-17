@@ -298,18 +298,27 @@ Step 3: Read the complete plan file
   - Use the Read tool to load the full plan .md file
   - Capture the section starting from <objective> through end of file as: PLAN_CONTENT
 
-Step 3.5: Load brownfield context (optional)
+Step 3.5: Load codebase map context (optional)
   - Check if .planning/CODEBASE.md exists
   - If yes:
     a. Read .planning/CODEBASE.md
-    b. Extract these sections:
+    b. If `.planning/codebase/index.jsonl` and `.planning/codebase/symbols.json` exist:
+       - Build a map query from the current plan objective, task text, expected_artifacts, files_modified, and assigned agent domains
+       - Follow codebase-mapper Section 18 to retrieve at most 5 relevant chunks
+       - Include chunk id, path, line range, kind, and summary in CODEBASE_CONTEXT
+    c. Extract these sections:
        - "## Agent Guidance" → Preferred and Avoid directives
        - "## Conventions Detected" → all convention bullet points
        - "## Risk Areas" → filter to rows where the Area or file paths overlap
          with the current plan's files_modified list
-    c. Compose a CODEBASE_CONTEXT block:
+       - "## Dependency Graph" → dependency warnings for files_modified when present
+       - "## Directory Mappings" → placement expectations for new files
+    d. Compose a CODEBASE_CONTEXT block:
 
        ## Codebase Context
+
+       ### Retrieved Map Chunks
+       {top matching index.jsonl chunks, or "No map index chunks were available."}
 
        ### Conventions
        {bullet list from Conventions Detected}
@@ -320,6 +329,9 @@ Step 3.5: Load brownfield context (optional)
 
        ### Risk Areas
        {filtered Risk Areas table rows, or "No risk areas overlap with this plan's files."}
+
+       ### Directory Mappings
+       {applicable mappings for files_modified or new file categories, if available}
 
   - If CODEBASE.md does not exist: set CODEBASE_CONTEXT = "" (empty string, no block injected)
 

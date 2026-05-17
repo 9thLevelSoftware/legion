@@ -146,9 +146,10 @@ Use resolved path for all personality reads:
 | `/legion:start` | workflow-common-core, questioning-flow, agent-registry, portfolio-manager, codebase-mapper | workflow-common-domains |
 | `/legion:plan` | workflow-common-core, agent-registry, phase-decomposer | memory-manager, github-sync, codebase-mapper, plan-critique, spec-pipeline, workflow-common-memory, workflow-common-github, workflow-common-domains |
 | `/legion:build` | workflow-common-core, agent-registry, wave-executor, execution-tracker | memory-manager, github-sync, codebase-mapper, workflow-common-memory, workflow-common-github |
-| `/legion:review` | workflow-common-core, agent-registry, review-loop, review-panel, execution-tracker | memory-manager, github-sync, design-workflows, workflow-common-memory, workflow-common-github, workflow-common-domains |
+| `/legion:review` | workflow-common-core, agent-registry, review-loop, review-panel, execution-tracker | memory-manager, github-sync, codebase-mapper, design-workflows, workflow-common-memory, workflow-common-github, workflow-common-domains |
 | `/legion:status` | workflow-common-core, execution-tracker, milestone-tracker | memory-manager, github-sync, codebase-mapper, workflow-common-memory, workflow-common-github |
 | `/legion:quick` | workflow-common-core, agent-registry | workflow-common-domains |
+| `/legion:map` | workflow-common-core, codebase-mapper | (none) |
 | `/legion:portfolio` | workflow-common-core, portfolio-manager | workflow-common-github |
 | `/legion:milestone` | workflow-common-core, milestone-tracker, execution-tracker | github-sync, workflow-common-github |
 | `/legion:agent` | workflow-common-core, agent-registry, agent-creator | workflow-common-domains |

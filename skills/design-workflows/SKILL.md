@@ -671,7 +671,7 @@ During wave-executor for design phases:
 
 3. Wave 2A agents (backend architecture) receive:
    - Wave 1 SUMMARY.md (research findings, project constraints)
-   - .planning/CODEBASE.md (if exists -- brownfield API surface)
+   - .planning/CODEBASE.md and .planning/codebase/ (if exists -- codebase map API surface)
    - Existing API contracts or schema files from project
    Only dispatched when phase scope includes backend/API work.
 
@@ -721,7 +721,7 @@ Every command that integrates with design workflows MUST follow this contract:
 6. Design documents are supplementary artifacts -- workflow completion does not depend on them
 ```
 
-This is identical to the Marketing, GitHub, Memory, and Brownfield degradation pattern -- all optional integrations follow the same contract.
+This is identical to the Marketing, GitHub, Memory, and Codebase Map degradation pattern -- all optional integrations follow the same contract.
 
 ---
 

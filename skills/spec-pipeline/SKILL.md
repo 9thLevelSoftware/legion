@@ -117,7 +117,7 @@ Identify knowledge gaps and research the codebase and domain to fill them.
 ```
 Input:
   - Section 1 output (structured requirements summary)
-  - .planning/CODEBASE.md (if exists — brownfield context)
+  - .planning/CODEBASE.md and .planning/codebase/ (if exists — codebase map context)
   - Existing skill/command files relevant to this phase
 
 Output:

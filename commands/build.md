@@ -178,7 +178,7 @@ DRY-RUN MODE (deterministic, no side effects)
    - `skills/workflow-common-memory/SKILL.md` only if `.planning/memory/` exists OR this run creates memory outcomes.
 
    - `skills/workflow-common-github/SKILL.md` only if `gh auth status` succeeds and a git remote exists.
-   - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists.
+   - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists or `.planning/codebase/index.jsonl` exists.
    If a condition is not met, skip that skill silently and continue.
 
 ## Step 0.5: INTENT DETECTION AND VALIDATION
@@ -295,12 +295,13 @@ c. **No match**: If NL parsing returns confidence 0 or no candidates, proceed wi
 
 4. EXECUTE WAVES
 
-   **BROWNFIELD CONTEXT** (optional — follows codebase-mapper Section 6.3):
+   **CODEBASE MAP CONTEXT** (optional — follows codebase-mapper Sections 6.4 and 18):
    If `.planning/CODEBASE.md` exists, wave-executor Section 3, Step 3.5 will automatically
-   load brownfield context (conventions, agent guidance, risk areas) and inject it into each
-   agent's execution prompt as a `## Codebase Context` block. No action needed here — this
-   is handled transparently during prompt construction in the wave executor.
-   If CODEBASE.md is absent: no injection occurs, agents receive standard prompts.
+   load map context (retrieved index chunks when available, conventions, dependency warnings,
+   directory mappings, agent guidance, and risk areas) and inject it into each agent's
+   execution prompt as a `## Codebase Context` block. No action needed here — this is
+   handled transparently during prompt construction in the wave executor.
+   If CODEBASE.md and map artifacts are absent: no injection occurs, agents receive standard prompts.
 
    **RESOLVE AGENT PATH** (once, before wave loop):
    Follow workflow-common Agent Path Resolution Protocol to resolve AGENTS_DIR.

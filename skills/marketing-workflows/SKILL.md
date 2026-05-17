@@ -523,7 +523,7 @@ Every command that integrates with marketing workflows MUST follow this contract
 6. Campaign documents are supplementary artifacts -- workflow completion does not depend on them
 ```
 
-This is identical to the GitHub Conventions, Memory Conventions, and Brownfield Conventions degradation pattern -- all optional integrations follow the same contract.
+This is identical to the GitHub Conventions, Memory Conventions, and Codebase Map Conventions degradation pattern -- all optional integrations follow the same contract.
 
 ---
 

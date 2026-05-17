@@ -1,11 +1,12 @@
 ---
 name: legion:start
 description: Initialize a new project with guided questioning flow
+argument-hint: "[design-doc-path]"
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
 ---
 
 <objective>
-Guide the user through an adaptive questioning flow to capture project vision, requirements, and constraints. Produce PROJECT.md, ROADMAP.md, and STATE.md with recommended agents per phase.
+Guide the user through an adaptive questioning flow to capture project vision, requirements, and constraints. Before initialization, check for a current `/legion:map` dataset when source code exists. Produce PROJECT.md, ROADMAP.md, and STATE.md with recommended agents per phase.
 </objective>
 
 <execution_context>
@@ -20,11 +21,14 @@ skills/codebase-mapper/SKILL.md
 @skills/questioning-flow/templates/project-template.md
 @skills/questioning-flow/templates/roadmap-template.md
 @skills/questioning-flow/templates/state-template.md
+@.planning/CODEBASE.md (if exists)
+@.planning/codebase/index.jsonl (if exists)
+@.planning/explorations/ (if exists)
 </context>
 
 <process>
 1. PRE-FLIGHT CHECK
-   - Check if `.planning/PROJECT.md` already exists by attempting to read it
+   - Check if `.planning/PROJECT.md` already exists by attempting to read it.
    - If it exists: issue AskUserQuestion.
 
      Question: "A project already exists in .planning/. Choose exactly one of two actions."
@@ -36,193 +40,135 @@ skills/codebase-mapper/SKILL.md
      Do not propose a third option. Do not merge or archive.
 
      → Use AskUserQuestion tool with these exact two options.
-   - If it doesn't exist: proceed directly
+   - If it doesn't exist: proceed directly.
 
-2. EXPLORATION OFFER
-   After pre-flight check passes (no existing project OR user confirmed reinitialize):
+2. DESIGN DOCUMENT INPUT
+   - Supported handoff form: `/legion:start <design-doc-path>`.
+   - If `$ARGUMENTS` contains a path:
+     - Resolve it relative to the current project.
+     - Require it to stay inside the current project.
+     - Read it as `design_context`.
+     - Extract Initial Ask, Product Definition, Feature Scope, Technical Direction, Open Questions, and Start Input when present.
+     - AskUserQuestion:
+       - "Use this design document to initialize" — prefill Stage 1 and Stage 2 from the document.
+       - "Review the document summary first" — display a concise summary, then ask again.
+       - "Abort start" — exit without writing files.
+   - If no `$ARGUMENTS` path is supplied:
+     - Look for `.planning/explorations/*.md`.
+     - If one or more exist, identify the most recent by modification time.
+     - AskUserQuestion:
+       - "Use latest exploration design" — load that design as `design_context`.
+       - "Start without exploration design" — run normal questioning.
+       - "Abort and review designs" — exit and suggest reading `.planning/explorations/`.
+   - Legacy `.planning/exploration-*.md` files may be read if no new exploration directory exists, but do not create new legacy files.
 
-   Issue AskUserQuestion.
-
-   Question: "Choose exactly one of two planning entry paths."
-
-   **Select one option:**
-   - **Yes, explore with Polymath** — invoke `/legion:explore` to crystallize the concept before planning
-   - **No, jump straight to planning** — skip exploration and proceed directly to brownfield detection
-
-   Do not pre-select. Do not propose exploration with a different agent.
-
-   → Use AskUserQuestion tool with these exact two options.
-
-   **If user selects "Yes, explore with Polymath":**
-   - Invoke `/legion:explore` workflow
-   - `/legion:explore` has its own exit states ("Proceed to planning", "Explore more", "Park"); those are handled inside that command, not here
-   - When `/legion:explore` returns with exit state "Proceed to planning":
-     - Capture the crystallized concept from exploration output
-     - Pre-populate Stage 1 (Vision & Identity) questioning with the crystallized summary
-     - Skip the opening "What are you building?" prompt
-     - Continue to brownfield detection (step 3)
-   - When `/legion:explore` returns with exit state "Explore more":
-     - Loop back to `/legion:explore` with narrowed scope
-   - When `/legion:explore` returns with exit state "Park":
-     - Exit with summary saved to `.planning/exploration-{timestamp}.md`
-
-   **If user selects "No, jump straight to planning":**
-   - Skip exploration
-   - Continue directly to brownfield detection (step 3)
-   - Proceed with standard questioning flow
-
-3. BROWNFIELD DETECTION
-   Follow codebase-mapper skill Section 1 (Source Code Detection Heuristic):
-   - Check for non-Legion source files in the current directory:
-     - Any source files outside .planning/, .claude/, .codex/, .cursor/, .windsurf/, .gemini/, .opencode/, and .aider/?
-     - Any package.json, Gemfile, pyproject.toml, requirements.txt, go.mod at root?
-     - Any src/, app/, lib/, components/ directories?
-   - If existing source code detected:
-     Use adapter.ask_user:
-       "I see an existing codebase here. Should I map it before we plan?"
-       Option 1: "Yes, analyze the codebase first"
-         → Run codebase-mapper Sections 2-4 to build the structural map
-         → Write .planning/CODEBASE.md using Section 5 format
-         → Display summary: "{N} files across {M} languages, {framework} detected, {risk_count} risk areas flagged"
-         → Continue to step 4
-       Option 2: "No, skip the analysis"
-         → Proceed directly to step 4 (greenfield mode)
-       Option 3: "I'll run /legion:plan directly"
-         → Abort start, let user plan manually
-   - If no existing source code detected:
-     Skip brownfield flow entirely (pure greenfield) — proceed to step 4
-   
-   **Integration with Exploration:**
-   If exploration was completed (user chose "Yes, explore with Polymath"):
-   - Display: "Exploration summary: [crystallized summary]"
-   - Use this context during brownfield analysis
-   - If existing codebase detected, ask: "Build on the existing code to realize your explored concept, or start fresh?"
+3. SOURCE AND MAP PRE-FLIGHT
+   - Follow codebase-mapper Section 1 Source Code Detection Heuristic.
+   - If no source code is detected, skip map pre-flight and proceed to directory setup.
+   - If source code is detected:
+     - Run the equivalent of `/legion:map --check` using codebase-mapper Section 17 freshness rules.
+     - Required map artifacts:
+       - `.planning/CODEBASE.md`
+       - `.planning/codebase/index.jsonl`
+       - `.planning/codebase/symbols.json`
+       - `.planning/codebase/search.md`
+       - `.planning/config/directory-mappings.yaml`
+     - If map status is `fresh`:
+       Use AskUserQuestion:
+       - **Use current map** — continue with map context.
+       - **Refresh map first** — run `/legion:map --refresh`, then continue.
+       - **Continue without map context** — proceed but do not inject map assumptions.
+     - If map status is `absent`, `partial`, or `stale`:
+       Use AskUserQuestion:
+       - **Run `/legion:map` now** — generate or refresh the dataset before planning.
+       - **Skip mapping for this start** — proceed without map context.
+       - **Abort and map manually** — exit and suggest `/legion:map --refresh`.
+   - If the user chooses any mapping option, follow `commands/map.md` and `skills/codebase-mapper/SKILL.md` rather than duplicating map logic.
 
 4. ENSURE DIRECTORY STRUCTURE
-   - Create `.planning/` directory if it doesn't exist
-   - Create `.planning/phases/` directory if it doesn't exist
-   - Verify `skills/questioning-flow/templates/` exists (required — fail with clear error if missing)
+   - Create `.planning/` directory if it doesn't exist.
+   - Create `.planning/phases/` directory if it doesn't exist.
+   - Verify `skills/questioning-flow/templates/` exists. If missing, fail with a clear error.
 
 5. QUESTIONING STAGE 1: VISION & IDENTITY
-   Follow the questioning-flow skill's Stage 1 exactly, with exploration integration:
-
-   **First: Check for saved exploration files (even if explore wasn't run this session)**
-   - Look for `.planning/exploration-*.md` files
-   - If found: read the most recent one (by filename or modification time)
-   - Extract: Crystallized Summary, Knowns, Unknowns, Decisions Made
-   - Set exploration_context = extracted data
-   - This covers the case where `/legion:explore` ran in a PREVIOUS session
-
-   **If exploration was completed (inline or from saved file):**
-   - Skip: "What are you building? Give me the elevator pitch."
-   - Instead open with: "Here's what we crystallized in exploration: [summary]. Let's confirm the details."
-   - Pre-populate: project_name, project_description, value_proposition from exploration
-   - Focus questioning on what's still missing or needs confirmation
-   - Display source: "Loaded from `.planning/exploration-{name}.md`" (if from saved file)
-
-   **If no exploration (user chose "No, jump straight to planning" AND no saved exploration files):**
-   - Keep existing Stage 1 flow unchanged:
-     - Open with: "What are you building? Give me the elevator pitch."
-     - Ask follow-up questions adaptively based on what's missing from the response
-     - Capture: project_name, project_description, value_proposition, target_users
-     - Summarize and confirm: "Here's what I'm understanding: [summary]. Anything to correct or add?"
-     - Wait for user confirmation before proceeding
+   Follow questioning-flow Section 2 Stage 1, with design document integration:
+   - If `design_context` exists:
+     - Open with a summary of the design doc and ask bounded confirmation.
+     - Pre-populate project_name, project_description, value_proposition, target_users, and architecture_notes where the document provides them.
+     - Ask only for missing or ambiguous fields.
+     - Record the design document path in PROJECT.md decisions.
+   - If no `design_context` exists:
+     - Run the standard Stage 1 flow from questioning-flow.
 
 6. QUESTIONING STAGE 2: REQUIREMENTS & CONSTRAINTS
-   Follow the questioning-flow skill's Stage 2 exactly:
-   - Ask: "What are the must-have features for v1?"
-   - Ask: "What's explicitly out of scope?"
-   - Adapt follow-ups based on project type detected in Stage 1
-   - Capture: requirements_list, out_of_scope, constraints, architecture_notes, decisions
-   - Summarize requirements as bullet list and confirm with user
+   Follow questioning-flow Section 2 Stage 2:
+   - If `design_context` includes MVP scope, non-goals, technical direction, or open questions, use them as prefilled requirements/constraints and ask for confirmation.
+   - If map context is fresh and enabled, use CODEBASE.md and `.planning/codebase/` to ground existing-code constraints and architecture.
+   - Keep the confirmation bounded via AskUserQuestion.
 
 7. QUESTIONING STAGE 3: WORKFLOW PREFERENCES
-   Follow the questioning-flow skill's Stage 3 exactly:
-   - Use adapter.ask_user with 3 structured choice questions:
-     - Execution mode: Guided (Recommended) / Autonomous / Collaborative
-     - Planning depth: Standard (Recommended) / Quick Sketch / Deep Analysis
-     - Cost profile: Balanced (Recommended) / Economy / Premium
-   - Record choices as decisions
+   Follow questioning-flow Section 2 Stage 3 exactly:
+   - Execution mode: Guided / Autonomous / Collaborative.
+   - Planning depth: Standard / Quick Sketch / Deep Analysis.
+   - Cost profile: Balanced / Economy / Premium.
+   - Record choices as decisions.
 
 8. GENERATE PROJECT.MD
-   - Read `skills/questioning-flow/templates/project-template.md` for the structure
-   - Fill all placeholders using the output mapping from questioning-flow skill Section 3
-   - Omit sections with no content (don't write "N/A")
-   - Write the completed document to `.planning/PROJECT.md`
+   - Read `skills/questioning-flow/templates/project-template.md`.
+   - Fill placeholders using questioning-flow Section 3.
+   - Include design source and map source in decisions when used:
+     - `Design source`: `{design_doc_path}`
+     - `Codebase map`: `.planning/CODEBASE.md` with map age/status.
+   - Omit sections with no content.
+   - Write `.planning/PROJECT.md`.
 
 9. GENERATE ROADMAP.MD
-   - Analyze requirements captured in Stage 2
-   - Follow phase decomposition guidelines from questioning-flow skill Section 4:
-     - Group requirements by dependency and domain
-     - Order phases: foundation → core features → user-facing → polish
-     - Estimate plan count from dependency, ownership, verification, and traceability boundaries
-     - Name phases descriptively
-   - For each phase, use the agent-registry skill's recommendation algorithm (Section 3):
-     - Match phase requirements against agent task types
-     - Select 2-4 recommended agents per phase
-     - Ensure testing agent for code phases, coordinator for cross-division work
-   - Define testable success criteria per phase
-   - Read `skills/questioning-flow/templates/roadmap-template.md` for the structure
-   - Fill placeholders and write to `.planning/ROADMAP.md`
+   - Analyze requirements captured in Stage 2.
+   - Follow questioning-flow Section 4 phase decomposition:
+     - Group requirements by dependency and domain.
+     - Order phases foundation → core features → user-facing → polish.
+     - Estimate plan count from dependency, ownership, verification, and traceability boundaries.
+     - Treat estimates as estimates, not phase-level caps.
+   - Recommend 2-4 agents per phase using agent-registry Section 3.
+   - If a fresh map is available, use it to avoid contradicting existing architecture and to identify existing-code constraints.
+   - Read `skills/questioning-flow/templates/roadmap-template.md`, fill placeholders, and write `.planning/ROADMAP.md`.
 
 10. GENERATE STATE.MD
-    - Read `skills/questioning-flow/templates/state-template.md` for the structure
+    - Read `skills/questioning-flow/templates/state-template.md`.
     - Fill placeholders:
-      - total_phases: count from roadmap
-      - total_plans: sum of estimated plans across all phases
-      - progress_bar / progress_percent: initialized to 0
-      - recent_decisions: workflow preferences from Stage 3
-      - first_phase_name: name of Phase 1
-      - date: current date
-    - Write to `.planning/STATE.md`
+      - total_phases: count from roadmap.
+      - total_plans: sum of estimated plans across all phases.
+      - progress_bar / progress_percent: initialized to 0.
+      - recent_decisions: workflow preferences, design source, map source.
+      - first_phase_name: name of Phase 1.
+      - date: current date.
+    - Write `.planning/STATE.md`.
 
 11. REGISTER IN PORTFOLIO
     Follow portfolio-manager Section 2 (Register Project):
-    a. Check if `{adapter.global_config_dir}` directory exists; create it if not (including parent directories)
-    b. Read `{adapter.global_config_dir}/portfolio.md` if it exists; otherwise initialize with empty structure:
-       ```
-       # Legion Portfolio
-       ## Projects
-       ## Cross-Project Dependencies
-       | ID | From | To | Type | Status | Notes |
-       |----|------|----|------|--------|-------|
-       ## Metadata
-       - **Last Updated**: {today}
-       - **Total Projects**: 0
-       - **Active Projects**: 0
-       ```
-    c. Get the absolute path of the current working directory
-    d. Check if this path is already registered under any project heading
-       - If yes: update the project name and description to match current PROJECT.md
-       - If no: add a new project entry:
-         ```
-         ### {project_name}
-         - **Path**: {absolute_path}
-         - **Status**: Active
-         - **Registered**: {today}
-         - **Description**: {one-line from PROJECT.md}
-         ```
-    e. Update Metadata: Last Updated, Total Projects count, Active Projects count
-    f. Write the updated `{adapter.global_config_dir}/portfolio.md`
-    g. Display: "Registered in portfolio: {adapter.global_config_dir}/portfolio.md"
+    - Create/update `{adapter.global_config_dir}/portfolio.md`.
+    - Register the current absolute path, project name, status, date, and one-line description.
+    - Preserve existing portfolio entries.
 
 12. DISPLAY SUMMARY
-    - Show the user a concise summary:
-      - Project: {project_name} — {one-line description}
-      - Phases: {count} phases planned
-      - For each phase: name and recommended agent count
-      - Workflow: {mode}, {depth}, {cost_profile}
-      - Files created: PROJECT.md, ROADMAP.md, STATE.md
-      - Portfolio: Registered at {adapter.global_config_dir}/portfolio.md
+    - Show:
+      - Project: `{project_name}` — one-line description.
+      - Source: design document path if used, otherwise "guided questioning".
+      - Codebase map: fresh/used, refreshed, skipped, or unavailable.
+      - Phases planned and first phase.
+      - Workflow choices.
+      - Files created.
+      - Portfolio path.
     - End with: "Run `/legion:plan 1` to begin Phase 1: {first_phase_name}"
-    - Do NOT dump full file contents — summary only
+    - Do not dump full file contents.
 
 <decision_matrix>
 | Situation | Action | Notes |
 |-----------|--------|-------|
-| Exploration completed (inline) | Use crystallized summary in Stage 1 | Pre-populate questioning with exploration output |
-| Exploration file found from previous session | Load and use in Stage 1 | Check `.planning/exploration-*.md` — context persists across sessions |
-| User skipped exploration, no saved files | Run standard Stage 1 questioning | No changes to existing flow |
-| Exploration parked | Exit start command, exploration already saved | User can re-run start later — file will be found automatically |
+| Exploration design path supplied | Read and use it as prefilled start context | Requires explicit confirmation before writing project files |
+| New exploration docs exist but no path supplied | Offer latest design, start without design, or abort | New docs live under `.planning/explorations/` |
+| Source code exists and map is absent/partial/stale | Ask whether to run `/legion:map`, skip, or abort | Mapping is user-approved, not silent |
+| Fresh map exists | Ask whether to use, refresh, or continue without it | Use map only when user allows |
+| User wants exploration first | Exit and suggest `/legion:explore` | Start no longer launches explore proactively |
 </decision_matrix>
 </process>
