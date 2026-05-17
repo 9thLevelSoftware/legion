@@ -215,7 +215,7 @@ skills/execution-tracker/SKILL.md
    b. Analyze for logical groupings:
       - Look for theme clusters (infrastructure, features, integrations, etc.)
       - Consider dependency chains
-      - Aim for 2-4 milestones with 3-7 phases each
+      - Use as many milestones as the roadmap needs; there is no fixed phase-count limit per milestone
    c. Present proposed milestones:
       "Based on your {count} phases, here are proposed milestone groupings:"
 

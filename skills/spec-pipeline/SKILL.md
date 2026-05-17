@@ -70,7 +70,7 @@ Step 4: Categorize requirements
   | Category | Description | Examples |
   |----------|-------------|---------|
   | Functional | What the system must do | "Spawn 2-3 agents with different philosophies" |
-  | Non-functional | Quality attributes and constraints | "Max 3 tasks per plan", "Progressive disclosure" |
+  | Non-functional | Quality attributes and constraints | "Per-plan task cap", "Progressive disclosure" |
   | Dependencies | What must exist before this phase | "Phase 29 output (frontmatter schema)" |
   | Deliverables | Concrete files/artifacts produced | "skills/spec-pipeline/SKILL.md" |
 

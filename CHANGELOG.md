@@ -5,6 +5,16 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.2] - 2026-05-16
+
+### Changed
+- `/legion:plan`, `/legion:start`, and `phase-decomposer` now treat phase plan counts as estimates, not caps; phases may contain as many plans as dependency, ownership, verification, and traceability boundaries require.
+- `/legion:milestone` and `milestone-tracker` no longer steer milestone definitions toward fixed milestone counts or fixed phase-count ranges.
+- `planning.max_tasks_per_plan` documentation now explicitly scopes the setting to tasks inside one plan only, not the number of plans in a phase.
+
+### Added
+- Regression coverage preventing active workflow surfaces from reintroducing phase plan-count caps or fixed milestone phase-count guidance.
+
 ## [8.0.1] - 2026-05-16
 
 ### Changed

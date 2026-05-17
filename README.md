@@ -198,7 +198,7 @@ Guides you through an adaptive conversation (5-8 exchanges) to capture project v
 
 #### `/legion:plan <N>` — Phase Planning
 
-Decomposes a roadmap phase into wave-structured plans with a default max of 3 tasks each (configurable via settings). Recommends agents from the 49-agent registry for each plan and gets your confirmation.
+Decomposes a roadmap phase into as many wave-structured plans as needed, using the default max of 3 tasks per plan only as a per-plan task cap (configurable via settings). Recommends agents from the 49-agent registry for each plan and gets your confirmation.
 
 **Key steps:**
 1. Parse or auto-detect the next unplanned phase from STATE.md
@@ -206,7 +206,7 @@ Decomposes a roadmap phase into wave-structured plans with a default max of 3 ta
 3. Detect domain-specific workflows — `marketing-workflows` activates for MKT-* requirements (campaign briefs, content calendars), `design-workflows` activates for DSN-* requirements (design systems, three-lens review)
 4. *(Optional)* Architecture proposals — spawns 2-3 read-only Explore agents with competing philosophies (Minimal, Clean, Pragmatic) for complex phases; user selects an approach
 5. *(Optional)* Spec pipeline — 5-stage specification process (gather → research → write → critique → assess) producing a structured spec at `.planning/specs/`
-6. Decompose into plans via `phase-decomposer` — default max 3 tasks per plan (configurable), grouped into dependency waves (parallel within, sequential between)
+6. Decompose into plans via `phase-decomposer` — any number of plans per phase, with the default max 3 tasks per plan applying only inside each plan, grouped into dependency waves (parallel within, sequential between)
 7. Recommend agents per plan using `agent-registry` scoring (keyword match 3pts, division affinity 2pts, partial match 1pt, memory boost from past outcomes)
 8. *(Optional)* Plan critique — spawns 2 read-only Explore agents (`testing-qa-verification-specialist` for pre-mortem, `product-sprint-prioritizer` for assumption hunting) with PASS/CAUTION/REWORK verdicts
 9. Generate plan files with full task instructions, verification commands, and YAML frontmatter
@@ -373,7 +373,7 @@ Handles the full milestone lifecycle: define milestone groupings, track status, 
 **Key steps:**
 1. Load project state — checks for existing `## Milestones` section in ROADMAP.md; offers to define milestones if none exist
 2. Display milestone dashboard via `milestone-tracker` — phase-level progress with 10-char progress bars per milestone
-3. Define milestones — analyzes phases for logical groupings (theme clusters, dependency chains), proposes 2-4 milestones with 3-7 phases each
+3. Define milestones — analyzes phases for logical groupings (theme clusters, dependency chains), proposing as many milestones as the roadmap needs with no fixed phase-count limit
 4. Complete milestone — validates all phases are Complete, generates summary at `.planning/milestones/MILESTONE-{N}.md` with metrics (plans, requirements, files, agents), closes GitHub milestone via `github-sync` (optional)
 5. Archive milestone — moves phase directories from `.planning/phases/` to `.planning/archive/milestone-{N}/`, condenses STATE.md, updates ROADMAP.md
 
@@ -684,7 +684,7 @@ Conductor's parallel dispatch pattern — spawning multiple specialized evaluato
 
 Shipyard's wave model is elegant: organize plans into dependency waves, execute everything within a wave in parallel, then advance to the next wave. This gives you maximum parallelism without dependency conflicts. We adopted it directly in `wave-executor.md`.
 
-Shipyard's max-3-tasks-per-plan constraint keeps work focused and reviewable. More than 3 tasks and plans become unwieldy — agents lose context, reviews get superficial, and failures are hard to diagnose. We enforce this in `phase-decomposer.md`.
+Shipyard's small-plan discipline keeps work focused and reviewable. Legion keeps that as a configurable per-plan task cap, but does not cap how many plans a phase may contain; additional plans improve traceability when dependency or verification boundaries require them.
 
 Atomic commits per completed plan (from Shipyard's `execution-tracker`) means every unit of work is independently revertable. If Plan 2 breaks something, you can roll back without losing Plan 1's progress.
 
@@ -891,7 +891,7 @@ legion/                     <- Project root
 - **Full personality injection**: Agents are spawned with their complete .md as instructions
 - **Standardized format**: All 49 agents use Format A — emoji section headings, "Your" pronouns, current range 155-679 lines (minimum 80)
 - **Budget-aware orchestration**: Heavier reasoning is reserved for planning and governance when the adapter supports it; execution stays on faster defaults, optional skills stay unloaded until needed, and prompt ceilings prevent oversized spawns
-- **Default max 3 tasks per plan (configurable)**: Keeps work focused and reviewable
+- **Configurable per-plan task cap**: Keeps individual plans focused while allowing any number of plans per phase
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides
 - **Plan contracts**: `files_forbidden`, `expected_artifacts`, and mandatory `verification_commands` enforce discipline at planning time
 - **Wave execution**: Plans grouped by dependency; parallel within waves, sequential between. File overlap detection and `sequential_files` prevent conflicts

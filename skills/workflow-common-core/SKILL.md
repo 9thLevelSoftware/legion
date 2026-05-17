@@ -86,7 +86,7 @@ This applies to ALL question prompts in ALL commands — confirmation gates, mod
 Read `settings.json` from repo root if available. If missing/invalid, use defaults.
 
 Defaults:
-- `planning.max_tasks_per_plan = 3`
+- `planning.max_tasks_per_plan = 3` (per-plan task cap only; not a phase plan-count cap)
 - `review.max_cycles = 3`
 - `execution.agent_personality_verbosity = "full"`
 - `integrations.github = "prompt"`

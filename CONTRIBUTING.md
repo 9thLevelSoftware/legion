@@ -97,7 +97,7 @@ The easiest way is `/legion:agent` — it guides you through creation and handle
 - **Format A for agents** — emoji headings, "Your" pronouns, hard minimum 80 lines (upper range is telemetry-only)
 - **Named colors only** — red, green, blue, purple, cyan, orange, yellow, pink
 - **Kebab-case divisions** — spatial-computing, project-management, not Title Case
-- **Default max 3 tasks per plan (configurable)** — keeps work focused and reviewable
+- **Configurable per-plan task cap** — keeps individual plans focused while allowing any number of plans per phase
 - **Full personality injection** — agent files are complete, not fragments
 - **Human-readable state** — `.planning/` files are plain markdown
 

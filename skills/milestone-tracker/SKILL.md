@@ -82,9 +82,9 @@ Step 2: Analyze phases for logical groupings
   - Shared theme (e.g., "core workflow", "advanced features", "integrations")
   - Dependency clusters (phases that build on each other)
   - Natural break points (major deliverables or user-facing milestones)
-  - Group size: aim for 3-7 phases per milestone
+  - Group size: no fixed phase-count limit; group phases by coherent deliverable and dependency boundaries
 
-Step 3: Propose 2-4 milestones
+Step 3: Propose the milestone set the roadmap needs
   For each proposed milestone, include:
   - Name: descriptive theme label
   - Phase range: {start}-{end} (inclusive, no gaps or overlaps)

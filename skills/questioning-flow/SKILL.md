@@ -220,10 +220,10 @@ After all three stages are complete, decompose the captured requirements into ph
    - User-facing features after core is stable
    - Polish, optimization, and launch last
 
-3. **Size each phase for 2-3 plans** (max 3 tasks per plan):
-   - Simple phase (config, setup): 1-2 plans
-   - Standard phase (feature build): 2-3 plans
-   - Complex phase (multi-system integration): 3 plans
+3. **Size each phase by coherent work boundaries**:
+   - Use dependency order, domain ownership, verification scope, and traceability to estimate plans
+   - Simple phases may need one plan; complex phases may need many plans
+   - Do not create extra phases only to avoid adding plans to the current phase
 
 4. **Name phases descriptively** — use what the phase delivers, not a number:
    - Good: "API Foundation", "User Dashboard", "Launch Prep"
@@ -240,8 +240,9 @@ After all three stages are complete, decompose the captured requirements into ph
 
 7. **Estimate plan count per phase**:
    - Count the requirements in the phase
-   - Group into plans of max 3 tasks each
-   - Record the estimate in the phase detail block
+   - Group into as many plans as dependency, ownership, verification, and traceability boundaries require
+   - Apply `planning.max_tasks_per_plan` only as the per-plan task cap
+   - Record the estimate in the phase detail block; plan counts are estimates, not caps
 
 ### Phase Detail Format
 
@@ -269,9 +270,9 @@ For each phase, produce a block matching the roadmap template pattern:
 
 | Depth | Phase Count | Plan Density | Notes |
 |-------|-------------|--------------|-------|
-| Quick Sketch | 2-3 | 1-2 plans/phase | Combine aggressively. Ship fast. |
-| Standard | 3-6 | 2-3 plans/phase | Balanced. Default recommendation. |
-| Deep Analysis | 6+ | 2-3 plans/phase | More phases, not more plans per phase. Add research phases. |
+| Quick Sketch | 2-3 | As needed | Keep phases broad, but preserve independent verification boundaries. |
+| Standard | 3-6 | As needed | Balanced. Split plans when traceability or ownership improves. |
+| Deep Analysis | 6+ | As needed | Add research phases when dependencies require them, not to avoid plan count. |
 
 ---
 

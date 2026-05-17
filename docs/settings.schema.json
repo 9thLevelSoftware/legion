@@ -31,7 +31,12 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "max_tasks_per_plan": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "max_tasks_per_plan": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Per-plan task cap only. Does not limit how many plans a phase may contain."
+        },
         "architecture_proposals_default": { "type": "string", "enum": ["always", "prompt", "never"] },
         "spec_pipeline_default": { "type": "string", "enum": ["always", "prompt", "never"] }
       },

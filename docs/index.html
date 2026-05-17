@@ -1158,6 +1158,30 @@
 
         <div class="divider"><div class="divider-line"></div></div>
 
+        <!-- ===== v8.0.2 ===== -->
+        <section class="reveal-section">
+            <h2>v8.0.2 &mdash; Uncapped Phase Planning</h2>
+            <p class="intro-text" style="margin-bottom: 1.5rem;">
+                Phase planning now favors traceability over artificial limits: phases can contain as many plans as the work needs, while <code>max_tasks_per_plan</code> remains a per-plan task cap.
+            </p>
+            <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
+                <div class="feature-card">
+                    <h3>Plan Counts Are Estimates</h3>
+                    <p><code>/legion:plan</code> and startup roadmap generation split plans by dependency, ownership, verification, and traceability boundaries instead of fixed plan density.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Flexible Milestones</h3>
+                    <p>Milestone grouping no longer targets fixed milestone counts or fixed phase ranges; milestones follow coherent deliverables and dependency boundaries.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Regression Guard</h3>
+                    <p>New tests prevent active workflow surfaces from reintroducing plan-per-phase caps or fixed phase-count guidance.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"><div class="divider-line"></div></div>
+
         <!-- ===== v8.0.1 ===== -->
         <section class="reveal-section">
             <h2>v8.0.1 &mdash; Kilo Code Plugin Surface</h2>
@@ -1276,7 +1300,7 @@
                 </div>
                 <div class="inspiration-card">
                     <h4><a href="https://github.com/lgbarn/shipyard" target="_blank" rel="noopener">Shipyard</a></h4>
-                    <p class="took"><strong>Took:</strong> Wave-based execution, max 3 tasks per plan constraint, atomic commits per completed plan.</p>
+                    <p class="took"><strong>Took:</strong> Wave-based execution, configurable per-plan task cap, atomic commits per completed plan.</p>
                     <p class="left">Left behind: 29 commands, checkpoint/rollback system, complex hook infrastructure</p>
                 </div>
                 <div class="inspiration-card">

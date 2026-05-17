@@ -14,7 +14,7 @@ Engine for `/legion:plan`. Takes a ROADMAP.md phase entry and transforms it into
 
 ## Section 1: Decomposition Principles
 
-1. **Max tasks per plan comes from settings** — read `settings.json` key `planning.max_tasks_per_plan` (default: 3). If a plan needs more work than that limit, split it into additional plans. Plans stay focused and reviewable.
+1. **Per-plan task cap comes from settings** — read `settings.json` key `planning.max_tasks_per_plan` (default: 3). This only limits how many tasks go inside one plan; it does not limit how many plans a phase may contain. If a phase needs more work than that per-plan task cap, split it into as many additional plans as dependency, ownership, verification, and traceability boundaries require.
 2. **Wave-structured execution** — Wave 1 plans have no internal dependencies. Wave 2 plans depend on Wave 1 outputs. Parallel within waves, sequential between waves.
 3. **Per-plan agent assignment** — different plans in the same phase may use different agents. A frontend plan gets a frontend agent; a testing plan gets a testing agent.
 4. **Self-contained plans** — each plan must be executable with only its `<context>` and `<execution_contract>` references. An agent should never need to read a file not listed in the contract.
@@ -22,7 +22,7 @@ Engine for `/legion:plan`. Takes a ROADMAP.md phase entry and transforms it into
    - `> verification:` inline lines after the task description — machine-checkable commands that can be extracted and run automatically by the wave-executor
    - A `<verify>` block with the same commands in executable form
    No "manually check" or "visually inspect" instructions. If you cannot script the check, the task is too vague.
-6. **Smallest independently verifiable plan** — choose the smallest plan that can be executed and verified on its own. `planning.max_tasks_per_plan` is a cap, not a compression goal; do not combine work just to reduce plan count when it leaves the executor making design decisions.
+6. **Smallest independently verifiable plan** — choose the smallest plan that can be executed and verified on its own. `planning.max_tasks_per_plan` is a per-plan task cap, not a phase plan-count cap or compression goal; do not combine work just to reduce plan count when it leaves the executor making design decisions.
 7. **No planned-work deferrals** — every planned task must be written so execution ends in one of three states: completed, blocked with evidence, or escalated through the blocker escalation protocol. Do not tell executors to leave planned work for later, move it to a future phase, or mark it deferred unless the task itself is to create a user-approved follow-up artifact.
 8. **Decision-complete implementation contracts** — every plan must name exact read targets, write targets, implementation sequence, required interfaces or content structure, edge/error cases, forbidden files, verification commands, and `BLOCKED` conditions. If a planner cannot decide an API, path, validation behavior, helper, or test location, planning is not done.
 
@@ -30,10 +30,11 @@ Engine for `/legion:plan`. Takes a ROADMAP.md phase entry and transforms it into
 
 ## Section 1.5: Settings Input
 
-Before decomposition, resolve planning limits from `settings.json`:
+Before decomposition, resolve the per-plan task cap from `settings.json`:
 - Try Read `settings.json`
-- If present, use `planning.max_tasks_per_plan` as the hard cap for tasks per plan
+- If present, use `planning.max_tasks_per_plan` as the hard cap for tasks inside each plan
 - If missing or invalid, default to `3`
+- This value never caps the total number of plans in a phase
 - Carry this value as `{max_tasks_per_plan}` for all rules and templates below
 
 ### Extended Thinking Mode
@@ -286,6 +287,7 @@ How to break a phase's requirements into plans and tasks.
 
 4. GROUP deliverables into plans within each wave
    - Max {max_tasks_per_plan} tasks per plan (from settings, default 3)
+   - Create as many plans as the phase needs; no maximum plan count exists for a phase
    - Group by: same file being modified, same skill/pattern, same agent specialty
    - Name plans by their primary output: "Create {X} skill", "Update {Y} command"
    - Split plans whenever a combined plan would require the executor to choose
@@ -772,7 +774,7 @@ After completion, create `.planning/phases/{NN}-{phase-slug}/{NN}-{PP}-SUMMARY.m
 | `must_haves.artifacts` | Primary output files with min_lines and contains checks |
 | `must_haves.key_links` | How this plan's output connects to other files (grep-able patterns) |
 | `<context>` | Always include PROJECT.md, ROADMAP.md, and the phase CONTEXT.md. Add source files relevant to the plan's tasks. For wave 2+ plans, include prior plan summaries. |
-| `<tasks>` | Max `{max_tasks_per_plan}` tasks (default 3). Each with name, files, action, verify, done. |
+| `<tasks>` | Max `{max_tasks_per_plan}` tasks inside this plan (default 3). This cap does not limit total plans in the phase. Each task has name, files, action, verify, done. |
 | `files_forbidden` | List of file paths and directory patterns this plan MUST NOT modify. Include files owned by other plans in the same wave (prevents parallel conflicts), shared config files not in scope, and any file the plan reads but should not write. Use glob patterns for directories (e.g., `agents/`, `commands/`). Empty array `[]` is valid if no restrictions apply, but prefer explicit declarations for code-modifying plans. |
 | `sequential_files` | Optional list of file paths that require single-agent sequential access within the wave. Use when multiple plans in the same wave read/write a shared file that isn't in `files_modified` (e.g., a shared config file read by all plans, a lock file, or a generated index file that multiple plans append to). Files in `sequential_files` must NOT also appear in `files_modified` -- if a plan modifies a file, declare it in `files_modified` and use `files_forbidden` in other plans to prevent conflicts. Empty array `[]` or omission means no sequential constraints. |
 | `expected_artifacts` | Structured list of output files this plan produces. Each entry has `path` (file path), `provides` (1-sentence description of what it delivers), and `required` (true/false — true means plan fails without this artifact). This is the **contract** — it declares what outputs exist after execution. Distinct from `must_haves.artifacts` which declares quality checks (min_lines, contains) on those outputs. |

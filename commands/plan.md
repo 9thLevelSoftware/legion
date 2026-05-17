@@ -6,7 +6,7 @@ allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion]
 ---
 
 <objective>
-Decompose a roadmap phase into wave-structured plans using `settings.planning.max_tasks_per_plan` (default 3). Recommend agents from the registry for each plan and get user confirmation. Generate plan files to `.planning/phases/{NN}-{slug}/`.
+Decompose a roadmap phase into as many wave-structured plans as needed, using `settings.planning.max_tasks_per_plan` (default 3) only as the per-plan task cap. Recommend agents from the registry for each plan and get user confirmation. Generate plan files to `.planning/phases/{NN}-{slug}/`.
 
 Every generated plan must be a decision-complete implementation contract that
 follows the shared execution harness:
@@ -270,7 +270,7 @@ DRY-RUN MODE (deterministic, no side effects)
      direction for decomposition decisions
    - Identify dependency layers
    - Map layers to waves
-   - Group deliverables into plans (max tasks from `settings.planning.max_tasks_per_plan`, default 3)
+   - Group deliverables into as many plans as needed; `settings.planning.max_tasks_per_plan` (default 3) only caps tasks inside each plan
    - Validate: every requirement covered, no circular dependencies
 
 5. RECOMMEND AGENTS

@@ -37,7 +37,7 @@ describe('Decision-complete planning harness', () => {
 
     assert.match(content, /decision-complete implementation contracts/i);
     assert.match(content, /Smallest independently verifiable plan/);
-    assert.match(content, /max_tasks_per_plan` is a cap, not a compression goal/);
+    assert.match(content, /max_tasks_per_plan` is a per-plan task cap, not a phase plan-count cap or compression goal/);
     for (const section of ['<execution_contract>', '<stop_gates>', '<recovery>']) {
       assert.match(content, new RegExp(section));
     }

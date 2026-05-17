@@ -210,7 +210,7 @@ After build/review cycles, outcomes are recorded to `.planning/memory/OUTCOMES.m
 
 - **Personality-first**: Agent .md files are the source of truth for agent behavior
 - **Full injection**: Agents are spawned with their complete personality as instructions
-- **Max 3 tasks per plan**: Keeps work focused and reviewable
+- **Per-plan task cap**: `planning.max_tasks_per_plan` keeps individual plans focused, but phases may contain as many plans as needed
 - **Plan schema hardening**: Plans include `files_forbidden` (prevents cross-plan conflicts), `expected_artifacts` (output contracts), and mandatory `verification_commands` (bash commands proving success)
 - **Wave execution**: Plans grouped into dependency waves; parallel within (if CLI supports it), sequential between
 - **Wave safety**: File overlap detection prevents parallel plans from writing the same files. `sequential_files` serializes dispatch for plans sharing files that require single-agent access

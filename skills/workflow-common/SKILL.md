@@ -117,7 +117,7 @@ Legion commands MAY be configured via `settings.json` in the repository root. Th
 Step 1: Try to read ./settings.json from current working directory.
 Step 2: If the file is missing or invalid JSON, continue with built-in defaults.
 Step 3: Resolve these runtime settings once per command invocation:
-  - planning.max_tasks_per_plan (default: 3)
+  - planning.max_tasks_per_plan (default: 3, per-plan task cap only)
   - review.max_cycles (default: 3)
   - execution.agent_personality_verbosity (default: full)
   - integrations.github (default: prompt)

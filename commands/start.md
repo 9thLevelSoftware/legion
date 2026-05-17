@@ -155,7 +155,7 @@ skills/codebase-mapper/SKILL.md
    - Follow phase decomposition guidelines from questioning-flow skill Section 4:
      - Group requirements by dependency and domain
      - Order phases: foundation → core features → user-facing → polish
-     - Size each phase for 2-3 plans
+     - Estimate plan count from dependency, ownership, verification, and traceability boundaries
      - Name phases descriptively
    - For each phase, use the agent-registry skill's recommendation algorithm (Section 3):
      - Match phase requirements against agent task types
