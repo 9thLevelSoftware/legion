@@ -5,6 +5,17 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.3] - 2026-05-17
+
+### Changed
+- `/legion:start` now checks for a fresh codebase map dataset when source code exists and asks whether to use, refresh, skip, or abort for manual mapping.
+- `/legion:explore` now uses research-first design discovery and saves `.planning/explorations/*-design.md` before optionally handing off to `/legion:start <design-doc>`.
+- Planning, build, review, status, and quick-task guidance now uses `/legion:map --refresh` instead of `/legion:quick analyze codebase`.
+
+### Added
+- **`/legion:map` command** — first-class codebase mapping entry point with freshness checks, refresh mode, scoped maps, query mode, CODEBASE.md compatibility, and `.planning/codebase/` semantic index artifacts.
+- Map regression coverage for required artifacts, freshness metadata, consumer guidance, and bridge mappings.
+
 ## [8.0.2] - 2026-05-16
 
 ### Changed

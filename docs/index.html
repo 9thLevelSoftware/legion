@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legion | My Name Is Legion, For We Are Many</title>
-    <meta name="description" content="Orchestrate 49 AI specialist personalities across 10 AI CLI runtimes plus the Kilo Code plugin. Plan, build, review, and polish with personality-first agents across 9 divisions.">
+    <meta name="description" content="Orchestrate 49 AI specialist personalities across 10 AI CLI runtimes plus the Kilo Code plugin. Plan, map, explore, build, review, and polish with personality-first agents across 9 divisions.">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -780,7 +780,7 @@
         <section class="reveal-section">
             <h2>The Forty-Nine</h2>
             <p class="intro-text" style="margin-bottom: 0.5rem;">
-                Not generic role labels. Each is a 155&ndash;679 line character sheet with deep expertise,
+                Not generic role labels. Each is a 156&ndash;472 line character sheet with deep expertise,
                 communication style, hard rules, and personality quirks. When summoned, each receives
                 its <em>complete personality</em> as instructions. Every agent includes structured metadata
                 &mdash; <code>languages</code>, <code>frameworks</code>, <code>artifact_types</code>,
@@ -841,7 +841,7 @@
         <section class="reveal-section">
             <h2>The Commands</h2>
             <p class="intro-text" style="margin-bottom: 1rem;">
-                Eighteen commands. Each a word of power.
+                Nineteen commands. Each a word of power.
             </p>
             <table class="command-table">
                 <thead>
@@ -858,7 +858,8 @@
                     <tr><td>/legion:portfolio</td><td>Multi-project dashboard with dependency tracking</td></tr>
                     <tr><td>/legion:milestone</td><td>Milestone completion, archiving, and metrics</td></tr>
                     <tr><td>/legion:agent</td><td>Create a new agent personality through guided workflow</td></tr>
-                    <tr><td>/legion:explore</td><td>Pre-flight exploration &mdash; crystallize, onboard, compare, or debate</td></tr>
+                    <tr><td>/legion:map</td><td>Map codebase architecture, functionality, risks, and searchable index artifacts</td></tr>
+                    <tr><td>/legion:explore</td><td>Research-first design discovery with a saved design doc before optional start</td></tr>
                     <tr><td>/legion:board</td><td>Convene board of directors for governance decisions</td></tr>
                     <tr><td>/legion:retro</td><td>Run structured retrospective on completed phases or milestones</td></tr>
                     <tr><td>/legion:ship</td><td>Pre-ship checklist, PR creation, deployment verification, canary monitoring</td></tr>
@@ -882,7 +883,12 @@
             <div class="workflow-visual">
                 <div class="workflow-step" style="opacity: 0.7;">
                     <span class="step-cmd">/legion:explore</span>
-                    <span class="step-desc">Pre-flight &rarr; Crystallize, onboard, compare, or debate (optional)</span>
+                    <span class="step-desc">Pre-flight &rarr; Research, clarify, compare approaches, save design doc (optional)</span>
+                </div>
+                <div class="workflow-arrow">&darr;</div>
+                <div class="workflow-step" style="opacity: 0.7;">
+                    <span class="step-cmd">/legion:map</span>
+                    <span class="step-desc">Codebase context &rarr; Architecture docs + searchable map artifacts (optional)</span>
                 </div>
                 <div class="workflow-arrow">&darr;</div>
                 <div class="workflow-step">
@@ -935,7 +941,7 @@
             <div class="features">
                 <div class="feature-card">
                     <h3>Personality Injection</h3>
-                    <p>Each of the 49 agents is spawned with its complete 155&ndash;679 line character sheet as system instructions. Not a role label &mdash; an identity.</p>
+                    <p>Each of the 49 agents is spawned with its complete 156&ndash;472 line character sheet as system instructions. Not a role label &mdash; an identity.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Wave Execution</h3>
@@ -979,7 +985,7 @@
                 </div>
                 <div class="feature-card">
                     <h3>Graceful Degradation</h3>
-                    <p>GitHub integration, memory, brownfield analysis, marketing workflows, design workflows, panels, critique &mdash; all opt-in. The core loop works without any of them.</p>
+                    <p>GitHub integration, memory, codebase mapping, marketing workflows, design workflows, panels, critique &mdash; all opt-in. The core loop works without any of them.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Light Installer Surface</h3>
@@ -998,8 +1004,8 @@
                     <p>Decision logging in SUMMARY.md captures why agents were chosen. Cycle-over-cycle diffs in REVIEW.md track whether review rounds are making progress or spinning.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>Explore Modes</h3>
-                    <p><code>/legion:explore</code> offers crystallize, onboard, compare, and debate modes. Structured pre-flight exploration before committing to formal planning.</p>
+                    <h3>Design Discovery</h3>
+                    <p><code>/legion:explore</code> researches an idea, asks focused clarification questions, compares approaches, and saves a design document before optional planning.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Intent Routing</h3>
@@ -1033,8 +1039,8 @@
                         <li><strong>Agent Metadata</strong> &mdash; <code>languages</code>, <code>frameworks</code>, <code>artifact_types</code>, <code>review_strengths</code> on all 49 agents</li>
                         <li><strong>Recommendation Engine v2</strong> &mdash; Metadata-aware scoring, <code>task_type</code> in outcomes, archetype boosts</li>
                         <li><strong>Adapter Conformance</strong> &mdash; Schema tests, cross-reference validation, <code>max_prompt_size</code> / <code>known_quirks</code></li>
-                        <li><strong>Codebase Mapper</strong> &mdash; Dependency risk assessment, test coverage correlation in CODEBASE.md</li>
-                        <li><strong>Polymath Advanced</strong> &mdash; Onboard, compare, and debate modes in <code>/legion:explore</code></li>
+                        <li><strong>Codebase Mapper</strong> &mdash; Architecture docs, risk assessment, test coverage correlation, and searchable map artifacts</li>
+                        <li><strong>Polymath Design Discovery</strong> &mdash; Research-first clarification and approach comparison in <code>/legion:explore</code></li>
                         <li><strong>Authority &amp; Conflict</strong> &mdash; Escalation protocol, agent-to-agent communication conventions</li>
                         <li><strong>Intent Routing v2</strong> &mdash; Natural language parsing, context-aware suggestions</li>
                         <li><strong>Integration &amp; Release</strong> &mdash; Cross-platform checksums, full regression suite, version 6.0.0</li>
@@ -1152,6 +1158,44 @@
                 <div class="feature-card">
                     <h3>Dynamic Knowledge Index</h3>
                     <p>Compressed directory index in AGENTS.md maps all 49 agents and 33 skills by division. &ldquo;Prefer retrieval-led reasoning&rdquo; directive eliminates LLM laziness during agent spawning. Based on <a href="https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals" target="_blank" rel="noopener">Vercel&rsquo;s Context Engineering research</a> (100% tool-use vs. 53&ndash;79% for skills).</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"><div class="divider-line"></div></div>
+
+        <!-- ===== v8.0.3 ===== -->
+        <section class="reveal-section">
+            <h2>v8.0.3 &mdash; Codebase Map &amp; Design Discovery</h2>
+            <p class="intro-text" style="margin-bottom: 1.5rem;">
+                Codebase understanding and idea exploration are now separate, first-class workflows:
+                <code>/legion:map</code> builds a queryable architecture dataset, while
+                <code>/legion:explore</code> produces a design document before project initialization.
+            </p>
+            <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
+                <div class="feature-card">
+                    <h3><code>/legion:map</code></h3>
+                    <p>New standalone command for full maps, <code>--check</code> freshness reports, <code>--refresh</code> rebuilds, scoped maps, and <code>--query</code> readback against the existing index.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Map Dataset</h3>
+                    <p>Writes <code>.planning/CODEBASE.md</code> plus <code>.planning/codebase/index.jsonl</code>, <code>symbols.json</code>, <code>search.md</code>, and <code>directory-mappings.yaml</code>.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Search Without Services</h3>
+                    <p>Semantic search uses summaries, aliases, symbols, keywords, related files, and <code>rg</code>. No embeddings, vector database, network service, or API key required.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Start Preflight</h3>
+                    <p><code>/legion:start</code> checks for a fresh map when source code exists and asks whether to use it, refresh it, skip it, or abort and map manually.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Design Docs</h3>
+                    <p><code>/legion:explore</code> now researches, clarifies, compares approaches, and saves <code>.planning/explorations/*-design.md</code> before any optional handoff.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Installer Coverage</h3>
+                    <p>Command metadata, Codex bridge mappings, flat-command runtimes, checksum verification, README metrics, and installer smoke tests now include the map command.</p>
                 </div>
             </div>
         </section>
@@ -1285,7 +1329,7 @@
             <div class="inspiration-grid">
                 <div class="inspiration-card">
                     <h4><a href="https://github.com/msitarzewski/agency-agents" target="_blank" rel="noopener">Agency Agents</a></h4>
-                    <p class="took"><strong>Took:</strong> The specialist personalities &mdash; 89&ndash;678 line character sheets with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Started with 51 inherited + 2 Legion-native (53 total), consolidated to 48 via 5 merges across v7.1.0-v7.2.0. The foundation everything else stands on.</p>
+                    <p class="took"><strong>Took:</strong> The specialist personality pattern &mdash; substantive character sheets with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Started with 51 inherited + 2 Legion-native (53 total), consolidated to 48 via 5 merges across v7.1.0-v7.2.0, and now ships 49 current agents. The foundation everything else stands on.</p>
                     <p class="left">Left behind: Original "Agency" branding and namespace</p>
                 </div>
                 <div class="inspiration-card">
@@ -1383,7 +1427,7 @@
                 "My name is Legion, for we are many."
             </p>
             <p style="margin-top: 0.5rem; color: #444; font-size: 0.8rem;">
-                49 agents &middot; 9 divisions &middot; 10 CLIs + Kilo Code &middot; 18 commands &middot; 33 skills &middot; 1 installer dependency
+                49 agents &middot; 9 divisions &middot; 10 CLIs + Kilo Code &middot; 19 commands &middot; 33 skills &middot; 1 installer dependency
             </p>
         </footer>
     </div>

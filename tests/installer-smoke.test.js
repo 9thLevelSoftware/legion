@@ -73,6 +73,7 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
     switch (surface.type) {
       case 'codex-prompts':
         expected.push(path.join(surfacePath, 'legion-start.md'));
+        expected.push(path.join(surfacePath, 'legion-map.md'));
         expected.push(path.join(surfacePath, 'legion-update.md'));
         break;
       case 'codex-bridge':
@@ -86,18 +87,22 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
         break;
       case 'gemini-commands':
         expected.push(path.join(surfacePath, 'start.toml'));
+        expected.push(path.join(surfacePath, 'map.toml'));
         expected.push(path.join(surfacePath, 'update.toml'));
         break;
       case 'copilot-skills':
         expected.push(path.join(surfacePath, 'legion-start', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'legion-map', 'SKILL.md'));
         expected.push(path.join(surfacePath, 'legion-update', 'SKILL.md'));
         break;
       case 'opencode-commands':
         expected.push(path.join(surfacePath, 'legion-start.md'));
+        expected.push(path.join(surfacePath, 'legion-map.md'));
         expected.push(path.join(surfacePath, 'legion-update.md'));
         break;
       case 'kilo-commands':
         expected.push(path.join(surfacePath, 'legion-start.md'));
+        expected.push(path.join(surfacePath, 'legion-map.md'));
         expected.push(path.join(surfacePath, 'legion-plan.md'));
         expected.push(path.join(surfacePath, 'legion-board.md'));
         expected.push(path.join(surfacePath, 'legion-update.md'));
@@ -217,6 +222,7 @@ function assertKiloCodeSkill(skillFile, manifestFile) {
   );
   assert.ok(content.includes(manifestFile.split(path.sep).join('/')), `${skillFile}: should reference the install manifest`);
   assert.match(content, /\/legion:board/, `${skillFile}: should map the board workflow`);
+  assert.match(content, /\/legion:map/, `${skillFile}: should map the map workflow`);
   assert.match(content, /\/legion:validate/, `${skillFile}: should map the validate workflow`);
   assert.match(content, /native Kilo workflow files/, `${skillFile}: should mention native Kilo workflows`);
 }

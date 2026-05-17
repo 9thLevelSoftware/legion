@@ -21,7 +21,8 @@ A multi-CLI plugin for orchestrating 48 AI specialist personalities as a coordin
 | `/legion:portfolio` | Multi-project dashboard with dependency tracking |
 | `/legion:milestone` | Milestone completion, archiving, and metrics |
 | `/legion:agent` | Create a new agent personality through a guided workflow |
-| `/legion:explore` | Pre-flight exploration with Polymath — crystallize, onboard, compare, or debate |
+| `/legion:map` | Generate, refresh, check, or query the codebase map and semantic index |
+| `/legion:explore` | Research-first design discovery that saves a design document before optional start |
 | `/legion:board` | Convene board of directors for governance decisions |
 | `/legion:retro` | Run structured retrospective on completed phases or milestones |
 | `/legion:ship` | Pre-ship checklist, PR creation, deployment verification, canary monitoring |
@@ -33,7 +34,7 @@ A multi-CLI plugin for orchestrating 48 AI specialist personalities as a coordin
 
 ```
 bin/                  — npm installer (install.js)
-commands/             — 18 /legion: command entry points
+commands/             — 19 /legion: command entry points
 skills/               — 31 reusable workflow skills (SKILL.md per directory)
 agents/               — 49 agent personality .md files (flat, with division in frontmatter)
 adapters/             — Per-CLI adapter files (claude-code.md, codex-cli.md, cursor.md, etc.)
@@ -107,7 +108,7 @@ Intent routing: `/legion:status` and other commands use natural language intent 
 
 GitHub integration is opt-in — when a GitHub remote exists, `/legion:plan` creates issues, `/legion:build` creates PRs, and `/legion:status` shows GitHub status.
 
-Brownfield support is automatic — when `/legion:start` detects an existing codebase, it offers to analyze architecture, frameworks, risks, dependency graphs, test coverage, API surface, config/environment, and code patterns. The analysis produces `.planning/CODEBASE.md`, consumed by 5 commands: `/legion:plan` injects context into phase decomposition, `/legion:build` injects conventions and guidance into agent execution prompts, `/legion:review` injects conventions for conformance checking, `/legion:plan` (critique) cross-references risks during pre-mortem analysis, and `/legion:status` detects staleness. Standalone re-analysis is available via `/legion:quick analyze codebase`. The codebase mapper also produces dependency risk analysis (outdated packages, heavy dependencies, unmaintained packages) and test coverage correlation (critical untested files ranked by fan-in and complexity).
+Codebase map support is user-approved — when `/legion:start` detects an existing codebase, it checks whether a fresh `/legion:map` dataset exists and asks whether to use it, refresh it, skip it, or abort to map manually. `/legion:map` produces `.planning/CODEBASE.md` plus `.planning/codebase/index.jsonl`, `.planning/codebase/symbols.json`, `.planning/codebase/search.md`, and `.planning/config/directory-mappings.yaml`. The dataset is consumed by `/legion:plan`, `/legion:build`, `/legion:review`, `/legion:status`, and `/legion:quick` for map-aware context, semantic lookup, conventions, risks, dependency graphs, test coverage, API surface, config/environment, dependency risk analysis, and file placement validation. Standalone refresh is available via `/legion:map --refresh`.
 
 Marketing workflows activate when `/legion:plan` detects:
 - Phase requirements with `MKT-*` prefix, OR

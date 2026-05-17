@@ -22,6 +22,7 @@ This repository can be loaded as a Codex plugin bundle. Use this bridge when the
 - `/legion:portfolio` -> `commands/portfolio.md`
 - `/legion:milestone` -> `commands/milestone.md`
 - `/legion:agent` -> `commands/agent.md`
+- `/legion:map` -> `commands/map.md`
 - `/legion:explore` -> `commands/explore.md`
 - `/legion:board` -> `commands/board.md`
 - `/legion:retro` -> `commands/retro.md`

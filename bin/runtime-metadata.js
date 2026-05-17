@@ -11,6 +11,7 @@ const LEGION_COMMANDS = [
   'portfolio',
   'milestone',
   'agent',
+  'map',
   'explore',
   'board',
   'retro',

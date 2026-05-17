@@ -46,7 +46,7 @@ DRY-RUN MODE (deterministic, no side effects)
    - `.planning/memory/RETRO.md` consumed during phase decomposition (Step 3) if file exists. Retro action items from prior phases inform plan constraints and agent selection.
 
    - `skills/workflow-common-github/SKILL.md` only if `gh auth status` succeeds and a git remote exists.
-   - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists.
+   - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists or `.planning/codebase/index.jsonl` exists.
    - `skills/marketing-workflows/SKILL.md` only for MKT-* requirements or marketing keyword detection.
    - `skills/design-workflows/SKILL.md` only for DSN-* requirements or design keyword detection.
 
@@ -125,22 +125,28 @@ DRY-RUN MODE (deterministic, no side effects)
      - Include agent recommendation adjustments (e.g., "prefer {agent} for {task_type}")
      - This creates the learn/retro/plan feedback loop
 
-   BROWNFIELD CONTEXT (optional — follows codebase-mapper Section 6.2):
+   CODEBASE MAP CONTEXT (optional — follows codebase-mapper Sections 6.3 and 18):
    - Check if .planning/CODEBASE.md exists
    - If yes:
      a. Read .planning/CODEBASE.md
-     b. Check the "Analyzed" date in the header
-        - If >30 days old: warn user "CODEBASE.md was analyzed {N} days ago. Consider running /legion:start to refresh the codebase map."
+     b. Check map freshness metadata (`generated_at`, `map_schema_version`, `source_fingerprint`) using codebase-mapper Section 17
+        - If stale or partial: warn user "Codebase map is stale or incomplete. Consider running `/legion:map --refresh`."
         - Do NOT auto-re-analyze — let user decide. Continue with existing data.
-     c. Extract these sections for use in step 4 (decomposition) and step 5 (agent recommendation):
+     c. If `.planning/codebase/index.jsonl` and `.planning/codebase/symbols.json` exist:
+        - Form a map query from the phase goal, requirements, likely domains, known target files, and agent specialties.
+        - Follow codebase-mapper Section 18 to retrieve the top relevant chunks.
+        - Read original source files for any chunk used as implementation evidence.
+     d. Extract these sections for use in step 4 (decomposition) and step 5 (agent recommendation):
         - Risk Areas table — flag risks that overlap with files this phase will modify
         - Agent Guidance — Preferred/Avoid/Touch-with-care patterns for task instructions
         - Conventions Detected — naming, structure, and config patterns agents should follow
         - Detected Stack — framework and test suite context for agent instructions
-     d. When generating plan tasks in step 4, include codebase context:
+        - Retrieved Map Chunks — only the chunk ids/summaries relevant to the phase
+     e. When generating plan tasks in step 4, include codebase context:
         - Note risk areas that tasks touch in the task action instructions
         - Add "Follow codebase conventions" note referencing detected patterns
         - Include "Touch with care" warnings for flagged files
+        - Include map chunk ids in plan context when a task is based on retrieved map evidence
    - If no:
      Skip silently (greenfield project or user declined analysis)
 
@@ -219,7 +225,7 @@ DRY-RUN MODE (deterministic, no side effects)
       | When | User selects "Yes, generate 2-3 proposals" in Step 3.5b. Fires exactly once per plan-phase invocation (no retry loop). |
       | Why parallel is safe | All proposal agents are read-only (Explore sub-agents — no file writes). Each operates in its own context window and returns a structured proposal summary (~200 tokens). No shared write targets. No cross-agent reads. |
       | How many | Exactly 2 or 3 agents (philosophies: Minimal, Clean, and — optionally — Pragmatic per phase-decomposer Section 2.5). Select count based on phase complexity signal from Step 3.5a; default to 3 when phase has ≥5 requirements. Do not reduce fan-out. |
-      | Mechanism | adapter.spawn_agent_readonly (Explore sub-agent on Claude Code; platform-equivalent on other CLIs). Issue all N spawn calls in a SINGLE tool call if `adapter.parallel_execution == true`; otherwise sequential. Model: adapter.model_execution. Include CODEBASE.md (if present) and `.planning/specs/{NN}-{phase-slug}-spec.md` (if present) as additional context in each spawn. |
+      | Mechanism | adapter.spawn_agent_readonly (Explore sub-agent on Claude Code; platform-equivalent on other CLIs). Issue all N spawn calls in a SINGLE tool call if `adapter.parallel_execution == true`; otherwise sequential. Model: adapter.model_execution. Include CODEBASE.md plus relevant `.planning/codebase/index.jsonl` chunks when present, and `.planning/specs/{NN}-{phase-slug}-spec.md` (if present) as additional context in each spawn. |
 
       - Collect and present proposals side-by-side
       - User selects an approach (or requests hybrid)

@@ -51,6 +51,10 @@ skills/workflow-common-github/SKILL.md
    - Store the full task description for use in subsequent steps
    - Display: "Quick task{' (fix mode)' if FIX_MODE}: {task_description}"
 
+   - If the task description requests codebase analysis, mapping, architecture inventory, semantic index generation, or "analyze codebase":
+     Display: "This is a codebase mapping task. Use `/legion:map` for first-time mapping or `/legion:map --refresh` to rebuild the dataset."
+     Exit without selecting or spawning a quick-task agent.
+
 2. LOAD PROJECT CONTEXT (optional)
    - Attempt to read .planning/PROJECT.md
    - If found: extract project name, tech stack, constraints

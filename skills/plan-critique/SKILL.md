@@ -599,7 +599,7 @@ This skill draws from:
 | Review Panel Structure | skills/review-panel/SKILL.md | Section 3 (verdict + routing pattern) |
 | Pre-mortem Technique | Klein (1998), adapted for plan files | Section 1 |
 | Assumption Mapping | Risk management, adapted for plan tasks | Section 2 |
-| Brownfield Risk Cross-Reference | codebase-mapper Section 4, Section 5 | Section 1, Section 2 |
+| Codebase Map Risk Cross-Reference | codebase-mapper Section 4, Section 5, and map artifacts | Section 1, Section 2 |
 
 ## Completion Gate
 
