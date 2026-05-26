@@ -27,6 +27,10 @@ test('map command declares supported modes and required artifacts', () => {
   ]) {
     assert.ok(command.includes(artifact), `map command should require ${artifact}`);
   }
+  assert.ok(
+    command.includes('In `--query`: continue to Query Mode'),
+    'query mode should bypass the no-source early exit'
+  );
 });
 
 test('codebase mapper specifies map metadata, index schemas, and search protocol', () => {
@@ -86,6 +90,10 @@ test('explore and start are decoupled through saved design documents', () => {
   assert.ok(explore.includes('Do not automatically run `/legion:start`'));
   assert.ok(start.includes('/legion:start <design-doc-path>'));
   assert.ok(start.includes('.planning/exploration-*.md'));
+  assert.ok(
+    start.includes('If no new or legacy design docs exist: do not ask the exploration-design choice'),
+    'start should not offer the latest-design prompt when no design docs exist'
+  );
   assert.ok(start.includes('Run `/legion:map` now'));
   assert.ok(polymath.includes('no longer exposes user-facing modes'));
   assert.doesNotMatch(explore, /MODE SELECTION|Crystallize mode|Onboard mode|Compare mode|Debate mode/);

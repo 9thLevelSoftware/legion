@@ -39,6 +39,7 @@ skills/codebase-mapper/SKILL.md
    - Follow codebase-mapper Section 1 Source Code Detection Heuristic.
    - Exclude Legion state/runtime folders: `.planning/`, `.claude/`, `.codex/`, `.cursor/`, `.windsurf/`, `.gemini/`, `.opencode/`, `.aider/`, `.kilo/`, `.kilocode/`, `.legion/`, `.git/`, dependency/build output directories.
    - If no source code is detected:
+     - In `--query`: continue to Query Mode; query reads an existing map dataset and does not require current source detection.
      - In `--check`: report `status: absent`, `reason: no source files detected`, and exit 0.
      - In default/full map mode: display "No source code detected, so no codebase map was generated." and exit without writing files.
 
