@@ -59,10 +59,22 @@ test('consumer commands point stale or ad-hoc analysis users to legion:map', () 
 
   assert.ok(plan.includes('/legion:map --refresh'), 'plan should suggest map refresh');
   assert.ok(status.includes('/legion:map --refresh'), 'status should suggest map refresh');
+  assert.ok(
+    status.includes('Else if any other map artifact exists'),
+    'status should classify incomplete map artifact sets as partial'
+  );
   assert.ok(quick.includes('/legion:map'), 'quick should route analysis to map');
   assert.ok(build.includes('CODEBASE MAP CONTEXT'), 'build should name map context');
   assert.ok(reviewLoop.includes('Retrieved Map Chunks'), 'review-loop should include retrieved map chunks');
+  assert.ok(
+    reviewLoop.includes('Always read the original source files'),
+    'review-loop should require source verification for retrieved map summaries'
+  );
   assert.ok(waveExecutor.includes('Retrieved Map Chunks'), 'wave-executor should include retrieved map chunks');
+  assert.ok(
+    waveExecutor.includes('Always read the original source files'),
+    'wave-executor should require source verification for retrieved map summaries'
+  );
 });
 
 test('explore and start are decoupled through saved design documents', () => {
@@ -73,7 +85,17 @@ test('explore and start are decoupled through saved design documents', () => {
   assert.ok(explore.includes('.planning/explorations/YYYY-MM-DD-<slug>-design.md'));
   assert.ok(explore.includes('Do not automatically run `/legion:start`'));
   assert.ok(start.includes('/legion:start <design-doc-path>'));
+  assert.ok(start.includes('.planning/exploration-*.md'));
   assert.ok(start.includes('Run `/legion:map` now'));
   assert.ok(polymath.includes('no longer exposes user-facing modes'));
   assert.doesNotMatch(explore, /MODE SELECTION|Crystallize mode|Onboard mode|Compare mode|Debate mode/);
+});
+
+test('intent router maps codebase analysis separately from design exploration', () => {
+  const intentRouter = read('skills/intent-router/SKILL.md');
+
+  assert.ok(intentRouter.includes('| Map/codebase analysis |'));
+  assert.ok(intentRouter.includes('`/legion:map`'));
+  assert.ok(intentRouter.includes('| Explore/design research |'));
+  assert.ok(intentRouter.includes('`/legion:explore`'));
 });

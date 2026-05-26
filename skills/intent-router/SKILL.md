@@ -1018,7 +1018,8 @@ Natural language phrases mapped to Legion commands. Intent flags are matched via
 | Status/progress | "show progress", "where are we", "what's next" | `/legion:status` |
 | Quick task | "quick fix", "run a one-off task" | `/legion:quick` |
 | Advise/consult | "get advice on", "ask about", "consult on" | `/legion:advise` |
-| Explore/research | "explore options", "research this idea", "design discovery" | `/legion:explore` |
+| Map/codebase analysis | "map the codebase", "analyze this repo", "refresh codebase map", "generate semantic index" | `/legion:map` |
+| Explore/design research | "explore options", "research this idea", "design discovery", "compare approaches" | `/legion:explore` |
 | Harden | "harden security", "security audit", "fix vulnerabilities" | `/legion:build --just-harden` |
 | Document | "write docs", "generate documentation" | `/legion:build --just-document` |
 

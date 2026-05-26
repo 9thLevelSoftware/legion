@@ -319,6 +319,8 @@ Step 3.5: Load codebase map context (optional)
 
        ### Retrieved Map Chunks
        {top matching index.jsonl chunks, or "No map index chunks were available."}
+       Note: These are summaries for context. Always read the original source files
+       before making code changes based on these chunks.
 
        ### Conventions
        {bullet list from Conventions Detected}

@@ -55,12 +55,13 @@ skills/codebase-mapper/SKILL.md
        - "Abort start" — exit without writing files.
    - If no `$ARGUMENTS` path is supplied:
      - Look for `.planning/explorations/*.md`.
-     - If one or more exist, identify the most recent by modification time.
+     - If one or more new exploration docs exist, identify the most recent by modification time.
+     - Else look for legacy `.planning/exploration-*.md` files and identify the most recent by modification time.
      - AskUserQuestion:
-       - "Use latest exploration design" — load that design as `design_context`.
+       - "Use latest exploration design" — load the most recent new or legacy design as `design_context`.
        - "Start without exploration design" — run normal questioning.
-       - "Abort and review designs" — exit and suggest reading `.planning/explorations/`.
-   - Legacy `.planning/exploration-*.md` files may be read if no new exploration directory exists, but do not create new legacy files.
+       - "Abort and review designs" — exit and suggest reading `.planning/explorations/` or legacy `.planning/exploration-*.md` files.
+   - Legacy `.planning/exploration-*.md` files may be read if no new exploration docs exist, but do not create new legacy files.
 
 3. SOURCE AND MAP PRE-FLIGHT
    - Follow codebase-mapper Section 1 Source Code Detection Heuristic.

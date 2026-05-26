@@ -227,6 +227,8 @@ Step 2.5: Load codebase map conventions (optional)
 
        ### Retrieved Map Chunks
        {top matching index chunks, or "No map index chunks were available."}
+       Note: These are summaries for context. Always read the original source files
+       before making review findings based on these chunks.
 
        ### Detected Stack
        {Detected Stack table from CODEBASE.md}

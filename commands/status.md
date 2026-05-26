@@ -106,6 +106,7 @@ DRY-RUN MODE (deterministic, no side effects)
       If `.planning/CODEBASE.md` exists, extract generated/analyzed date, schema version, analyzed commit, source file count, and source fingerprint.
       Calculate age in days from current date.
       Set codebase_map_available = true, codebase_map_age = {days}, codebase_map_status = fresh|stale|partial.
+      Else if any other map artifact exists: set codebase_map_available = true, codebase_map_status = partial, codebase_map_age = unknown, analyzed_date = unknown.
       If no map artifacts exist: skip, set codebase_map_available = false.
 
 3. CALCULATE PROGRESS
@@ -167,7 +168,7 @@ DRY-RUN MODE (deterministic, no side effects)
 
    ## Codebase Map
    **Status**: {codebase_map_status}
-   **Last analyzed**: {analyzed_date} ({codebase_map_age} days ago)
+   **Last analyzed**: {analyzed_date and codebase_map_age, or "unknown" for partial datasets without CODEBASE.md metadata}
    **Artifacts**: CODEBASE.md {present/missing}, index.jsonl {present/missing}, symbols.json {present/missing}, search.md {present/missing}, directory-mappings.yaml {present/missing}
    Tip: Your codebase map is stale or incomplete. Run `/legion:map --refresh` to refresh it.
 
