@@ -207,22 +207,37 @@ Step 2: Read the reviewer's personality file
   - Read the ENTIRE personality .md file — do not truncate or summarize
   - Capture this as: PERSONALITY_CONTENT
 
-Step 2.5: Load brownfield conventions (optional)
+Step 2.5: Load codebase map conventions (optional)
   - Check if .planning/CODEBASE.md exists
   - If yes:
     a. Read .planning/CODEBASE.md
-    b. Extract these sections:
+    b. If `.planning/codebase/index.jsonl` and `.planning/codebase/symbols.json` exist:
+       - Build a map query from the phase name, changed files, findings scope, and reviewer domain
+       - Follow codebase-mapper Section 18 to retrieve at most 5 relevant chunks
+       - Include retrieved chunk ids and source paths in the review context
+    c. Extract these sections:
        - "## Conventions Detected" → all convention bullet points
        - "## Detected Stack" → technology table
-    c. Compose a CODEBASE_CONVENTIONS block:
+       - "## Risk Areas" → rows relevant to changed files
+       - "## API Surface" → routes/contracts relevant to changed files
+       - "## Test Coverage Map" → tests and critical untested files relevant to changed files
+    d. Compose a CODEBASE_CONVENTIONS block:
 
        ## Codebase Conventions (from CODEBASE.md)
+
+       ### Retrieved Map Chunks
+       {top matching index chunks, or "No map index chunks were available."}
+       Note: These are summaries for context. Always read the original source files
+       before making review findings based on these chunks.
 
        ### Detected Stack
        {Detected Stack table from CODEBASE.md}
 
        ### Conventions
        {bullet list from Conventions Detected}
+
+       ### Risk / Test Context
+       {relevant Risk Areas and Test Coverage Map excerpts}
 
        Non-conformance with established conventions is a WARNING-level finding
        unless the plan explicitly calls for a different pattern.

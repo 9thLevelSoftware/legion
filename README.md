@@ -99,7 +99,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 
 1. Install Legion (see above)
 2. Start Legion with the runtime-native entry point from the table above
-3. Answer the guided questions — the system explores your vision before jumping to implementation
+3. Answer the guided questions — or run `/legion:explore` first to create a design document
 4. Review the generated PROJECT.md and ROADMAP.md
 5. Plan the first phase with the runtime-native Legion plan entry
 6. Execute the phase with the runtime-native Legion build entry
@@ -108,7 +108,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 
 ## Commands
 
-These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot, OpenCode, and Kilo CLI use flat `/legion-start`; Kilo Code Plugin installs both plugin workflows such as `/legion-start.md` and CLI-backed workflows such as `/legion-start`, plus a single `Legion` mode bridge and individual Agent Skills; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Eighteen commands total.
+These are the canonical Legion command names. Each runtime maps them to its own discovery surface. Codex uses flat prompt names such as `/project:legion-start`; Gemini keeps `/legion:start`; Copilot, OpenCode, and Kilo CLI use flat `/legion-start`; Kilo Code Plugin installs both plugin workflows such as `/legion-start.md` and CLI-backed workflows such as `/legion-start`, plus a single `Legion` mode bridge and individual Agent Skills; Kiro uses `@legion-orchestrator`; Cursor and Windsurf rely on their installed rules and plain-language intent routing. Nineteen commands total.
 
 | Command | Description | Usage |
 |---------|-------------|-------|
@@ -122,7 +122,8 @@ These are the canonical Legion command names. Each runtime maps them to its own 
 | `/legion:portfolio` | Multi-project dashboard with dependency tracking | When managing multiple projects |
 | `/legion:milestone` | Milestone completion, archiving, and metrics | At project milestones |
 | `/legion:agent` | Create a new agent personality through guided workflow | When you need a specialist that doesn't exist |
-| `/legion:explore` | Pre-flight exploration with Polymath — crystallize, onboard, compare, or debate | Before `/legion:start` — align on ideas before committing to a project |
+| `/legion:map` | Generate, refresh, check, or query the codebase map dataset | Before start or planning in existing codebases |
+| `/legion:explore` | Research-first design discovery with Polymath | Creates a design doc; can hand off to `/legion:start <design-doc>` when you choose |
 | `/legion:board` | Convene board of directors for governance decisions | For architecture decisions, go/no-go calls, conflict resolution |
 | `/legion:retro` | Run structured retrospective on completed phases or milestones | After phases or milestones — captures what worked, what didn't |
 | `/legion:ship` | Pre-ship checklist, PR creation, deployment verification, canary monitoring | After review — formal shipping stage before the next phase |
@@ -155,7 +156,8 @@ These are the canonical Legion command names. Each runtime maps them to its own 
 /legion:plan 2 → ...     Repeat for each phase until project complete
 
 
-/legion:explore          Pre-flight → Crystallize, onboard, compare, or debate (before start)
+/legion:map              Standalone → Codebase documentation + semantic index
+/legion:explore          Standalone → Research + questions + design doc before optional start
 /legion:advise <topic>   Standalone → Read-only expert consultation (any time)
 /legion:quick <task>     Standalone → One-off task with agent selection (any time)
 /legion:polish [target]  Standalone → 4-pass code cleanup with safety rails (any time)
@@ -168,7 +170,7 @@ Recent releases rewrote large parts of Legion to behave better on Claude Opus 4.
 
 - **Lean always-load core**: `workflow-common-core` now carries the minimum shared contract - adapter detection, state and path resolution, control-mode defaults, and context ceilings. Heavier behavior stays in optional skills.
 - **Retrieval over preload**: AGENTS.md and CLAUDE.md keep a compressed index in context, then commands read the exact agent or skill file they need instead of dragging the full roster into every command.
-- **Conditional skill loading**: `/legion:plan`, `/legion:build`, `/legion:review`, and `/legion:status` load brownfield, GitHub, critique, panel, and domain skills only when their activation conditions are met.
+- **Conditional skill loading**: `/legion:plan`, `/legion:build`, `/legion:review`, and `/legion:status` load codebase-map, GitHub, critique, panel, and domain skills only when their activation conditions are met.
 - **Prompt-budget enforcement**: `wave-executor` estimates prompt size before spawning, warns near adapter limits, and blocks oversized launches instead of letting agents fail mid-flight.
 - **Smaller coordinator context**: spawned agents report structured summaries and downstream waves receive focused handoff context rather than full execution traces.
 - **More deterministic control flow**: the v7.3.3 audit replaced vague triggers, free-form gates, and underspecified dispatch wording with concrete activation rules, closed-set AskUserQuestion flows, completion gates, and explicit dispatch tables.
@@ -185,15 +187,16 @@ Guides you through an adaptive conversation (5-8 exchanges) to capture project v
 
 **Key steps:**
 1. Pre-flight check — detects existing projects and offers to reinitialize or continue
-2. Brownfield detection — if an existing codebase is found, offers architecture analysis via the `codebase-mapper` skill, producing `.planning/CODEBASE.md` with framework detection, risk areas, and conventions
-3. Vision exploration — 3-stage adaptive conversation via `questioning-flow`: vision → requirements → constraints, targeting 5-8 natural exchanges
-4. Agent recommendation — `agent-registry` scores all 49 agents to recommend 2-4 per phase based on keyword match and division affinity
-5. Document generation — produces `PROJECT.md`, `ROADMAP.md`, and `STATE.md` using questioning-flow templates
-6. Portfolio registration — registers the project in the global portfolio via `portfolio-manager` at `~/.claude/legion/portfolio.md`
+2. Design document input — optionally consumes `.planning/explorations/*-design.md` from `/legion:explore`
+3. Codebase map pre-flight — if source code is found, checks for a fresh `/legion:map` dataset and asks whether to use, refresh, skip, or abort
+4. Vision exploration — 3-stage adaptive conversation via `questioning-flow`: vision → requirements → constraints, targeting 5-8 natural exchanges
+5. Agent recommendation — `agent-registry` scores all 49 agents to recommend 2-4 per phase based on keyword match and division affinity
+6. Document generation — produces `PROJECT.md`, `ROADMAP.md`, and `STATE.md` using questioning-flow templates
+7. Portfolio registration — registers the project in the global portfolio via `portfolio-manager` at `~/.claude/legion/portfolio.md`
 
-**Skills invoked:** `workflow-common-core` → `questioning-flow` → `agent-registry` → `portfolio-manager` | `codebase-mapper` (optional brownfield)
+**Skills invoked:** `workflow-common-core` → `questioning-flow` → `agent-registry` → `portfolio-manager` | `codebase-mapper` (optional map pre-flight)
 **Tools:** Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
-**Produces:** `.planning/PROJECT.md`, `.planning/ROADMAP.md`, `.planning/STATE.md` | `.planning/CODEBASE.md` (brownfield)
+**Produces:** `.planning/PROJECT.md`, `.planning/ROADMAP.md`, `.planning/STATE.md` | optional `.planning/CODEBASE.md` and `.planning/codebase/` map artifacts
 **User interaction:** Guided Q&A throughout; confirms generated documents before finalizing
 
 #### `/legion:plan <N>` — Phase Planning
@@ -202,7 +205,7 @@ Decomposes a roadmap phase into as many wave-structured plans as needed, using t
 
 **Key steps:**
 1. Parse or auto-detect the next unplanned phase from STATE.md
-2. Load phase context — reads ROADMAP.md requirements, prior phase summaries, and `CODEBASE.md` if brownfield (injects risk areas and conventions into plan tasks)
+2. Load phase context — reads ROADMAP.md requirements, prior phase summaries, and the codebase map if present (retrieves relevant chunks, risk areas, and conventions)
 3. Detect domain-specific workflows — `marketing-workflows` activates for MKT-* requirements (campaign briefs, content calendars), `design-workflows` activates for DSN-* requirements (design systems, three-lens review)
 4. *(Optional)* Architecture proposals — spawns 2-3 read-only Explore agents with competing philosophies (Minimal, Clean, Pragmatic) for complex phases; user selects an approach
 5. *(Optional)* Spec pipeline — 5-stage specification process (gather → research → write → critique → assess) producing a structured spec at `.planning/specs/`
@@ -212,7 +215,7 @@ Decomposes a roadmap phase into as many wave-structured plans as needed, using t
 9. Generate plan files with full task instructions, verification commands, and YAML frontmatter
 10. *(Optional)* GitHub issue creation via `github-sync` — creates a labeled issue with plan checklist
 
-**Skills invoked:** `workflow-common-core` → `phase-decomposer` → `agent-registry` → `memory-manager` | `codebase-mapper` (brownfield) | `marketing-workflows` | `design-workflows` | `spec-pipeline` | `plan-critique` | `github-sync` (all optional)
+**Skills invoked:** `workflow-common-core` → `phase-decomposer` → `agent-registry` → `memory-manager` | `codebase-mapper` (map context) | `marketing-workflows` | `design-workflows` | `spec-pipeline` | `plan-critique` | `github-sync` (all optional)
 **Tools:** Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 **Produces:** `.planning/phases/{NN}-{slug}/CONTEXT.md` and `{NN}-{PP}-PLAN.md` files | `.planning/specs/` (optional) | `.planning/campaigns/` (marketing) | `.planning/designs/` (design)
 **User interaction:** Confirms agent recommendations; opts into architecture proposals, spec pipeline, and plan critique; reviews critique findings
@@ -226,7 +229,7 @@ Spawns agents with full personality injection to execute all plans for the curre
 2. Discover plans via `wave-executor` — parse YAML frontmatter, build wave map, validate no circular dependencies or file conflicts
 3. Create a Claude Code Team via TeamCreate (`phase-{NN}-execution`) with TaskCreate for each plan and cross-wave dependencies via TaskUpdate
 4. Execute plans wave by wave via `wave-executor` — all agents within a wave spawn in parallel via Agent tool with `model: "sonnet"`
-5. Each agent receives its complete personality .md (currently 156-680 lines) concatenated with the plan file as its prompt; autonomous plans skip personality injection
+5. Each agent receives its complete personality .md (currently 156-472 lines) concatenated with the plan file as its prompt; autonomous plans skip personality injection
 6. Agents auto-remediate environment issues (missing deps, wrong versions) — classify errors as BLOCKER vs ENVIRONMENT, retry once after remediation
 7. Collect results via SendMessage — parse structured summaries, write `{NN}-{PP}-SUMMARY.md` files
 8. Track progress via `execution-tracker` — update STATE.md, ROADMAP.md progress table, create atomic git commits per successful plan
@@ -234,7 +237,7 @@ Spawns agents with full personality injection to execute all plans for the curre
 10. Detect manual edits — intersect agent-modified files with `git diff` to capture corrective preference signals
 11. Shutdown team via SendMessage shutdown_request + TeamDelete
 
-**Skills invoked:** `workflow-common-core` → `wave-executor` → `execution-tracker` → `memory-manager` | `codebase-mapper` (brownfield context injection) | `github-sync` (issue checklist + PR creation)
+**Skills invoked:** `workflow-common-core` → `wave-executor` → `execution-tracker` → `memory-manager` | `codebase-mapper` (map context injection) | `github-sync` (issue checklist + PR creation)
 **Tools:** Read, Write, Edit, Bash, Grep, Glob, Agent, TeamCreate, TeamDelete, TaskCreate, TaskUpdate, TaskList, SendMessage, AskUserQuestion
 **Produces:** Implementation artifacts plus `{NN}-{PP}-SUMMARY.md` files, atomic git commits, optional GitHub PR
 **User interaction:** Confirms pre-execution plan; monitors progress; resolves blockers if agents get stuck
@@ -277,7 +280,7 @@ Single command to understand where the project is and what to do next. Reads all
 2. Calculate progress via `execution-tracker` — 20-char progress bar from ROADMAP.md plan counts
 3. Display milestone progress via `milestone-tracker` (if milestones defined)
 4. Load memory briefing via `memory-manager` (if OUTCOMES.md exists) — last 5 outcomes, top 3 agents by success rate
-5. Check codebase map staleness (if CODEBASE.md exists and >30 days old, suggest refresh)
+5. Check codebase map status (CODEBASE.md plus `.planning/codebase/` artifacts; suggest `/legion:map --refresh` if stale or partial)
 6. Fetch GitHub status via `github-sync` (if STATE.md has GitHub section) — live issue/PR/milestone state via `gh` CLI
 7. Route to next action — decision tree: no project → start; pending → plan; planned → build; executed → review; complete → next phase or finish
 
@@ -323,27 +326,39 @@ Get read-only strategic advice from any of the 49 agent personalities. The advis
 **Produces:** Advisory output (no file changes, no state updates)
 **User interaction:** Selects advisor agent; asks follow-up questions; ends session when satisfied
 
-#### `/legion:explore` — Pre-flight Exploration
+#### `/legion:map` — Codebase Mapping
 
-Enter structured exploration mode with the Polymath agent before committing to a formal project. Four modes for different exploration needs.
-
-**Modes:**
-- **Crystallize** (default) — Research-first idea exploration with structured choice protocol. Guides you through progressive questioning to transform a vague idea into a clear project concept with defined scope, requirements, and constraints. The original Polymath workflow.
-- **Onboard** — Guided codebase familiarization for joining an existing project. Analyzes architecture, frameworks, patterns, and conventions at progressive depth levels (overview → module → implementation detail). Produces a structured understanding document.
-- **Compare** — Structured comparison of 2-4 alternatives (frameworks, architectures, approaches). Builds a weighted comparison matrix with criteria you define, captures your decision with rationale for future reference.
-- **Debate** — Adversarial exploration where two perspectives argue opposing positions on a technical or strategic question. Each side presents evidence-backed arguments across multiple rounds, with winner tracking and decision capture (DPO-inspired).
+Generate, refresh, check, or query the codebase map dataset used by planning, build, review, and status workflows.
 
 **Key steps:**
-1. Parse mode from arguments or present mode selection menu
-2. Load project context if available (works without it for greenfield exploration)
-3. Spawn the Polymath agent via Agent tool with full personality injection
-4. Run the selected mode's structured protocol — all modes enforce structured choices (no open-ended questions)
-5. Capture exploration output — crystallize produces a concept document, onboard produces an understanding map, compare produces a decision matrix, debate produces a winner summary
+1. Detect source code and existing map artifacts
+2. In `--check`, report freshness/completeness without writing files
+3. In default or `--refresh`, generate architecture documentation, functionality inventory, dependency graph, API surface, test map, risk hotspots, setup/runbook, and conventions
+4. Write `.planning/CODEBASE.md`, `.planning/codebase/index.jsonl`, `.planning/codebase/symbols.json`, `.planning/codebase/search.md`, and `.planning/config/directory-mappings.yaml`
+5. In `--query`, search the existing index and return matching chunks plus source files to read next
 
-**Skills invoked:** `workflow-common-core` → `polymath-engine` → `agent-registry`
-**Tools:** Read, Write, Edit, Bash, Grep, Glob, Agent, AskUserQuestion
-**Produces:** Exploration artifacts (mode-dependent); crystallize feeds directly into `/legion:start`
-**User interaction:** Selects mode; participates in structured exploration; confirms captured decisions
+**Skills invoked:** `workflow-common-core` → `codebase-mapper`
+**Tools:** Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
+**Produces:** `.planning/CODEBASE.md`, `.planning/codebase/`, `.planning/config/directory-mappings.yaml`
+**User interaction:** Confirms refresh when a fresh map already exists; mapping remains user-approved during `/legion:start`
+
+#### `/legion:explore` — Design Discovery
+
+Run research-first product/design discovery with Polymath before committing to formal project initialization. Explore inspects current project context, researches the initial ask, asks focused clarifying questions, compares approaches, and saves a design document.
+
+**Key steps:**
+1. Inspect local project context, codebase map, and prior exploration docs
+2. Capture or resume the initial ask
+3. Run bounded local/web research where available
+4. Ask one material clarifying question at a time via structured choices
+5. Compare 2-3 viable approaches and capture the selected direction
+6. Save `.planning/explorations/YYYY-MM-DD-<slug>-design.md`
+7. Ask whether to start with the design, keep discussing, or park it
+
+**Skills invoked:** `workflow-common-core` → `polymath-engine` → `questioning-flow`
+**Tools:** Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
+**Produces:** `.planning/explorations/*-design.md`
+**User interaction:** Answers focused design questions; explicitly chooses whether to hand off to `/legion:start <design-doc-path>`
 
 ---
 
@@ -497,14 +512,15 @@ The recommendation engine scores against these fields (not just keywords and div
 
 ### Codebase Mapper Enrichment
 
-The brownfield analysis (`/legion:start` → codebase-mapper) now produces two additional sections in `.planning/CODEBASE.md`:
+The codebase map (`/legion:map` → codebase-mapper) produces `.planning/CODEBASE.md` plus semantic index artifacts under `.planning/codebase/`:
 
 - **Dependency Risk** — Identifies outdated packages, unmaintained dependencies, and heavy transitive dependency trees. Ranks by risk score (staleness + popularity + security advisories).
 - **Test Coverage Correlation** — Maps untested files against fan-in (how many other files depend on them) and complexity. High fan-in + no tests = highest risk. Degrades gracefully when coverage data is unavailable.
+- **Semantic Search Index** — Stores chunk summaries, aliases, symbols, related files, and search protocol for map-aware command context without embeddings or a vector database.
 
-### Polymath Advanced Modes
+### Polymath Design Discovery
 
-`/legion:explore` now offers four modes beyond the original crystallize workflow. See the [Explore workflow section](#legionexplore--pre-flight-exploration) above for full details on onboard, compare, and debate modes.
+`/legion:explore` now uses a single research-first design discovery flow. It saves a design document under `.planning/explorations/` and offers `/legion:start <design-doc-path>` only after the user explicitly chooses to start.
 
 ### Authority & Conflict Resolution
 
@@ -648,6 +664,34 @@ When `review.polish` is enabled in settings (default: `true`), `/legion:review` 
 - **New agent** — `testing-code-polisher` (#49) joins the Testing division with specialized review strengths: code-clarity, comment-quality, naming-conventions, structural-simplification, convention-consistency
 - **New skill** — `code-polish` provides the reusable 4-pass engine consumed by both the command and the review integration
 
+## v8.0.3 Codebase Map & Design Discovery
+
+v8.0.3 separates codebase understanding from idea exploration. Codebase mapping is now a first-class, queryable dataset, while exploration is a research-first design conversation that produces a design document before any project initialization.
+
+### `/legion:map`
+
+`/legion:map` owns architecture documentation and retrieval context for existing codebases.
+
+- **Modes** — default full map, `--check` freshness check, `--refresh` rebuild, `--scope <path>` focused mapping, and `--query <text>` readback against the existing index.
+- **Dataset** — writes `.planning/CODEBASE.md` for human readers plus `.planning/codebase/index.jsonl`, `.planning/codebase/symbols.json`, `.planning/codebase/search.md`, and `.planning/config/directory-mappings.yaml`.
+- **Freshness metadata** — records generated time, analyzed commit, source file count, source fingerprint, scope, and map schema version so commands can detect stale or partial maps.
+- **Semantic search without services** — no embeddings, vector database, or API key dependency. Commands search summaries, aliases, symbols, keywords, and paths with `rg`, then read original source lines for evidence.
+- **Consumer protocol** — `/legion:plan`, `/legion:build`, `/legion:review`, `/legion:status`, and `/legion:quick` retrieve relevant chunks instead of assuming all context comes from CODEBASE.md.
+
+### `/legion:start` Map Preflight
+
+`/legion:start` now checks for source code before project setup. If a codebase exists, it checks map freshness and asks whether to use the current map, refresh it, skip mapping for this start, or abort and run mapping manually. Start can also consume a saved exploration design document via `/legion:start <design-doc-path>`.
+
+### `/legion:explore`
+
+`/legion:explore` is no longer a mode picker and no longer starts projects automatically. Polymath now runs one design-discovery path: inspect context, research the ask when tools are available, ask one high-signal clarification at a time, compare 2-3 viable approaches, and save `.planning/explorations/YYYY-MM-DD-<slug>-design.md`. The final choice is explicit: start with the design, keep discussing, or park it.
+
+### Release Coverage
+
+- Command lint and cross-reference coverage now includes `commands/map.md`.
+- Installer smoke tests verify `/legion:map` appears in Codex prompts and flat-command runtime surfaces.
+- Map-specific regression tests cover required artifacts, freshness metadata, consumer references, and explore/start decoupling.
+
 ## Standing on the Shoulders of Giants
 
 Legion didn't invent its patterns from scratch. It cherry-picked the best ideas from twelve proven Claude Code projects, combined them into something greater than the sum of its parts, and left behind the complexity that made each hard to adopt.
@@ -656,7 +700,7 @@ Legion didn't invent its patterns from scratch. It cherry-picked the best ideas 
 
 #### The Agent Personality Foundation — [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)
 
-Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 4 Legion-native specializations, consolidated from the original 55 via 5 agent merges and 1 addition (Code Polisher, v7.5.0). These are not generic role labels — they are structured character sheets (current range 155-679 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
+Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 4 Legion-native specializations, consolidated from the original 55 via 5 agent merges and 1 addition (Code Polisher, v7.5.0). These are not generic role labels — they are structured character sheets (current range 156-472 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
 
 #### From [GSD (Get Shit Done)](https://github.com/gsd-build/get-shit-done)
 
@@ -762,15 +806,15 @@ Puzld.ai's DPO (Direct Preference Optimization) extraction pattern — capturing
 
 Beyond combining these twelve projects, Legion introduced several original patterns:
 
-- **Personality-first agents**: The 49 agent personalities are not role labels — they are 155-679 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its complete personality as system instructions, not a generic "you are a backend developer" prompt.
+- **Personality-first agents**: The 49 agent personalities are not role labels — they are 156-472 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its complete personality as system instructions, not a generic "you are a backend developer" prompt.
 
 - **Hybrid agent selection**: The workflow recommends agents based on task analysis (keyword matching, division affinity, past performance), but the user always confirms or overrides. No black-box assignment.
 
-- **Lean core + conditional loading**: The always-load surface is intentionally small (`workflow-common-core`), while domain, GitHub, critique, panel, and brownfield skills only load when their preconditions are met. This keeps the orchestration path lighter on large models without flattening Legion's feature set.
+- **Lean core + conditional loading**: The always-load surface is intentionally small (`workflow-common-core`), while domain, GitHub, critique, panel, and codebase-map skills only load when their preconditions are met. This keeps the orchestration path lighter on large models without flattening Legion's feature set.
 
 - **Domain-specific workflow detection**: When `/legion:plan` encounters marketing requirements (MKT-*) or design requirements (DSN-*), it automatically switches to domain-specific wave patterns and team assembly — campaign planning with content calendars for marketing, design systems with three-lens review for design — instead of forcing engineering patterns onto non-engineering work.
 
-- **Graceful degradation everywhere**: GitHub integration, cross-session memory, brownfield analysis, marketing workflows, and design workflows are all opt-in features that activate when their prerequisites exist and skip silently when they don't. The core workflow (start → plan → build → review) works identically with or without any optional feature.
+- **Graceful degradation everywhere**: GitHub integration, cross-session memory, codebase mapping, marketing workflows, and design workflows are all opt-in features that activate when their prerequisites exist and skip silently when they don't. The core workflow (start → plan → build → review) works identically with or without any optional feature.
 
 - **Audit-hardened interaction contracts** (v7.3.3): A Claude Opus 4.7 audit drove 226 fixes across 91 files. User gates are now closed-set AskUserQuestion flows, activation triggers are concrete, dispatch tables spell out when, why, how many, and by what mechanism, and critical skills declare explicit completion gates.
 
@@ -782,7 +826,7 @@ Beyond combining these twelve projects, Legion introduced several original patte
 
 - **Structured agent metadata** (v6.0): All 49 agents include `languages`, `frameworks`, `artifact_types`, and `review_strengths` in frontmatter, enabling metadata-aware recommendation scoring instead of keyword-only matching.
 
-- **Pre-flight exploration modes** (v6.0): `/legion:explore` offers crystallize, onboard, compare, and debate modes — structured exploration before committing to formal project planning.
+- **Design discovery** (v6.0, redesigned in v8.0.3): `/legion:explore` researches an idea, asks focused clarification questions, compares approaches, and saves a design doc before optional project initialization.
 
 ### Design Choices and Tradeoffs
 
@@ -790,7 +834,7 @@ Legion intentionally optimizes for orchestration ergonomics (few commands, markd
 
 | Design Axis | Typical Alternative | Legion Choice | Tradeoff |
 |-------------|---------------------|---------------|----------|
-| Command surface | 15-33+ command sets | 18 commands | Faster onboarding, but less granular command specialization |
+| Command surface | 15-33+ command sets | 19 commands | Faster onboarding, but less granular command specialization |
 | State storage | JSON/DB/hybrid state | Markdown-only `.planning/` | Human-readable and git-native, but less strict schema enforcement |
 | Setup model | CLI bootstrap + config | `npx` installer | Simpler install path, but runtime capabilities can vary more |
 | Always-load context | Monolithic shared instructions | Lean `workflow-common-core` + optional extensions | Lower prompt cost on hot paths, but activation rules must stay accurate |
@@ -799,7 +843,7 @@ Legion intentionally optimizes for orchestration ergonomics (few commands, markd
 | Runtime coverage | Single-runtime focus | 11 runtime adapters | Broader portability, but feature parity differs by runtime tier |
 | Memory strategy | Hook-based/global memory | Project-local explicit memory | Better project isolation, but requires explicit integration points |
 
-Current repository metrics: 18 commands, 33 skills, 49 agent personalities, 11 runtime adapters, and 4 control mode presets.
+Current repository metrics: 19 commands, 33 skills, 49 agent personalities, 11 runtime adapters, and 4 control mode presets.
 
 ## The 49 Agents
 
@@ -827,7 +871,7 @@ legion/                     <- Project root
 ├── bin/
 │   └── install.js         <- Cross-runtime installer (npx entry point)
 ├── CLAUDE.md               <- Project instructions (injected into Claude Code context)
-├── commands/               <- 18 /legion: command entry points
+├── commands/               <- 19 /legion: command entry points
 │   ├── start.md
 │   ├── plan.md
 │   ├── build.md
@@ -839,6 +883,7 @@ legion/                     <- Project root
 │   ├── portfolio.md
 │   ├── milestone.md
 │   ├── agent.md
+│   ├── map.md
 │   ├── explore.md
 │   ├── board.md
 │   ├── retro.md
@@ -860,7 +905,7 @@ legion/                     <- Project root
 │   ├── review-panel/SKILL.md       <- Dynamic multi-reviewer composition with rubrics
 │   ├── plan-critique/SKILL.md      <- Pre-mortem analysis + assumption hunting
 │   ├── hooks-integration/SKILL.md  <- Claude Code hooks for lifecycle automation
-│   └── + 22 more (portfolio, milestone, memory, agents, GitHub, brownfield, marketing, design, spec pipeline, ship pipeline, security review, code polish, Legion bridge integration, and workflow-common extensions)
+│   └── + 22 more (portfolio, milestone, memory, agents, GitHub, codebase mapping, marketing, design, spec pipeline, ship pipeline, security review, code polish, Legion bridge integration, and workflow-common extensions)
 ├── agents/                 <- 49 personality .md files (flat, with division in frontmatter)
 │   ├── engineering-senior-developer.md
 │   ├── design-ui-designer.md
@@ -889,7 +934,7 @@ legion/                     <- Project root
 - **Runtime-agnostic**: Works with 10 AI CLI runtimes plus Kilo Code plugin support — skills, commands, and agents adapt via per-runtime adapters (support tiers listed below)
 - **Human-readable state**: All planning files are markdown, readable without tools
 - **Full personality injection**: Agents are spawned with their complete .md as instructions
-- **Standardized format**: All 49 agents use Format A — emoji section headings, "Your" pronouns, current range 155-679 lines (minimum 80)
+- **Standardized format**: All 49 agents use Format A — emoji section headings, "Your" pronouns, current range 156-472 lines (minimum 80)
 - **Budget-aware orchestration**: Heavier reasoning is reserved for planning and governance when the adapter supports it; execution stays on faster defaults, optional skills stay unloaded until needed, and prompt ceilings prevent oversized spawns
 - **Configurable per-plan task cap**: Keeps individual plans focused while allowing any number of plans per phase
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides
@@ -899,7 +944,7 @@ legion/                     <- Project root
 - **Deterministic gates**: User-facing decisions use closed-set AskUserQuestion flows and explicit trigger rules, reducing ambiguity on literal models such as Claude Opus 4.7
 - **Observability**: Decision logging in SUMMARY.md and cycle-over-cycle diffs in REVIEW.md provide agent decision audit trails
 - **Retrieval-led reasoning**: A compressed Dynamic Knowledge Index in AGENTS.md maps every agent and skill file by division/category. Combined with a "prefer retrieval over pre-training" directive, this eliminates LLM laziness during agent spawning while keeping the coordinator's hot path lighter — agents read the exact files they need instead of hallucinating personas. Based on [Vercel's Context Engineering research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals).
-- **Graceful degradation**: Optional features (GitHub, memory, marketing, design, panels, critique) activate when available, skip silently when not
+- **Graceful degradation**: Optional features (GitHub, memory, codebase mapping, marketing, design, panels, critique) activate when available, skip silently when not
 - **Read-only advisory**: Consultation agents explore but never modify — tool-level enforcement via Explore subagent type
 - **Domain-weighted review**: Each reviewer evaluates against non-overlapping criteria scoped to their expertise, not generic checklists
 
@@ -911,14 +956,14 @@ These activate automatically when their prerequisites are met:
 |---------|---------------|--------------|
 | **GitHub Integration** | `gh` CLI authenticated + git remote exists | Links phases to issues, creates PRs, syncs milestones |
 | **Cross-Session Memory** | `.planning/memory/OUTCOMES.md` exists | Boosts agent recommendations based on past performance |
-| **Brownfield Analysis** | Existing codebase detected during `/legion:start` | Maps architecture, frameworks, risks before planning |
+| **Codebase Map** | `/legion:map` or existing codebase detected during `/legion:start` | Maps architecture, functionality, risks, semantic index, and directory mappings before planning |
 | **Marketing Workflows** | `MKT-*` phase requirements OR `workflow_type: marketing` in CONTEXT.md | Campaign planning, content calendars, channel coordination |
 | **Design Workflows** | `DSN-*` phase requirements OR `workflow_type: design` in CONTEXT.md | Design systems, UX research, three-lens review (brand + accessibility + usability) |
 | **Plan Critique** | User selects critique during `/legion:plan` | Pre-mortem analysis, assumption hunting, PASS/CAUTION/REWORK verdicts |
 | **Review Panels** | User selects panel mode in `/legion:review` | 2-4 domain-weighted reviewers with non-overlapping rubrics |
 | **Control Modes** | `control_mode` set in `settings.json` | Adjusts authority enforcement: autonomous, guarded, advisory, surgical |
 | **Intent Routing** | Ambiguous input to any command | Natural language parsing routes to the right command + flags |
-| **Explore Modes** | `/legion:explore` with mode selection | Onboard, compare, debate modes beyond default crystallize |
+| **Design Discovery** | `/legion:explore` | Research-first brainstorming that saves a design doc before optional `/legion:start` |
 | **Board of Directors** | `/legion:board meet <topic>` or `/legion:board review` | Governance deliberation with dynamic agent panels, voting, and audit trail |
 | **Cross-CLI Dispatch** | `dispatch.enabled` in `settings.json` + external CLI installed | Routes work to Gemini/Codex/Copilot via capability matching |
 | **Multi-Pass Evaluators** | `review.evaluator_depth: "multi-pass"` in settings | Deep evaluation with 4 specialized evaluator types (6-7 passes each) |
@@ -930,10 +975,10 @@ These activate automatically when their prerequisites are met:
 | **State Validation** | `/legion:validate` command | Schema conformance, cross-reference checking, integrity verification for `.planning/` files |
 
 <!-- legion-metrics:start -->
-- Commands: 18
+- Commands: 19
 - Skills: 33
 - Agents: 49
-- Agent personality line range (current): 156-680
+- Agent personality line range (current): 156-472
 <!-- legion-metrics:end -->
 
 ## Requirements

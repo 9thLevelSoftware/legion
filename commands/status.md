@@ -43,7 +43,7 @@ DRY-RUN MODE (deterministic, no side effects)
    - `skills/workflow-common-memory/SKILL.md` only if `.planning/memory/OUTCOMES.md` exists.
    
    - `skills/workflow-common-github/SKILL.md` only if STATE.md contains a GitHub section and `gh` is available.
-   - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists.
+   - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists or `.planning/codebase/index.jsonl` exists.
    If a condition is not met, skip that skill silently and continue.
 1. CHECK PROJECT EXISTS
    - Attempt to read .planning/PROJECT.md
@@ -97,11 +97,17 @@ DRY-RUN MODE (deterministic, no side effects)
       - Milestone mapping table (if present)
       If ## GitHub section does not exist: skip, set github_metadata_available = false
 
-   i. .planning/CODEBASE.md — if exists, extract:
-      - Analyzed date from the header
-      - Calculate age in days from current date
-      - Set codebase_map_available = true, codebase_map_age = {days}
-      If .planning/CODEBASE.md does not exist: skip, set codebase_map_available = false
+   i. Codebase map dataset — inspect:
+      - `.planning/CODEBASE.md`
+      - `.planning/codebase/index.jsonl`
+      - `.planning/codebase/symbols.json`
+      - `.planning/codebase/search.md`
+      - `.planning/config/directory-mappings.yaml`
+      If `.planning/CODEBASE.md` exists, extract generated/analyzed date, schema version, analyzed commit, source file count, and source fingerprint.
+      Calculate age in days from current date.
+      Set codebase_map_available = true, codebase_map_age = {days}, codebase_map_status = fresh|stale|partial.
+      Else if any other map artifact exists: set codebase_map_available = true, codebase_map_status = partial, codebase_map_age = unknown, analyzed_date = unknown.
+      If no map artifacts exist: skip, set codebase_map_available = false.
 
 3. CALCULATE PROGRESS
    Follow execution-tracker Section 5 (Progress Calculation):
@@ -158,13 +164,15 @@ DRY-RUN MODE (deterministic, no side effects)
    {checked_count}/{total_count} requirements complete
    {List unchecked requirements from current phase, if any}
 
-   If codebase_map_available AND codebase_map_age > 30:
+   If codebase_map_available AND (codebase_map_age > 30 OR codebase_map_status == "stale" OR codebase_map_status == "partial"):
 
    ## Codebase Map
-   **Last analyzed**: {analyzed_date} ({codebase_map_age} days ago)
-   Tip: Your codebase map is stale (>30 days). Run `/legion:quick analyze codebase` to refresh it.
+   **Status**: {codebase_map_status}
+   **Last analyzed**: {analyzed_date and codebase_map_age, or "unknown" for partial datasets without CODEBASE.md metadata}
+   **Artifacts**: CODEBASE.md {present/missing}, index.jsonl {present/missing}, symbols.json {present/missing}, search.md {present/missing}, directory-mappings.yaml {present/missing}
+   Tip: Your codebase map is stale or incomplete. Run `/legion:map --refresh` to refresh it.
 
-   If codebase_map_available is false OR codebase_map_age <= 30: omit this section entirely (no placeholder).
+   If codebase_map_available is false OR the map is fresh and complete: omit this section entirely (no placeholder).
 
    If memory_available (i.e., .planning/memory/OUTCOMES.md exists and has records):
 
@@ -234,7 +242,7 @@ If directory_mappings.status == "stale" OR directory_mappings.changes_detected:
     Recommendation: {directory_mappings.recommendation}
     
     Actions:
-    - Run `/legion:quick analyze codebase` to re-analyze
+    - Run `/legion:map --refresh` to re-analyze
     - Or: Review and update `.planning/config/directory-mappings.yaml`
 
 5. DETERMINE NEXT ACTION

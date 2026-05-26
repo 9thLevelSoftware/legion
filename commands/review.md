@@ -55,6 +55,8 @@ Examples:
 
    - `skills/workflow-common-github/SKILL.md` only if `gh auth status` succeeds and a git remote exists.
 
+   - `skills/codebase-mapper/SKILL.md` only if `.planning/CODEBASE.md` exists or `.planning/codebase/index.jsonl` exists. Review-loop Step 2.5 uses map conventions, risk areas, API surface, and test map context when available.
+
    - `skills/workflow-common-domains/SKILL.md` only for design/marketing domain review contexts.
 
    - `skills/review-evaluators/SKILL.md` only if `settings.review.evaluator_depth` is `"multi-pass"` (default).

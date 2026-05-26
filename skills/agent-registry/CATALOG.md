@@ -101,7 +101,7 @@ The recommendation algorithm and team assembly patterns are in `SKILL.md` in thi
 | agents-orchestrator | `agents/agents-orchestrator.md` | Spawnable coordinator agent for cross-division task execution within a build task — coordinates specialist agents through dev-QA loops when multi-agent coordination is needed | orchestration, pipeline-management, workflow-automation, agent-coordination, dev-qa-loops |
 | data-analytics-engineer | `agents/data-analytics-engineer.md` | Full-stack data analytics specialist — builds trustworthy data infrastructure (pipelines, ETL, quality) and delivers actionable business insights (dashboards, KPIs, executive reporting) | data-pipelines, etl, data-quality, data-warehouse, data-engineering, dashboards, kpi-reporting, business-intelligence, statistical-analyses |
 | lsp-index-engineer | `agents/lsp-index-engineer.md` | Language Server Protocol specialist building unified code intelligence systems through LSP client orchestration and semantic indexing | lsp, code-intelligence, semantic-indexing, language-servers, developer-tooling |
-| polymath | `agents/polymath.md` | Pre-flight alignment specialist who crystallizes raw ideas through structured exploration and research-first questioning | exploration, clarification, research-first, structured-questions, gap-detection |
+| polymath | `agents/polymath.md` | Pre-flight design discovery specialist who researches raw ideas, asks focused clarification questions, compares approaches, and produces design documents | exploration, clarification, research-first, structured-questions, design-discovery, gap-detection |
 
 ### Support Division (4 agents)
 
@@ -228,7 +228,7 @@ Reverse mapping from common project needs to recommended agents.
 
 ### Exploration & Clarification
 - **Pre-flight Alignment**: polymath
-- **Use case**: Crystallize raw ideas through structured exploration before formal planning
+- **Use case**: Turn raw ideas into researched design documents before optional formal planning
 - **Task types**: exploration, clarification, research-first, structured-questions, gap-detection
 
 
