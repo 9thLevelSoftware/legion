@@ -37,6 +37,13 @@ Use these checklists for manual verification when CI cannot prove runtime-native
 - Verify Gemini reads the authoritative `.legion/commands/legion/start.md` file.
 - Confirm nested namespace commands still resolve as `/legion:<command>`.
 
+## Antigravity CLI
+
+- Confirm `.agents/plugins/legion/plugin.json` or `~/.gemini/config/plugins/legion/plugin.json` exists and is valid JSON.
+- Verify skills, agents, and commands directories exist inside the plugin folder.
+- Restart Antigravity CLI and run `agy inspect` to verify the `legion` plugin is active.
+- Verify Antigravity CLI can run `/legion:start` and execute the installed plugin commands.
+
 ## Kiro CLI (formerly Amazon Q Developer CLI)
 
 - Confirm `.kiro/agents/legion-orchestrator.md` or `~/.kiro/agents/legion-orchestrator.md` exists.

@@ -121,6 +121,14 @@ function expectedNativeFiles(runtimeKey, scope, projectDir, homeDir) {
         expected.push(path.join(surfacePath, 'board-of-directors', 'SKILL.md'));
         expected.push(path.join(surfacePath, 'wave-executor', 'SKILL.md'));
         break;
+      case 'antigravity-plugin':
+        expected.push(path.join(surfacePath, 'plugin.json'));
+        expected.push(path.join(surfacePath, 'skills', 'code-polish', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'skills', 'workflow-common', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'skills', 'phase-decomposer', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'skills', 'board-of-directors', 'SKILL.md'));
+        expected.push(path.join(surfacePath, 'skills', 'wave-executor', 'SKILL.md'));
+        break;
       default:
         throw new Error(`Unhandled native surface type in tests: ${surface.type}`);
     }

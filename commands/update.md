@@ -27,6 +27,7 @@ skills/workflow-common-core/SKILL.md
      - cursor → --cursor
      - copilot-cli → --copilot
      - gemini-cli → --gemini
+     - antigravity-cli → --antigravity
      - kiro-cli → --kiro
      - amazon-q → --amazon-q (deprecated alias for --kiro)
      - windsurf → --windsurf

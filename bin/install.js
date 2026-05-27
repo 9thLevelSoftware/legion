@@ -89,6 +89,8 @@ Runtime (pick one):
   --cursor      Cursor
   --copilot     GitHub Copilot CLI
   --gemini      Google Gemini CLI
+  --antigravity Antigravity CLI
+  --agy         Alias for --antigravity
   --kiro        Kiro CLI (preferred)
   --amazon-q    Deprecated alias for --kiro
   --windsurf    Windsurf
@@ -1250,6 +1252,84 @@ function install(runtimeKey, scope, verify = false) {
           }
           console.log(`  ${surface.key}: ${commandPath}`);
         }
+        break;
+      }
+
+      case 'antigravity-plugin': {
+        // 1. Write plugin.json manifest
+        const pluginJsonPath = joinPath(surface.path, 'plugin.json');
+        const manifest = {
+          name: "legion",
+          version: pkg.version,
+          description: pkg.description,
+          author: pkg.author.name || pkg.author,
+          repository: pkg.repository.url || pkg.repository,
+          keywords: pkg.keywords,
+          license: pkg.license
+        };
+        writeManagedFile(pluginJsonPath, JSON.stringify(manifest, null, 2), nativeArtifacts);
+        console.log(`  ${surface.key}: plugin.json -> ${pluginJsonPath}`);
+
+        // 2. Copy skills/ directory recursive to surface.path/skills
+        const destSkillsDir = joinPath(surface.path, 'skills');
+        ensureDirs([destSkillsDir]);
+        const skillSrcDirs = listDirs(src.skillsSrc);
+        for (const skillSrc of skillSrcDirs) {
+          const skillName = path.basename(skillSrc);
+          const destSkillPath = joinPath(destSkillsDir, skillName);
+          ensureDirs([destSkillPath]);
+          for (const entry of fs.readdirSync(skillSrc)) {
+            const srcPath = joinPath(skillSrc, entry);
+            const destPath = joinPath(destSkillPath, entry);
+            if (fs.statSync(srcPath).isDirectory()) {
+              copyDirRecursive(srcPath, destPath);
+            } else if (entry === 'SKILL.md') {
+              let content = fs.readFileSync(srcPath, 'utf8');
+              if (skillName === 'workflow-common') {
+                content = rewriteAgentPathResolution(content, paths.manifestFile);
+              }
+              fs.writeFileSync(destPath, content);
+            } else {
+              fs.copyFileSync(srcPath, destPath);
+            }
+          }
+          // Recursively push all files inside to nativeArtifacts
+          const walkArtifacts = (dir) => {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+              const full = joinPath(dir, entry.name);
+              if (entry.isDirectory()) {
+                walkArtifacts(full);
+              } else {
+                nativeArtifacts.push({ path: full });
+              }
+            }
+          };
+          walkArtifacts(destSkillPath);
+          nativeArtifacts.push({ path: destSkillPath, kind: 'dir' });
+        }
+        console.log(`  ${surface.key}: skills -> ${destSkillsDir}`);
+
+        // 3. Copy agents/ directory to surface.path/agents
+        const destAgentsDir = joinPath(surface.path, 'agents');
+        ensureDirs([destAgentsDir]);
+        const agentFiles = listMdFiles(src.agentsSrc);
+        for (const agentFile of agentFiles) {
+          const base = path.basename(agentFile);
+          const destAgentPath = joinPath(destAgentsDir, base);
+          fs.copyFileSync(agentFile, destAgentPath);
+          nativeArtifacts.push({ path: destAgentPath });
+        }
+        console.log(`  ${surface.key}: agents -> ${destAgentsDir}`);
+
+        // 4. Copy transformed commands/ to surface.path/commands
+        const destCommandsDir = joinPath(surface.path, 'commands');
+        ensureDirs([destCommandsDir]);
+        for (const [commandName, commandContent] of transformedCommands.entries()) {
+          const commandPath = joinPath(destCommandsDir, `${commandName}.md`);
+          writeManagedFile(commandPath, commandContent, nativeArtifacts);
+        }
+        console.log(`  ${surface.key}: commands -> ${destCommandsDir}`);
         break;
       }
 

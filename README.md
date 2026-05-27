@@ -25,6 +25,7 @@ Replace `--claude` with your runtime of choice:
 | `--cursor` | Cursor |
 | `--copilot` | GitHub Copilot CLI |
 | `--gemini` | Google Gemini CLI |
+| `--antigravity` | Antigravity CLI |
 | `--kiro` | Kiro CLI (preferred) |
 | `--amazon-q` | Deprecated alias for `--kiro` |
 | `--windsurf` | Windsurf |
@@ -42,6 +43,7 @@ Replace `--claude` with your runtime of choice:
 | OpenAI Codex CLI | Beta | Native prompt commands plus a Legion bridge skill; use `/project:legion-start` or `/prompts:legion-start` |
 | GitHub Copilot CLI | Beta | Native `/legion-start` skills plus a `legion-orchestrator` agent profile |
 | Google Gemini CLI | Beta | Native `/legion:start` custom commands in `.gemini/commands/legion/` |
+| Antigravity CLI | Certified | Native `/legion:start` plugins in `.agents/plugins/legion/` (local) or `~/.gemini/config/plugins/legion/` (global) |
 | Kiro CLI (formerly Amazon Q Developer CLI) | Beta | Native `@legion-orchestrator` custom agent plus steering files |
 | OpenCode | Beta | Native `/legion-start` custom commands plus a Legion subagent |
 | Kilo CLI | Beta | Native `/legion-start` custom commands plus a Legion subagent |
@@ -87,6 +89,7 @@ This repository now also ships a repo-native Codex plugin manifest at `.codex-pl
 | OpenAI Codex CLI | `/project:legion-start` | `/prompts:legion-start` |
 | GitHub Copilot CLI | `/legion-start` or `/agent legion-orchestrator` | `/legion-start` or `/agent legion-orchestrator` |
 | Google Gemini CLI | `/legion:start` | `/legion:start` |
+| Antigravity CLI | `/legion:start` | `/legion:start` |
 | Kiro CLI | `@legion-orchestrator` | `@legion-orchestrator` |
 | OpenCode | `/legion-start` | `/legion-start` |
 | Kilo CLI | `/legion-start` | `/legion-start` |
@@ -984,8 +987,8 @@ These activate automatically when their prerequisites are met:
 ## Requirements
 
 - Node.js 18+ (install-time only; the installer lazy-loads `yaml` for safe Kilo Code mode merges)
-- One of the 10 supported AI CLI runtimes or the Kilo Code plugin:
-  Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Kiro CLI, Windsurf, OpenCode, Kilo CLI, Aider, or Kilo Code Plugin
+- One of the 11 supported AI CLI runtimes or the Kilo Code plugin:
+  Claude Code, OpenAI Codex CLI, Cursor, GitHub Copilot CLI, Google Gemini CLI, Antigravity CLI, Kiro CLI, Windsurf, OpenCode, Kilo CLI, Aider, or Kilo Code Plugin
 
 ## Contributing
 

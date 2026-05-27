@@ -10,6 +10,7 @@ Claude Code remains the control runtime. Every other runtime below was re-audite
 | Cursor | Experimental | Rules-only | Yes | No | `.cursor/rules/legion.mdc` | Plain-language Legion requests |
 | GitHub Copilot CLI | Beta | Skills and custom agent | Yes | Yes | `.github/skills/`, `.github/agents/`, `~/.copilot/skills/`, `~/.config/copilot/agents/` | `/legion-start` or `/agent legion-orchestrator` |
 | Google Gemini CLI | Beta | Native commands | Yes | Yes | `.gemini/commands/legion/*.toml` or `~/.gemini/commands/legion/*.toml` | `/legion:start` |
+| Antigravity CLI | Certified | Native plugins | Yes | Yes | `.agents/plugins/legion/` plus `~/.gemini/config/plugins/legion/` | `/legion:start` |
 | Kiro CLI (formerly Amazon Q Developer CLI) | Beta | Custom agent and steering | Yes | Yes | `.kiro/agents/`, `.kiro/steering/`, `~/.kiro/agents/`, `~/.kiro/steering/` | `@legion-orchestrator` |
 | Windsurf | Experimental | Rules-only | Yes | No | `.windsurf/rules/legion.md` | Plain-language Legion requests |
 | OpenCode | Beta | Commands and subagent | Yes | Yes | `.opencode/command/`, `.opencode/agent/`, `~/.config/opencode/command/`, `~/.config/opencode/agent/` | `/legion-start` |
@@ -45,6 +46,10 @@ Claude Code remains the control runtime. Every other runtime below was re-audite
 - [Custom commands](https://google-gemini.github.io/gemini-cli/docs/cli/commands/)
 - [Configuration and GEMINI.md](https://github.com/google-gemini/gemini-cli?tab=readme-ov-file#configuration)
 - [Extensions](https://github.com/google-gemini/gemini-cli/blob/main/docs/extension.md)
+
+### Antigravity CLI
+
+- [Plugins](https://antigravity.google)
 
 ### Kiro CLI
 

@@ -40,6 +40,7 @@ Step 1: Tool probe (primary detection)
     - Cursor: `.cursor/rules/legion.mdc` exists
     - Copilot CLI: `.github/skills/legion-start/SKILL.md`, `~/.copilot/skills/legion-start/SKILL.md`, `.github/agents/legion-orchestrator.agent.md`, or `~/.config/copilot/agents/legion-orchestrator.agent.md` exists
     - Gemini CLI: `.gemini/commands/legion/start.toml` or `~/.gemini/commands/legion/start.toml` exists
+    - Antigravity CLI: `.agents/plugins/legion/plugin.json` or `~/.gemini/config/plugins/legion/plugin.json` exists
     - Kiro CLI: `.kiro/agents/legion-orchestrator.md`, `~/.kiro/agents/legion-orchestrator.md`, `.kiro/steering/legion.md`, or `~/.kiro/steering/AGENTS.md` exists
     - Windsurf: `.windsurf/rules/legion.md` exists
     - OpenCode: `.opencode/command/legion-start.md`, `~/.config/opencode/command/legion-start.md`, `.opencode/agent/legion-orchestrator.md`, or `~/.config/opencode/agent/legion-orchestrator.md` exists
