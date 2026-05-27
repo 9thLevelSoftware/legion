@@ -249,6 +249,40 @@ const RUNTIME_METADATA = {
       },
     ],
   },
+  antigravity: {
+    key: 'antigravity',
+    flag: '--antigravity',
+    aliases: ['--agy'],
+    label: 'Antigravity CLI',
+    adapterFile: 'antigravity-cli.md',
+    supportTier: 'certified',
+    disposition: 'native-plugins',
+    installSurface: 'native plugins with manifest, skills, and agents',
+    scopeSupport: { local: true, global: true },
+    storageLayout: 'legion',
+    allowedTools: ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob'],
+    supportsAtRefs: false,
+    nativeSurfaces: [
+      {
+        key: 'antigravity-plugin',
+        type: 'antigravity-plugin',
+        pathKind: 'dir',
+        localPath: '$PROJECT/.agents/plugins/legion',
+        globalPath: '$HOME/.gemini/config/plugins/legion',
+      },
+    ],
+    entrypoints: {
+      local: '/legion:start',
+      global: '/legion:start',
+    },
+    evidence: [
+      {
+        title: 'Plugins structure',
+        url: 'https://antigravity.google',
+        verifiedOn: '2026-03-11',
+      },
+    ],
+  },
   kiro: {
     key: 'kiro',
     flag: '--kiro',
@@ -598,6 +632,7 @@ const RUNTIME_ORDER = [
   'cursor',
   'copilot',
   'gemini',
+  'antigravity',
   'kiro',
   'windsurf',
   'opencode',

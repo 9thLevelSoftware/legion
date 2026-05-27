@@ -761,6 +761,7 @@
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--codex</span>      <span class="comment"># OpenAI Codex CLI</span>
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--cursor</span>     <span class="comment"># Cursor</span>
 <span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--gemini</span>     <span class="comment"># Google Gemini CLI</span>
+<span class="command">npx</span> <span class="string">@9thlevelsoftware/legion</span> <span class="flag">--antigravity</span> <span class="comment"># Antigravity CLI</span>
 <span class="comment"># + copilot, kiro, windsurf, opencode, kilo, kilo-code, aider</span>
 
 <span class="comment"># Then, in any project directory:</span>
@@ -1164,6 +1165,31 @@
 
         <div class="divider"><div class="divider-line"></div></div>
 
+        <!-- ===== v8.0.4 ===== -->
+        <section class="reveal-section">
+            <h2>v8.0.4 &mdash; Antigravity CLI Adapter</h2>
+            <p class="intro-text" style="margin-bottom: 1.5rem;">
+                Official native plugin integration for the brand new <strong>Antigravity CLI</strong> (<code>agy</code>),
+                the successor to Google Gemini CLI, bringing premium multi-agent workflows and parallel wave coordination.
+            </p>
+            <div class="features" style="grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));">
+                <div class="feature-card">
+                    <h3>Native Plugin Structure</h3>
+                    <p>Installs as a compliant Antigravity plugin under <code>.agents/plugins/legion</code> (local) or <code>~/.gemini/config/plugins/legion</code> (global) with a generated <code>plugin.json</code> manifest.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Parallel Waves</h3>
+                    <p>Leverages Antigravity's native subagent spawn mechanics to execute coordinate parallel waves with filesystem-based result polling.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>11 CLI Runtimes</h3>
+                    <p>Enriches the detection step 1 probe with Antigravity validation, expanding Legion's certified ecosystem coverage.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"><div class="divider-line"></div></div>
+
         <!-- ===== v8.0.3 ===== -->
         <section class="reveal-section">
             <h2>v8.0.3 &mdash; Codebase Map &amp; Design Discovery</h2>
@@ -1269,8 +1295,8 @@
                     <p>Installs flat <code>/legion-start</code> workflows to <code>.kilo/commands/</code>, a <code>legion-orchestrator</code> subagent to <code>.kilo/agents/</code>, and Agent-Skills-formatted copies of every Legion skill to <code>.kilo/skills/&lt;name&gt;/SKILL.md</code> for Kilo's native skill loader.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>10 Runtimes</h3>
-                    <p>Legion now covers 10 AI CLI runtimes: Claude Code, Codex CLI, Cursor, Copilot CLI, Gemini CLI, Kiro CLI, Windsurf, OpenCode, <strong>Kilo CLI</strong>, and Aider.</p>
+                    <h3>11 Runtimes</h3>
+                    <p>Legion now covers 11 AI CLI runtimes: Claude Code, Codex CLI, Cursor, Copilot CLI, Gemini CLI, Antigravity CLI, Kiro CLI, Windsurf, OpenCode, <strong>Kilo CLI</strong>, and Aider.</p>
                 </div>
                 <div class="feature-card">
                     <h3>Detection Protocol</h3>

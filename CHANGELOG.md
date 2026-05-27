@@ -5,6 +5,14 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.4] - 2026-05-27
+
+### Added
+- **Antigravity CLI Support** — Full native integration for the brand new Antigravity CLI (`agy`), the successor to Gemini CLI.
+- **Antigravity Plugin Installer** — Native installation surface mapping under `.agents/plugins/legion` (local) and `~/.gemini/config/plugins/legion` (global) with a generated `plugin.json` manifest.
+- **CLI Adapter & Routing** — Comprehensive `adapters/antigravity-cli.md` adapter detailing capabilities, known quirks, interaction protocol, and parallel wave execution protocols.
+- **Versioning & Website Updates** — Synchronized metadata, updated README, website, and certification checklists to ensure smooth NPM publication.
+
 ## [8.0.3] - 2026-05-17
 
 ### Changed

@@ -166,6 +166,7 @@ function checkRuntimeSupportTable() {
     'Cursor',
     'GitHub Copilot CLI',
     'Google Gemini CLI',
+    'Antigravity CLI',
     'Kiro CLI (formerly Amazon Q Developer CLI)',
     'Windsurf',
     'OpenCode',
