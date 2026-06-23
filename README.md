@@ -1,3 +1,5 @@
+# Give the shiny new thing a try at: https://9thlevelsoftware.github.io/legion-ascended
+
 # Legion
 
 Orchestrate 49 AI specialist personalities across 10 AI CLI runtimes plus the Kilo Code plugin.
