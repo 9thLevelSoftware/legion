@@ -234,7 +234,7 @@ Spawns agents with full personality injection to execute all plans for the curre
 2. Discover plans via `wave-executor` — parse YAML frontmatter, build wave map, validate no circular dependencies or file conflicts
 3. Create a Claude Code Team via TeamCreate (`phase-{NN}-execution`) with TaskCreate for each plan and cross-wave dependencies via TaskUpdate
 4. Execute plans wave by wave via `wave-executor` — all agents within a wave spawn in parallel via Agent tool with `model: "sonnet"`
-5. Each agent receives its complete personality .md (currently 156-472 lines) concatenated with the plan file as its prompt; autonomous plans skip personality injection
+5. Each agent receives its complete personality .md (currently 155-471 lines) concatenated with the plan file as its prompt; autonomous plans skip personality injection
 6. Agents auto-remediate environment issues (missing deps, wrong versions) — classify errors as BLOCKER vs ENVIRONMENT, retry once after remediation
 7. Collect results via SendMessage — parse structured summaries, write `{NN}-{PP}-SUMMARY.md` files
 8. Track progress via `execution-tracker` — update STATE.md, ROADMAP.md progress table, create atomic git commits per successful plan
@@ -705,7 +705,7 @@ Legion didn't invent its patterns from scratch. It cherry-picked the best ideas 
 
 #### The Agent Personality Foundation — [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)
 
-Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 4 Legion-native specializations, consolidated from the original 55 via 5 agent merges and 1 addition (Code Polisher, v7.5.0). These are not generic role labels — they are structured character sheets (current range 156-472 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
+Legion now ships 49 built-in personalities: 51 originated in the agency-agents repository by msitarzewski, plus 4 Legion-native specializations, consolidated from the original 55 via 5 agent merges and 1 addition (Code Polisher, v7.5.0). These are not generic role labels — they are structured character sheets (current range 155-471 lines) with deep expertise, communication styles, hard rules, and personality quirks across 9 divisions. Legion builds orchestration, planning, and review workflows on top of this personality foundation.
 
 #### From [GSD (Get Shit Done)](https://github.com/gsd-build/get-shit-done)
 
@@ -811,7 +811,7 @@ Puzld.ai's DPO (Direct Preference Optimization) extraction pattern — capturing
 
 Beyond combining these twelve projects, Legion introduced several original patterns:
 
-- **Personality-first agents**: The 49 agent personalities are not role labels — they are 156-472 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its complete personality as system instructions, not a generic "you are a backend developer" prompt.
+- **Personality-first agents**: The 49 agent personalities are not role labels — they are 155-471 line character sheets with expertise, communication style, hard rules, and personality quirks, all in a standardized emoji-headed format. When an agent is spawned, it receives its complete personality as system instructions, not a generic "you are a backend developer" prompt.
 
 - **Hybrid agent selection**: The workflow recommends agents based on task analysis (keyword matching, division affinity, past performance), but the user always confirms or overrides. No black-box assignment.
 
@@ -939,7 +939,7 @@ legion/                     <- Project root
 - **Runtime-agnostic**: Works with 10 AI CLI runtimes plus Kilo Code plugin support — skills, commands, and agents adapt via per-runtime adapters (support tiers listed below)
 - **Human-readable state**: All planning files are markdown, readable without tools
 - **Full personality injection**: Agents are spawned with their complete .md as instructions
-- **Standardized format**: All 49 agents use Format A — emoji section headings, "Your" pronouns, current range 156-472 lines (minimum 80)
+- **Standardized format**: All 49 agents use Format A — emoji section headings, "Your" pronouns, current range 155-471 lines (minimum 80)
 - **Budget-aware orchestration**: Heavier reasoning is reserved for planning and governance when the adapter supports it; execution stays on faster defaults, optional skills stay unloaded until needed, and prompt ceilings prevent oversized spawns
 - **Configurable per-plan task cap**: Keeps individual plans focused while allowing any number of plans per phase
 - **Hybrid selection**: Workflow recommends agents, user confirms or overrides
@@ -983,7 +983,7 @@ These activate automatically when their prerequisites are met:
 - Commands: 19
 - Skills: 33
 - Agents: 49
-- Agent personality line range (current): 156-472
+- Agent personality line range (current): 155-471
 <!-- legion-metrics:end -->
 
 ## Requirements
