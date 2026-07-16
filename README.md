@@ -983,7 +983,7 @@ These activate automatically when their prerequisites are met:
 - Commands: 19
 - Skills: 33
 - Agents: 49
-- Agent personality line range (current): 155-471
+- Agent personality line range (current): 156-472
 <!-- legion-metrics:end -->
 
 ## Requirements

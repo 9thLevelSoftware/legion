@@ -1,7 +1,7 @@
 ---
 name: legion:status
 description: Show project progress dashboard and route to next action
-argument-hint: [--dry-run]
+argument-hint: "[--dry-run]"
 allowed-tools: [Read, Grep, Glob]
 ---
 
