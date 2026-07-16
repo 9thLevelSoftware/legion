@@ -5,6 +5,11 @@ All notable changes to the Legion plugin are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [8.0.6] - 2026-07-16
+
+### Fixed
+- **Copilot CLI skill discovery** — Quote affected `argument-hint` frontmatter values so loaders that require a string no longer reject Legion commands.
+
 ## [8.0.5] - 2026-05-27
 
 ### Fixed
