@@ -1,6 +1,6 @@
 ---
 name: workflow-common-core
-description: Lean core conventions and path contracts used by all /legion: commands
+description: "Lean core conventions and path contracts used by all /legion: commands"
 triggers: [common, core, paths, state, conventions]
 token_cost: low
 summary: "Lean always-load core for command execution: CLI adapter detection, state file paths, settings resolution, agent path resolution, and base command mapping."
