@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const { recommendAgents, parseAgentMetadata, metadataScore, archetypeBoost, detectTaskType, classifyConfidence } = require(path.join(ROOT, 'scripts', 'recommendation-engine.js'));
+const { recommendAgents, parseCatalog, parseAgentMetadata, metadataScore, archetypeBoost, detectTaskType, classifyConfidence } = require(path.join(ROOT, 'scripts', 'recommendation-engine.js'));
 
 const cases = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'tests', 'fixtures', 'recommendation', 'cases.json'), 'utf8')
@@ -330,4 +330,13 @@ test('recommendAgents handles non-numeric memoryScores gracefully', () => {
   assert.ok(topRec, 'backend architect should still be recommended');
   assert.ok(Number.isFinite(topRec.totalScore), 'totalScore should be finite, not NaN');
   assert.equal(topRec.memoryBoost, 0, 'non-numeric memoryScore should be treated as 0');
+});
+
+test('parseCatalog returns only agents that have an agents/*.md file', () => {
+  const agentFiles = fs.readdirSync(path.join(ROOT, 'agents')).filter((f) => f.endsWith('.md'));
+  const ids = parseCatalog().map((a) => a.id);
+  assert.deepEqual([...ids].sort(), agentFiles.map((f) => f.replace(/\.md$/, '')).sort());
+
+  const recs = recommendAgents({ prompt: 'harden api security audit', topN: 10 }).recommendations;
+  assert.ok(!recs.some((r) => r.id === 'harden'), 'intent rows must not be recommended as agents');
 });
