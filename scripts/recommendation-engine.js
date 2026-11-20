@@ -118,6 +118,8 @@ function parseCatalog() {
     if (cols.length < 4) continue;
     const id = cols[0];
     if (!/^[a-z0-9-]+$/.test(id)) continue;
+    // Only Agent Catalog rows point at an agent file; skip other tables (e.g. Intent Routing).
+    if (!/^agents\/[a-z0-9-]+\.md$/.test(cols[1].replace(/`/g, ''))) continue;
 
     const specialty = cols[2].toLowerCase();
     const taskTypes = cols[3]
